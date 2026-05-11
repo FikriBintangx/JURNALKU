@@ -156,7 +156,7 @@ function SearchResults() {
               onClick={() => setIsFilterOpen(true)}
               className={cn(
                 "flex items-center justify-center space-x-2 border px-4 py-2.5 rounded-xl text-sm font-bold transition-all relative",
-                isFilterOpen || Object.values(filters).some(v => v === true || v > 0 || v < 1900) 
+                isFilterOpen || Object.values(filters).some(v => v === true || (typeof v === 'number' && (v > 0 && v < 2024))) 
                   ? "bg-primary/10 border-primary/50 text-primary" 
                   : "bg-muted border-border text-muted-foreground hover:bg-muted/80"
               )}
