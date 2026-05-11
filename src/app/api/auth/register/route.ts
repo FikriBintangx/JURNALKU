@@ -47,9 +47,13 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error('[AUTH_REGISTER_ERROR]', error);
+    console.error('[AUTH_REGISTER_ERROR]', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    });
     return NextResponse.json(
-      { message: 'Terjadi kesalahan saat mendaftar' },
+      { message: 'Terjadi kesalahan saat mendaftar: ' + (error.message || 'Internal Error') },
       { status: 500 }
     );
   }

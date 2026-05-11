@@ -33,7 +33,7 @@ function NavbarContent() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', { method: 'POST' });
       setUser(null);
       router.push('/');
       router.refresh();

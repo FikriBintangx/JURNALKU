@@ -70,9 +70,13 @@ export async function POST(req: Request) {
       }
     });
   } catch (error: any) {
-    console.error('[AUTH_LOGIN_ERROR]', error);
+    console.error('[AUTH_LOGIN_ERROR]', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    });
     return NextResponse.json(
-      { message: 'Terjadi kesalahan saat login' },
+      { message: 'Terjadi kesalahan saat login: ' + (error.message || 'Internal Error') },
       { status: 500 }
     );
   }
