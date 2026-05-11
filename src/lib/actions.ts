@@ -198,8 +198,8 @@ export async function getBookmarks(): Promise<JournalType[]> {
     console.log(`[BOOKMARK] Found ${bookmarks.length} bookmarks`);
 
     return bookmarks
-      .filter(b => b.journal) // Safety: skip orphaned bookmarks
-      .map(b => {
+      .filter((b: any) => b.journal) // Safety: skip orphaned bookmarks
+      .map((b: any) => {
         const j = b.journal;
 
         // Parse authorsJson or fall back to author string
@@ -214,7 +214,7 @@ export async function getBookmarks(): Promise<JournalType[]> {
         } catch {}
 
         if (authors.length === 0 && j.author) {
-          authors = j.author.split(',').map(name => ({ authorId: '', name: name.trim() }));
+          authors = j.author.split(',').map((name: string) => ({ authorId: '', name: name.trim() }));
         }
 
         return {
