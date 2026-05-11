@@ -3,7 +3,7 @@ import { fetchArxiv } from './providers/arxivProvider';
 import { fetchPubMed } from './providers/pubmedProvider';
 import { fetchDOAJ } from './providers/doajProvider';
 import { fetchZenodo } from './providers/zenodoProvider';
-import type { UniversalPaperEnriched } from '@/types/filters';
+import type { UniversalPaperEnriched } from '@/types/search';
 
 // Re-export for compatibility with existing imports
 export type UniversalPaper = UniversalPaperEnriched;
@@ -232,12 +232,12 @@ export const searchAggregator = {
       const items = res.data?.results;
       if (!Array.isArray(items)) return [];
 
-      return items.map((item: any) => {
+      return items.reduce((acc: UniversalPaperEnriched[], item: any) => {
         const id = item.id?.split('/')?.pop() || this.generateId();
         const title = (item.title || '').trim();
-        if (!title) return null;
+        if (!title) return acc;
 
-        return {
+        acc.push({
           id, paperId: id, source: 'openalex', title,
           abstract: this.decodeInvertedIndex(item.abstract_inverted_index),
           authors: (item.authorships || []).map((a: any) => ({ name: a.author?.display_name || 'Unknown' })),
@@ -251,8 +251,9 @@ export const searchAggregator = {
           relevanceScore: 0, isOpenAccess: !!item.open_access?.is_oa,
           venue: item.primary_location?.source?.display_name || '',
           docType: 'journal_article',
-        };
-      }).filter((p): p is UniversalPaperEnriched => p !== null && !!p.title);
+        });
+        return acc;
+      }, []);
 
     } catch (e: any) {
       console.error(`[PROVIDER] OpenAlex error: ${e.message}`);
@@ -277,11 +278,11 @@ export const searchAggregator = {
       const items = res.data?.data;
       if (!Array.isArray(items)) return [];
 
-      return items.map((item: any) => {
+      return items.reduce((acc: UniversalPaperEnriched[], item: any) => {
         const title = (item.title || '').trim();
-        if (!title) return null;
+        if (!title) return acc;
         const id = item.paperId || this.generateId();
-        return {
+        acc.push({
           id, paperId: id, source: 'semantic', title,
           abstract: item.abstract || '',
           authors: (item.authors || []).map((a: any) => ({ name: a.name || 'Unknown' })),
@@ -293,8 +294,9 @@ export const searchAggregator = {
           url: `https://www.semanticscholar.org/paper/${id}`,
           relevanceScore: 0, isOpenAccess: !!item.isOpenAccess,
           venue: item.venue || '', docType: 'journal_article',
-        };
-      }).filter((p): p is UniversalPaperEnriched => p !== null && !!p.title);
+        });
+        return acc;
+      }, []);
 
     } catch (e: any) {
       console.error(`[PROVIDER] Semantic Scholar error: ${e.message}`);
@@ -316,9 +318,9 @@ export const searchAggregator = {
       const items = res.data?.message?.items;
       if (!Array.isArray(items)) return [];
 
-      return items.map((item: any) => {
+      return items.reduce((acc: UniversalPaperEnriched[], item: any) => {
         const title = (item.title?.[0] || '').trim();
-        if (!title) return null;
+        if (!title) return acc;
         const doi = item.DOI || '';
         const id = doi || this.generateId();
 
@@ -329,7 +331,7 @@ export const searchAggregator = {
           'review-article': 'review',
         };
 
-        return {
+        acc.push({
           id, paperId: id, source: 'crossref', title,
           abstract: (item.abstract || '').replace(/<[^>]*>/g, '').trim(),
           authors: (item.author || []).map((a: any) => ({
@@ -344,8 +346,9 @@ export const searchAggregator = {
           relevanceScore: 0, isOpenAccess: false,
           venue: item['container-title']?.[0] || '',
           docType: (typeMap[item.type] || 'unknown') as any,
-        };
-      }).filter((p): p is UniversalPaperEnriched => p !== null && !!p.title);
+        });
+        return acc;
+      }, []);
 
     } catch (e: any) {
       console.error(`[PROVIDER] Crossref error: ${e.message}`);
@@ -367,12 +370,12 @@ export const searchAggregator = {
       const items = res.data?.results;
       if (!Array.isArray(items)) return [];
 
-      return items.map((item: any) => {
+      return items.reduce((acc: UniversalPaperEnriched[], item: any) => {
         const title = (item.title || '').trim();
-        if (!title) return null;
+        if (!title) return acc;
         const id = item.id?.toString() || this.generateId();
 
-        return {
+        acc.push({
           id: `core_${id}`, paperId: `core_${id}`, source: 'core', title,
           abstract: item.abstract || '',
           authors: (item.authors || []).map((a: any) => ({ name: a.name || 'Unknown' })),
@@ -383,8 +386,9 @@ export const searchAggregator = {
           url: `https://core.ac.uk/works/${id}`,
           relevanceScore: 0, isOpenAccess: true,
           venue: item.journals?.[0]?.title || '', docType: 'journal_article',
-        };
-      }).filter((p): p is UniversalPaperEnriched => p !== null && !!p.title);
+        });
+        return acc;
+      }, []);
 
     } catch (e: any) {
       console.error(`[PROVIDER] CORE error: ${e.message}`);

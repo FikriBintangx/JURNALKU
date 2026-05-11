@@ -3,7 +3,7 @@ import { searchAggregator } from '@/services/searchAggregator';
 import { embeddingService } from '@/services/embeddingService';
 import { rankingEngine } from '@/services/rankingEngine';
 import { aiEnrichmentService } from '@/services/aiEnrichmentService';
-import type { SearchFilters, UniversalPaperEnriched } from '@/types/filters';
+import type { SearchFilters, UniversalPaperEnriched } from '@/types/search';
 
 /**
  * JurnalStar Smart Search API

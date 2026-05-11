@@ -11,6 +11,7 @@ import { Search, Filter, BookX, Loader2, Sparkles, AlertCircle } from 'lucide-re
 import { motion, AnimatePresence } from 'framer-motion';
 import { JournalCardSkeleton } from '@/components/Skeleton';
 import FilterSidebar from '@/components/FilterSidebar';
+import { SearchFilters, SortBy, SearchResponse } from '@/types/search';
 
 function SearchResults() {
   const router = useRouter();
@@ -26,13 +27,13 @@ function SearchResults() {
   const [hasMore, setHasMore] = useState(true);
   const provider = (searchParams.get('provider') as 'default' | 'googlescholar') || 'default';
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<SearchFilters>({
     yearStart: 1900,
     yearEnd: new Date().getFullYear(),
     openAccess: false,
     hasPdf: false,
     minCitations: 0,
-    sortBy: 'relevance' as 'relevance' | 'year' | 'citations'
+    sortBy: 'relevance'
   });
 
   const observer = useRef<IntersectionObserver | null>(null);
@@ -68,7 +69,7 @@ function SearchResults() {
           data = { data: recommended, total: recommended.length, offset: 0, error: false };
           setHasMore(false);
         } else {
-          data = await journalService.search(query, 12, offset, provider);
+          data = await journalService.search(query, 12, offset, provider, filters.sortBy || 'relevance');
           if (data.error) throw new Error(data.message || 'Gagal mengambil data');
         }
         
@@ -97,8 +98,8 @@ function SearchResults() {
     .filter(j => {
       if (filters.openAccess && !j.isOpenAccess) return false;
       if (filters.hasPdf && !j.openAccessPdf?.url) return false;
-      if (j.year && (j.year < filters.yearStart || j.year > filters.yearEnd)) return false;
-      if (filters.minCitations > 0 && (j.citationCount || 0) < filters.minCitations) return false;
+      if (j.year && (j.year < (filters.yearStart || 1900) || j.year > (filters.yearEnd || 2024))) return false;
+      if ((filters.minCitations || 0) > 0 && (j.citationCount || 0) < (filters.minCitations || 0)) return false;
       return true;
     })
     .sort((a, b) => {

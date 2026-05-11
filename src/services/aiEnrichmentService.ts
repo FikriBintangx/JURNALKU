@@ -19,7 +19,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { redis } from "@/lib/redis";
 import { aiKeyManager, classifyAIError } from "./AIKeyManager";
-import type { AIEnrichment, ResearchMethod, TopicCategory, ComplexityLevel } from "@/types/filters";
+import type { AIEnrichment, ResearchMethod, TopicCategory, ComplexityLevel } from "@/types/search";
 
 const MODEL = "gemini-2.0-flash";
 const FALLBACK_MODEL = "gemini-1.5-flash-latest";

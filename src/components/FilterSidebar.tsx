@@ -4,12 +4,12 @@ import { X, Calendar, BookOpen, Star, RefreshCcw, Cpu, Tag, Layers, Database, Sp
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
-import type { SearchFilters, JournalSource, SortBy, ResearchMethod, TopicCategory, ComplexityLevel, DocumentType } from '@/types/filters';
+import type { SearchFilters, JournalSource, SortBy, ResearchMethod, TopicCategory, ComplexityLevel, DocumentType } from '@/types/search';
 
 interface FilterSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  filters: SearchFilters & { yearStart?: number; yearEnd?: number; minCitations?: number; sortBy?: SortBy };
+  filters: SearchFilters;
   onApply: (newFilters: SearchFilters) => void;
   onReset: () => void;
   resultCount?: number;
@@ -195,10 +195,8 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
                 <PillSelector<SortBy>
                   options={[
                     { value: 'relevance', label: '🎯 Relevansi' },
-                    { value: 'year_desc', label: '📅 Terbaru' },
-                    { value: 'year_asc', label: '📅 Terlama' },
-                    { value: 'citations_desc', label: '⭐ Sitasi ↓' },
-                    { value: 'citations_asc', label: '⭐ Sitasi ↑' },
+                    { value: 'year', label: '📅 Tahun' },
+                    { value: 'citations', label: '⭐ Sitasi' },
                   ]}
                   value={local.sortBy || 'relevance'}
                   onChange={v => set({ sortBy: v as SortBy })}
