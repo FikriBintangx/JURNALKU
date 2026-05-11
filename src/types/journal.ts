@@ -26,7 +26,4 @@ export interface SearchResponse {
   total: number;
   offset: number;
   data: Journal[];
-  success?: boolean;
-  error?: boolean;
-  message?: string;
 }

@@ -65,7 +65,7 @@ function SearchResults() {
         let data;
         if (recommend && offset === 0) {
           const recommended = await journalService.getRecommendations(recommend);
-          data = { data: recommended, total: recommended.length, offset: 0, error: false };
+          data = { data: recommended, total: recommended.length };
           setHasMore(false);
         } else {
           data = await journalService.search(query, 12, offset, provider);
@@ -156,14 +156,14 @@ function SearchResults() {
               onClick={() => setIsFilterOpen(true)}
               className={cn(
                 "flex items-center justify-center space-x-2 border px-4 py-2.5 rounded-xl text-sm font-bold transition-all relative",
-                isFilterOpen || Object.values(filters).some(v => v === true || (typeof v === 'number' && (v > 0 && v < 2024))) 
+                isFilterOpen || Object.values(filters).some(v => v === true || (typeof v === 'number' && v > 0)) 
                   ? "bg-primary/10 border-primary/50 text-primary" 
                   : "bg-muted border-border text-muted-foreground hover:bg-muted/80"
               )}
             >
               <Filter className="w-4 h-4" />
               <span>Filter</span>
-              {Object.values(filters).some(v => v === true || v > 0 || v < 1900) && (
+              {Object.values(filters).some(v => v === true || (typeof v === 'number' && v > 0)) && (
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background" />
               )}
             </button>
