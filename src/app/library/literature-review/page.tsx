@@ -115,7 +115,9 @@ export default function LiteratureReviewPage() {
                       </div>
                       <div className="flex-grow">
                         <p className="text-white font-bold text-sm line-clamp-1">{book.title}</p>
-                        <p className="text-[10px] text-slate-500 uppercase mt-1">{book.year} • {book.authors}</p>
+                        <p className="text-[10px] text-slate-500 uppercase mt-1">
+                          {book.year} • {book.authors?.map(a => a.name).join(', ') || 'Unknown Authors'}
+                        </p>
                       </div>
                     </button>
                   ))}
