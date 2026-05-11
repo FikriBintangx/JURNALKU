@@ -65,7 +65,7 @@ function SearchResults() {
         let data;
         if (recommend && offset === 0) {
           const recommended = await journalService.getRecommendations(recommend);
-          data = { data: recommended, total: recommended.length };
+          data = { data: recommended, total: recommended.length, offset: 0, error: false };
           setHasMore(false);
         } else {
           data = await journalService.search(query, 12, offset, provider);
