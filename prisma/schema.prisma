@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────
+// USER — Session-based (no auth required)
+// ─────────────────────────────────────────────────────────────
+model User {
+  id           String          @id @default(cuid())
+  name         String?
+  email        String          @unique
+  password     String
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// JOURNAL — Cached paper metadata from external providers
+// ─────────────────────────────────────────────────────────────
+model Journal {
+  id           String    @id
+  title        String
+  abstract     String?
+  // Authors stored as JSON array: [{ name: "..." }, ...]
+  authorsJson  String?   @map("authors_json")
+  // Keep plain text author field for backward compatibility
+  author       String?
+  year         Int?
+  source       String?
+  sourceId     String?
+  doi          String?   @unique
+  venue        String?
+  pdfUrl       String?
+  externalUrl  String?
+  isOpenAccess Boolean   @default(false)
+  docType      String?
+  citations    Int       @default(0)
+  keywords     String[]  @default([])
+  embedding    Float[]   @default([])
+  createdAt    DateTime  @default(now())
+
+  bookmarks    Bookmark[]
+  summaries    Summary[]
+  researchGaps ResearchGap[]
+  interactions UserInteraction[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// BOOKMARK — Session-based (userId = session cookie value)
+// ─────────────────────────────────────────────────────────────
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String   // session ID (cookie) — no FK to User for guest support
+  journalId String
+  createdAt DateTime @default(now())
+
+  journal   Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, journalId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// SUMMARY — Cached AI summaries per paper
+// ─────────────────────────────────────────────────────────────
+model Summary {
+  id        String   @id @default(cuid())
+  journalId String
+  content   String
+  type      String   @default("basic")
+  json      Json?
+  journal   Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// RESEARCH GAP — Cached AI gap analysis per paper
+// ─────────────────────────────────────────────────────────────
+model ResearchGap {
+  id        String   @id @default(cuid())
+  journalId String   @unique
+  content   String
+  json      Json?
+  journal   Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// USER INTERACTION — Analytics (click, view, share)
+// Session-based: userId is a string ID (guest or registered)
+// ─────────────────────────────────────────────────────────────
+model UserInteraction {
+  id        String   @id @default(cuid())
+  userId    String
+  journalId String
+  type      String   // VIEW | CLICK | BOOKMARK | SHARE
+  journal   Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// SEARCH HISTORY — Per session
+// ─────────────────────────────────────────────────────────────
+model History {
+  id        String   @id @default(cuid())
+  userId    String
+  query     String
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// SEARCH CACHE — Redis-fallback cache in DB
+// ─────────────────────────────────────────────────────────────
+model SearchCache {
+  id        String   @id @default(cuid())
+  query     String   @unique
+  results   Json
+  updatedAt DateTime @updatedAt
+}

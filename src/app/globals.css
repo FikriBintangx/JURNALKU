@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+}
+
+:root {
+  /* DARK MODE (Default based on user request) */
+  --background: #000000;
+  --foreground: #ffffff;
+  --primary: #6366f1;
+  
+  /* Card: Grey gelap dikit, opacity 60% */
+  --card: rgba(30, 30, 30, 0.6);
+  --card-foreground: #ffffff;
+  
+  --border: rgba(255, 255, 255, 0.1);
+  --muted: rgba(255, 255, 255, 0.05);
+  --muted-foreground: #a1a1aa;
+  --radius: 1.5rem;
+}
+
+.light {
+  /* LIGHT MODE (Clean & Premium White) */
+  --background: #ffffff;
+  --foreground: #020617; /* Very dark blue for better readability */
+  --primary: #6366f1; /* Keep indigo as primary for brand consistency */
+  
+  /* Card: Putih Bersih dengan Border Halus */
+  --card: #ffffff;
+  --card-foreground: #020617;
+  
+  --border: rgba(0, 0, 0, 0.08);
+  --muted: #f8fafc; /* Slate 50 */
+  --muted-foreground: #64748b; /* Slate 500 */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@layer utilities {
+  .glass-card {
+    background-color: var(--card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    color: var(--card-foreground);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+    border-color: var(--primary);
+  }
+
+  .btn-primary {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--foreground);
+    color: var(--background);
+  }
+
+  .responsive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+/* Custom Scrollbar for Premium Feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border);
+}
