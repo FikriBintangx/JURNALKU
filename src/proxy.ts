@@ -42,6 +42,8 @@ export async function proxy(request: NextRequest) {
   }
 }
 
+export default proxy;
+
 // Terapkan middleware ke semua halaman kecuali folder public/api tertentu
 export const config = {
   matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
