@@ -4,7 +4,7 @@ import { geminiService } from '@/services/geminiService';
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { paperId, abstract, title } = body;
+    const { paperId, abstract, title, model } = body;
 
     if (!paperId) {
       return NextResponse.json({ success: false, fallback: true, message: "Paper ID diperlukan.", data: null });
@@ -35,7 +35,7 @@ Berikan minimal 3 judul penelitian yang bisa dikembangkan dari jurnal ini.
 
 Gunakan Bahasa Indonesia akademik yang formal dan jelas.`;
 
-    const result = await geminiService.generateAI({ paperId, type: 'gap', prompt, abstract, title });
+    const result = await geminiService.generateAI({ paperId, type: 'gap', prompt, abstract, title, model });
 
     return NextResponse.json({
       success: result.success, data: result.data,

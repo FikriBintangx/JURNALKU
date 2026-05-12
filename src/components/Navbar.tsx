@@ -180,7 +180,8 @@ function NavbarContent() {
 
           {/* Combined Suggestions & History Dropdown */}
           {showDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-3 bg-black text-white dark:bg-white dark:text-black backdrop-blur-2xl border border-border rounded-[2rem] overflow-hidden shadow-2xl z-[110] animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="absolute top-full left-0 right-0 mt-3 bg-background/95 dark:bg-slate-950/95 backdrop-blur-3xl border border-border rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-[110] animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
+              
               
               {query.length >= 3 && (
                 <SearchSuggestions 
@@ -222,7 +223,7 @@ function NavbarContent() {
                             setShowDropdown(false);
                             router.push(`/search?q=${encodeURIComponent(h)}&provider=${provider}`);
                           }}
-                          className="w-full text-left px-5 py-3 text-inherit hover:bg-primary/20 transition-all flex items-center gap-4 group rounded-xl"
+                          className="w-full text-left px-5 py-3 text-inherit hover:bg-primary/10 transition-all flex items-center gap-4 group rounded-xl"
                         >
                           <Search className="w-4 h-4 opacity-50 group-hover:text-primary" />
                           <span className="text-sm font-medium">{h}</span>
@@ -230,8 +231,14 @@ function NavbarContent() {
                       ))}
                     </div>
                   ) : query.length < 3 && (
-                    <div className="px-5 py-8 text-center text-muted-foreground italic text-sm">
-                      Ketik minimal 3 karakter untuk saran AI...
+                    <div className="px-5 py-10 text-center space-y-3 animate-in fade-in duration-700">
+                      <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center mx-auto">
+                        <Sparkles className="w-5 h-5 text-primary/30" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-bold opacity-40 italic">Menunggu ide brilianmu...</p>
+                        <p className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] font-black">Ketik minimal 3 karakter untuk saran AI</p>
+                      </div>
                     </div>
                   )}
                 </div>

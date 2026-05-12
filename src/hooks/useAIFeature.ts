@@ -18,11 +18,19 @@ export const useAIFeature = ({ endpoint, paperId, abstract, title }: UseAIFeatur
     setLoading(true);
     setError(null);
 
+    // Get the currently selected model from localStorage
+    const model = typeof window !== 'undefined' ? localStorage.getItem('selected_ai_model') : null;
+
     try {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paperId, abstract, title }),
+        body: JSON.stringify({ 
+          paperId, 
+          abstract, 
+          title,
+          model // Pass the selected model to the backend
+        }),
       });
 
       const result = await response.json();
@@ -35,7 +43,6 @@ export const useAIFeature = ({ endpoint, paperId, abstract, title }: UseAIFeatur
     } catch (err: any) {
       setError("AI sedang sibuk atau koneksi terputus");
     } finally {
-
       setLoading(false);
     }
   }, [endpoint, paperId, abstract, title, loading]);

@@ -3,20 +3,17 @@
  * 
  * OpenRouter is OpenAI-compatible and routes to 100+ models.
  * We use it as the 4th tier AI fallback with key rotation across 3 keys.
- * 
- * Model priority (free/cheap models that work well for academic tasks):
- * - meta-llama/llama-3.1-8b-instruct:free
- * - mistralai/mistral-7b-instruct:free
- * - google/gemma-2-9b-it:free
  */
 
 const OPENROUTER_BASE = 'https://openrouter.ai/api/v1/chat/completions';
 
-// Models to try in order (all free tier on OpenRouter)
-const MODELS = [
-  'meta-llama/llama-3.1-8b-instruct:free',
-  'mistralai/mistral-7b-instruct:free',
-  'google/gemma-2-9b-it:free',
+// Models with labels for the UI
+export const AI_MODELS = [
+  { id: 'meta-llama/llama-3.1-8b-instruct:free', name: 'Llama 3.1 8B', provider: 'Meta' },
+  { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B', provider: 'Mistral' },
+  { id: 'google/gemma-2-9b-it:free', name: 'Gemma 2 9B', provider: 'Google' },
+  { id: 'qwen/qwen-2-7b-instruct:free', name: 'Qwen 2 7B', provider: 'Alibaba' },
+  { id: 'microsoft/phi-3-mini-128k-instruct:free', name: 'Phi-3 Mini', provider: 'Microsoft' },
 ];
 
 // Round-robin key selector
@@ -34,13 +31,18 @@ function getNextKey(): string | null {
   return key;
 }
 
-export async function callOpenRouter(prompt: string, timeoutMs: number = 15000): Promise<string> {
+export async function callOpenRouter(prompt: string, timeoutMs: number = 15000, modelOverride?: string): Promise<string> {
   const apiKey = getNextKey();
   if (!apiKey) throw new Error('OPENROUTER_NOT_CONFIGURED');
 
+  // If a specific model is requested, try it first. Otherwise use fallbacks.
+  const modelsToTry = modelOverride 
+    ? [modelOverride, ...AI_MODELS.map(m => m.id).filter(id => id !== modelOverride)]
+    : AI_MODELS.map(m => m.id);
+
   let lastError: Error | null = null;
 
-  for (const model of MODELS) {
+  for (const model of modelsToTry) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -74,13 +76,9 @@ export async function callOpenRouter(prompt: string, timeoutMs: number = 15000):
 
       if (!response.ok) {
         const errBody = await response.text().catch(() => '');
-        // If rate limited on this key, try next key
         if (response.status === 429 || response.status === 402) {
-          const nextKey = getNextKey();
-          if (nextKey && nextKey !== apiKey) {
-            console.warn(`[OPENROUTER] Key rate limited, rotating...`);
-            // Retry with next key would require restructuring — just throw
-          }
+          console.warn(`[OPENROUTER] Key/Model rate limited, trying next...`);
+          continue; // Try next model
         }
         throw new Error(`OPENROUTER_${response.status}: ${errBody.slice(0, 100)}`);
       }
@@ -92,7 +90,7 @@ export async function callOpenRouter(prompt: string, timeoutMs: number = 15000):
         throw new Error('OPENROUTER_EMPTY_RESPONSE');
       }
 
-      console.log(`[OPENROUTER] Success via ${model} — ${text.length} chars`);
+      console.log(`[OPENROUTER] Success via ${model}`);
       return text;
 
     } catch (err: any) {
@@ -100,11 +98,10 @@ export async function callOpenRouter(prompt: string, timeoutMs: number = 15000):
       lastError = err;
       console.warn(`[OPENROUTER] Model ${model} failed: ${err.message}`);
 
-      // Try next model if current fails (except on timeout/abort)
       if (err.name === 'AbortError') {
-        throw new Error('OPENROUTER_TIMEOUT');
+        // On timeout, we might want to try next model or just fail
+        continue;
       }
-      // Continue to next model in loop
     }
   }
 

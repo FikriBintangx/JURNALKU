@@ -4,7 +4,7 @@ import { geminiService } from '@/services/geminiService';
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { paperId, abstract, title } = body;
+    const { paperId, abstract, title, model } = body;
 
     if (!paperId) {
       return NextResponse.json({ success: false, fallback: true, message: "Paper ID diperlukan.", data: null });
@@ -31,7 +31,7 @@ Bagaimana hasil penelitian bisa diterapkan di dunia nyata. (1-2 kalimat)
 
 PENTING: Maksimal 250 kata total. Gunakan bahasa formal dan akademik.`;
 
-    const result = await geminiService.generateAI({ paperId, type: 'summary', prompt, abstract, title });
+    const result = await geminiService.generateAI({ paperId, type: 'summary', prompt, abstract, title, model });
 
     return NextResponse.json({
       success: result.success, data: result.data,
