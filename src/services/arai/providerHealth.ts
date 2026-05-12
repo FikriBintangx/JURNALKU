@@ -5,7 +5,7 @@
  * Implements sophisticated circuit breaking and intelligent failover logic.
  */
 
-export type ProviderType = 'gemini' | 'groq' | 'openrouter' | 'huggingface' | 'embedding';
+export type ProviderType = 'gemini' | 'groq' | 'openrouter' | 'huggingface' | 'embedding' | 'none';
 
 export type ProviderState = 'healthy' | 'degraded' | 'cooldown' | 'exhausted' | 'offline' | 'unstable';
 
@@ -125,9 +125,9 @@ class ProviderHealthManager {
     let cooldownMinutes = 0;
     switch (errorType) {
       case 'rate_limit':
-        s.healthScore = Math.max(0, s.healthScore - 30);
-        s.quotaProbability = Math.min(1, s.quotaProbability + 0.3);
-        cooldownMinutes = 10;
+        s.healthScore = Math.max(0, s.healthScore - 20);
+        s.quotaProbability = Math.min(1, s.quotaProbability + 0.2);
+        cooldownMinutes = 5; // Reduced from 10
         break;
       case 'missing_model':
         s.healthScore = Math.max(0, s.healthScore - 50);

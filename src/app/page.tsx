@@ -128,9 +128,9 @@ export default function Home() {
                 </div>
                 <button 
                   type="submit"
-                  className="h-12 md:h-20 px-8 md:px-20 rounded-full text-xs md:text-sm font-black uppercase tracking-widest shadow-2xl active:scale-95 mr-2 shrink-0 transition-all bg-foreground text-background hover:brightness-125"
+                  className="btn-primary btn-fill-mewah h-12 md:h-20 px-8 md:px-20 !rounded-full text-xs md:text-sm font-black uppercase tracking-widest shadow-2xl active:scale-95 mr-2 shrink-0 transition-all bg-foreground text-background"
                 >
-                  SEARCH
+                  <span className="relative z-10">SEARCH</span>
                 </button>
               </div>
 
@@ -174,7 +174,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="flex flex-wrap justify-center gap-4 mt-8"
+            className="flex flex-wrap justify-center items-center gap-3 md:gap-4 mt-8 px-4"
           >
             {categories.map((cat) => (
               <button 
@@ -183,10 +183,10 @@ export default function Home() {
                   setQuery(cat.name);
                   router.push(`/search?q=${encodeURIComponent(cat.name)}`);
                 }}
-                className="flex items-center space-x-3 rounded-full px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all bg-muted/50 border border-border hover:bg-foreground hover:text-background group"
+                className="btn-fill-mewah flex items-center space-x-3 rounded-full px-5 md:px-7 py-3 md:py-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all bg-muted/50 border border-border hover:border-foreground/20 group relative overflow-hidden"
               >
-                <div className="opacity-40 group-hover:opacity-100 transition-opacity">{cat.icon}</div>
-                <span>{cat.name}</span>
+                <div className="opacity-40 group-hover:opacity-100 transition-opacity relative z-10">{cat.icon}</div>
+                <span className="relative z-10">{cat.name}</span>
               </button>
             ))}
           </motion.div>

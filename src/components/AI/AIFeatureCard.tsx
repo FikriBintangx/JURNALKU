@@ -39,7 +39,6 @@ export const AIFeatureCard = ({
   const handleCopy = async () => {
     if (!data) return;
     try {
-      // Remove raw markdown symbols like ** and ##
       const cleanText = String(data)
         .replace(/(\*\*|__)(.*?)\1/g, '$2')
         .replace(/(#+)\s/g, '')
@@ -50,6 +49,25 @@ export const AIFeatureCard = ({
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy text', err);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!data) return;
+    const shareData = {
+      title: `${title}: ${paperTitle}`,
+      text: String(data).replace(/[#*]/g, ''),
+      url: window.location.href
+    };
+
+    try {
+      if (navigator.share && navigator.canShare?.(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        await handleCopy();
+      }
+    } catch (err) {
+      console.error('Error sharing', err);
     }
   };
 
@@ -72,7 +90,7 @@ export const AIFeatureCard = ({
             onClick={generate}
             disabled={loading}
             className={cn(
-              "btn-primary h-10 px-6",
+              "btn-primary btn-fill-mewah h-10 px-6 !rounded-xl",
               loading && "opacity-50 cursor-not-allowed"
             )}
           >
@@ -128,11 +146,26 @@ export const AIFeatureCard = ({
             >
               <div className="flex-1 text-sm text-card-foreground/90 leading-relaxed max-h-[500px] overflow-y-auto pr-4 custom-scrollbar font-medium">
                 <div className="relative p-7 glass-card !bg-white/5 border border-white/10 shadow-2xl rounded-[2.5rem] group/content overflow-hidden">
-                  {/* ISAGI Branding */}
-                  {!String(data).includes('(Fallback)') && (
-                    <div className="flex items-center gap-2 mb-6 py-1.5 px-4 bg-primary/10 border border-primary/20 rounded-full w-fit">
-                      <Sparkles size={10} className="text-primary animate-pulse" />
-                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">ISAGI Intelligence Certified</span>
+                  {/* ISAGI Branding & Fallback Badge */}
+                  <div className="flex flex-wrap items-center gap-3 mb-6">
+                    {!String(data).includes('(Fallback)') && !intelligence?.fallback && (
+                      <div className="flex items-center gap-2 py-1.5 px-4 bg-primary/10 border border-primary/20 rounded-full w-fit">
+                        <Sparkles size={10} className="text-primary animate-pulse" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">ISAGI Intelligence Certified</span>
+                      </div>
+                    )}
+                    {(intelligence?.fallback || String(data).includes('[FALLBACK MODE]')) && (
+                      <div className="flex items-center gap-2 py-1.5 px-4 bg-amber-500/10 border border-amber-500/20 rounded-full w-fit">
+                        <AlertCircle size={10} className="text-amber-500" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-500">Autonomous Fallback Mode</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Fallback Warning Box */}
+                  {(intelligence?.fallback || String(data).includes('[FALLBACK MODE]')) && (
+                    <div className="mb-6 p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 text-[11px] text-amber-200/60 leading-relaxed italic">
+                      Layanan AI utama sedang dalam pemulihan. Ringkasan ini dihasilkan secara otomatis menggunakan ekstraksi metadata literatur untuk menjaga kelangsungan riset Anda.
                     </div>
                   )}
 
@@ -161,26 +194,32 @@ export const AIFeatureCard = ({
                   </div>
 
                   {/* Actions Area */}
-                  <div className="mt-10 pt-6 border-t border-white/5 flex items-center justify-between">
-                    <div className="flex gap-4">
+                  <div className="mt-10 pt-6 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
                       <button 
                         onClick={handleCopy}
                         className={cn(
-                          "flex items-center gap-2 text-[10px] font-bold transition-all px-3 py-1.5 rounded-lg border border-transparent",
-                          copied ? "bg-green-500/10 text-green-500 border-green-500/20" : "text-card-foreground/40 hover:text-primary hover:bg-primary/5"
+                          "btn-fill-mewah flex items-center gap-2 text-[10px] font-bold transition-all px-3 py-1.5 rounded-xl border border-white/5 whitespace-nowrap",
+                          copied ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-white/5 text-card-foreground/60 hover:text-primary"
                         )}
                       >
                         {copied ? <Check size={12} /> : <Clipboard size={12} />}
-                        {copied ? 'Tersalin' : 'Salin Teks Bersih'}
+                        {copied ? 'Tersalin' : 'Salin Teks'}
                       </button>
-                      <button className="flex items-center gap-2 text-[10px] font-bold text-card-foreground/40 hover:text-primary transition-colors px-3 py-1.5">
+                      <button 
+                        onClick={handleShare}
+                        className="btn-fill-mewah flex items-center gap-2 text-[10px] font-bold bg-white/5 text-card-foreground/60 hover:text-primary transition-all px-3 py-1.5 rounded-xl border border-white/5 whitespace-nowrap"
+                      >
                         <Share2 size={12} />
                         Bagikan
                       </button>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary/40 group-hover/content:text-primary/70 transition-colors">
-                      ISAGI Analysis
-                      <CheckCircle2 size={12} className="text-primary/60" />
+                    
+                    <div className="flex items-center gap-2 py-1 px-3 glass-card !bg-white/5 border border-white/10 rounded-full group/badge transition-colors hover:border-primary/30">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-card-foreground/40 group-hover/badge:text-primary/70 transition-colors whitespace-nowrap">
+                        {intelligence?.orchestrator || 'ISAGI Analysis'}
+                      </span>
+                      <CheckCircle2 size={10} className="text-primary/40 group-hover/badge:text-primary/70 transition-colors" />
                     </div>
                   </div>
                 </div>

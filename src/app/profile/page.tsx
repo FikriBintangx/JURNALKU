@@ -58,7 +58,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="mono-card overflow-hidden">
+            <div className="mono-card overflow-hidden p-2 space-y-1">
               {[
                 { id: 'account', label: 'Account Systems', icon: User },
                 { id: 'security', label: 'Security Layer', icon: Shield },
@@ -69,15 +69,29 @@ export default function ProfilePage() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "w-full flex items-center justify-between p-5 text-[10px] font-black uppercase tracking-widest transition-all border-b border-border/50 last:border-0",
-                    activeTab === tab.id ? "bg-foreground text-background" : "hover:bg-muted"
+                    "relative w-full flex items-center justify-between p-4 text-[10px] font-black uppercase tracking-widest transition-all rounded-2xl group overflow-hidden",
+                    activeTab === tab.id ? "text-background" : "hover:bg-foreground/[0.03] text-foreground/60 hover:text-foreground"
                   )}
                 >
-                  <div className="flex items-center gap-4">
-                    <tab.icon className="w-4 h-4" />
+                  {activeTab === tab.id && (
+                    <motion.div 
+                      layoutId="activeTabBg"
+                      className="absolute inset-0 bg-foreground shadow-2xl z-0"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  
+                  <div className="flex items-center gap-4 relative z-10">
+                    <tab.icon className={cn("w-4 h-4 transition-colors", activeTab === tab.id ? "text-background" : "text-foreground/40 group-hover:text-primary")} />
                     <span>{tab.label}</span>
                   </div>
-                  <div className={cn("w-1.5 h-1.5 rounded-full", activeTab === tab.id ? "bg-background" : "bg-foreground/20")} />
+                  
+                  <div className="relative z-10">
+                    <div className={cn(
+                      "w-1.5 h-1.5 rounded-full transition-all duration-500", 
+                      activeTab === tab.id ? "bg-background scale-150" : "bg-foreground/10 group-hover:bg-primary/40"
+                    )} />
+                  </div>
                 </button>
               ))}
             </div>

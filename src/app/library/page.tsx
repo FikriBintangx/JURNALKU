@@ -107,20 +107,20 @@ export default function LibraryPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-full md:w-auto">
             <button 
               onClick={handleAddToWorkspace}
               disabled={selectedIds.length === 0 || isSubmitting}
-              className="bg-foreground text-background px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center space-x-3 hover:opacity-90 transition-all active:scale-95 shadow-xl disabled:opacity-20 disabled:cursor-not-allowed disabled:active:scale-100"
+              className="btn-primary btn-fill-mewah w-full md:w-auto bg-foreground text-background px-10 py-5 !rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center space-x-3 transition-all active:scale-95 shadow-xl disabled:opacity-20 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-4 h-4 relative z-10" />
               )}
-              <span>{showSuccess ? 'Berhasil Masuk!' : 'Masukan ke Workspace'}</span>
+              <span className="relative z-10">{showSuccess ? 'Berhasil Masuk!' : 'Masukan ke Workspace'}</span>
               {selectedIds.length > 0 && !showSuccess && (
-                <span className="ml-2 bg-background/20 px-2 py-0.5 rounded text-[10px]">
+                <span className="ml-2 bg-background/20 px-2 py-0.5 rounded text-[10px] relative z-10">
                   {selectedIds.length}
                 </span>
               )}

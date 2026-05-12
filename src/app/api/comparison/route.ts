@@ -12,17 +12,25 @@ export async function POST(request: Request) {
     const combinedPaperId = papers.map(p => p.paperId).sort().join('-');
     const combinedContent = papers.map((p, i) => `Jurnal ${i + 1}:\nTitle: ${p.title}\nAbstract: ${p.abstract}`).join('\n\n---\n\n');
 
-    const prompt = `Bandingkan jurnal-jurnal akademik berikut.
-    
-Tentukan:
-1. Persamaan tema/topik
-2. Perbedaan signifikan (metode, temuan, atau fokus)
-3. Analisis metode terbaik di antara semuanya
-4. Tren riset yang terlihat dari kumpulan jurnal ini
+    const prompt = `AUTONOMOUS MULTI-PAPER COMPARISON ENGINE:
+Lakukan analisis komparatif mendalam antara jurnal-jurnal akademik berikut.
 
-Gunakan bahasa Indonesia akademik.
+Parameter Perbandingan:
+1. Metodologi (Perbandingan teknik, validitas, dan desain penelitian)
+2. Teori & Landasan Kognitif (Persamaan dan perbedaan kerangka teori)
+3. Temuan & Hasil (Deteksi konvergensi atau kontradiksi hasil)
+4. Variabel & Demografi (Perbedaan fokus subjek dan cakupan data)
+5. Keterbatasan & Kesimpulan (Kekuatan bukti dan kualitas metodologi)
 
-Jurnal yang dibandingkan:
+Ringkasan Analisis:
+- Skor Kemiripan (Similarity Score)
+- Skor Kontradiksi (Contradiction Score)
+- Perbandingan Novelty (Siapa yang paling baru/unik?)
+- Skor Kualitas Metodologi
+
+JAWAB DALAM BAHASA INDONESIA AKADEMIK. JANGAN GUNAKAN SIMBOL # ATAU *. Gunakan baris baru untuk memisahkan setiap kategori.
+
+Daftar Jurnal:
 ${combinedContent}`;
 
     // We can't use the standard generateAI here because it expects title/abstract separately

@@ -149,13 +149,13 @@ function SearchResults() {
             </div>
           </div>
           
-          <div className="flex flex-row items-center gap-3 md:gap-4 shrink-0">
+          <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 shrink-0 w-full lg:w-auto">
             {/* Provider Toggle - Monochrome */}
-            <div className="bg-muted p-1.5 rounded-2xl border border-border flex shadow-inner">
+            <div className="bg-muted p-1 bg-muted/50 rounded-2xl border border-border flex shadow-inner w-full sm:w-auto">
               <button 
                 onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&provider=default`)}
                 className={cn(
-                  "px-4 md:px-8 py-2.5 md:py-3.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all",
+                  "btn-fill-mewah flex-1 sm:flex-none px-6 md:px-8 py-2.5 md:py-3.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all",
                   provider === 'default' ? "bg-foreground text-background shadow-xl" : "text-foreground-muted hover:text-foreground"
                 )}
               >
@@ -164,7 +164,7 @@ function SearchResults() {
               <button 
                 onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&provider=googlescholar`)}
                 className={cn(
-                  "px-4 md:px-8 py-2.5 md:py-3.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2",
+                  "btn-fill-mewah flex-1 sm:flex-none px-6 md:px-8 py-2.5 md:py-3.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2",
                   provider === 'googlescholar' ? "bg-foreground text-background shadow-xl" : "text-foreground-muted hover:text-foreground"
                 )}
               >
@@ -176,7 +176,7 @@ function SearchResults() {
             <button 
               onClick={() => setIsFilterOpen(true)}
               className={cn(
-                "flex items-center justify-center space-x-2 md:space-x-3 border-2 px-4 md:px-8 py-2.5 md:py-3.5 rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all relative",
+                "btn-fill-mewah w-full sm:w-auto flex items-center justify-center space-x-2 md:space-x-3 border-2 px-6 md:px-8 py-2.5 md:py-3.5 rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all relative",
                 isFilterOpen || Object.values(filters).some(v => v === true || (typeof v === 'number' && v > 0)) 
                   ? "bg-foreground text-background border-foreground shadow-2xl" 
                   : "bg-background border-border-strong text-foreground hover:bg-muted"

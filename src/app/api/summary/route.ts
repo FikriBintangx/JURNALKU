@@ -31,11 +31,20 @@ Bagaimana hasil penelitian bisa diterapkan di dunia nyata. (1-2 kalimat)
 
 PENTING: Maksimal 250 kata total. Gunakan bahasa formal dan akademik.`;
 
-    const result = await geminiService.generateAI({ paperId, type: 'summary', prompt, abstract, title, model });
+    const result = await geminiService.generateAI({ 
+      paperId, 
+      type: 'summary', 
+      prompt, 
+      abstract, 
+      title, 
+      model: model,
+    });
 
     return NextResponse.json({
-      success: result.success, data: result.data,
-      fallback: result.fallback || false, cached: result.cached || false,
+      success: result.success, 
+      data: result.data,
+      fallback: result.fallback || false, 
+      cached: result.cached || false,
     });
 
   } catch (error: any) {

@@ -245,7 +245,7 @@ export default function WorkspacePage() {
         </div>
 
         <div className="p-6 bg-foreground/[0.02]">
-          <button onClick={() => router.push('/')} className="w-full flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest px-6 py-4 rounded-2xl bg-foreground text-background hover:opacity-90 transition-all shadow-xl">
+          <button onClick={() => router.push('/')} className="btn-primary btn-fill-mewah w-full flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest px-6 py-4 !rounded-2xl bg-foreground text-background transition-all shadow-xl">
             <span>← Kembali ke Menu</span>
           </button>
         </div>
@@ -258,9 +258,9 @@ export default function WorkspacePage() {
           <div className="flex items-center gap-4 flex-1">
             <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden p-2"><Menu className="w-6 h-6" /></button>
             <div className="flex p-1 bg-muted/30 rounded-2xl border border-border">
-              <button onClick={() => setActiveTab('synthesis')} className={cn("px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all", activeTab === 'synthesis' ? "bg-foreground text-background shadow-lg" : "text-foreground-muted hover:text-foreground")}>Sintesis AI</button>
-              <button onClick={() => setActiveTab('review')} className={cn("px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all", activeTab === 'review' ? "bg-foreground text-background shadow-lg" : "text-foreground-muted hover:text-foreground")}>Tinjauan Pustaka</button>
-              <button onClick={() => setActiveTab('compare')} className={cn("px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2", activeTab === 'compare' ? "bg-foreground text-background shadow-lg" : "text-foreground-muted hover:text-foreground")}>
+              <button onClick={() => setActiveTab('synthesis')} className={cn("btn-fill-mewah px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all", activeTab === 'synthesis' ? "bg-foreground text-background shadow-lg" : "text-foreground-muted hover:text-foreground")}>Sintesis AI</button>
+              <button onClick={() => setActiveTab('review')} className={cn("btn-fill-mewah px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all", activeTab === 'review' ? "bg-foreground text-background shadow-lg" : "text-foreground-muted hover:text-foreground")}>Tinjauan Pustaka</button>
+              <button onClick={() => setActiveTab('compare')} className={cn("btn-fill-mewah px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2", activeTab === 'compare' ? "bg-foreground text-background shadow-lg" : "text-foreground-muted hover:text-foreground")}>
                 <GitCompare className="w-3.5 h-3.5" /> <span>Komparasi</span>
               </button>
             </div>

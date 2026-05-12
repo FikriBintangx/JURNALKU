@@ -10,22 +10,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, fallback: true, message: "Paper ID diperlukan.", data: null });
     }
 
-    const prompt = `Generate minimal 5 ide penelitian lanjutan yang konkret berdasarkan jurnal ini.
+    const prompt = `FUTURE RESEARCH PREDICTION ENGINE:
+Analisis trajektori penelitian berdasarkan jurnal ini dan literatur pendukung yang tersedia. 
 
-Untuk setiap ide, sertakan:
-- **Judul yang disarankan** — judul penelitian yang spesifik
-- **Latar belakang** — mengapa penelitian ini penting
-- **Pendekatan** — metode yang direkomendasikan
-- **Target publikasi** — jenis jurnal yang tepat
+Hasilkan minimal 5 ide penelitian masa depan yang konkret:
+1. Prediksi Arah Riset (Tema yang akan muncul dalam 3-5 tahun)
+2. Inovasi Metodologi (Metode baru yang direkomendasikan)
+3. Pengembangan Teori (Celah teoritis yang perlu diisi)
+4. Aplikasi Praktis & Industri (Implementasi nyata)
+5. Kolaborasi Lintas Disiplin (Sinergi dengan bidang ilmu lain)
 
-Format dengan markdown yang rapi dan mudah dibaca.
+Gunakan Bahasa Indonesia akademik. JANGAN GUNAKAN SIMBOL # ATAU *. Gunakan baris baru untuk memisahkan setiap poin.`;
 
-Sertakan juga:
-- Ide aplikasi praktis di dunia industri
-- Ide pengembangan teori
-- Rekomendasi kolaborasi lintas disiplin`;
-
-    const result = await geminiService.generateAI({ paperId, type: 'ideas', prompt, abstract, title });
+    const result = await geminiService.generateAI({ paperId, type: 'future-research', prompt, abstract, title });
 
     return NextResponse.json({
       success: result.success, data: result.data,

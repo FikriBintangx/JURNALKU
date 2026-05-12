@@ -34,22 +34,26 @@ class DynamicModelRegistry {
 
   private initDefaultModels() {
     const defaults: Partial<RegisteredModel>[] = [
-      // Gemini
+      // ── NATIVE GEMINI ──────────────────────────────────────────────────
+      { id: 'gemini-1.5-flash', provider: 'gemini', name: 'Gemini 1.5 Flash', capabilities: ['fast'] },
       { id: 'gemini-2.0-flash', provider: 'gemini', name: 'Gemini 2.0 Flash', capabilities: ['vision', 'streaming'] },
       { id: 'gemini-1.5-pro', provider: 'gemini', name: 'Gemini 1.5 Pro', capabilities: ['high-reasoning'] },
+      { id: 'gemini-2.0-flash-exp', provider: 'gemini', name: 'Gemini 2.0 Experimental' },
       
-      // Groq
+      // ── NATIVE GROQ ────────────────────────────────────────────────────
       { id: 'llama-3.3-70b-versatile', provider: 'groq', name: 'Llama 3.3 70B', capabilities: ['fast', 'high-reasoning'] },
+      { id: 'llama-3.1-70b-versatile', provider: 'groq', name: 'Llama 3.1 70B' },
       { id: 'mixtral-8x7b-32768', provider: 'groq', name: 'Mixtral 8x7B', capabilities: ['fast'] },
       
-      // OpenRouter
+      // ── OPENROUTER (Qualified IDs) ─────────────────────────────────────
       { id: 'google/gemini-2.0-flash-001', provider: 'openrouter', name: 'OR Gemini Flash' },
       { id: 'meta-llama/llama-3.3-70b-instruct', provider: 'openrouter', name: 'OR Llama 3.3' },
       { id: 'deepseek/deepseek-chat', provider: 'openrouter', name: 'DeepSeek V3' },
+      { id: 'anthropic/claude-3.5-haiku', provider: 'openrouter', name: 'Claude 3.5 Haiku' },
+      { id: 'anthropic/claude-3.5-sonnet', provider: 'openrouter', name: 'Claude 3.5 Sonnet' },
       
-      // HuggingFace
+      // ── HUGGING FACE ───────────────────────────────────────────────────
       { id: 'mistralai/Mistral-7B-Instruct-v0.3', provider: 'huggingface', name: 'Mistral 7B' },
-      { id: 'meta-llama/Llama-3.1-8B-Instruct', provider: 'huggingface', name: 'Llama 3.1 8B' },
       { id: 'Qwen/Qwen2.5-7B-Instruct', provider: 'huggingface', name: 'Qwen 2.5' }
     ];
 
@@ -99,11 +103,27 @@ class DynamicModelRegistry {
     return available.length > 0 ? available[0].id : null;
   }
 
+  public getModel(modelId: string): RegisteredModel | undefined {
+    return this.models.get(modelId);
+  }
+
+  public getProviderForModel(modelId: string): ProviderType {
+    if (modelId === 'isagi-autonomous') return 'gemini'; // Orchestrated entry
+    
+    const m = this.models.get(modelId);
+    if (m) return m.provider;
+
+    // Heuristic for unknown models
+    if (modelId.includes('/')) return 'openrouter';
+    if (modelId.startsWith('gemini')) return 'gemini';
+    if (modelId.includes('llama') || modelId.includes('mixtral')) return 'groq';
+    
+    return 'gemini'; // Default
+  }
+
   public async validateModel(modelId: string): Promise<boolean> {
     const m = this.models.get(modelId);
     if (!m) return false;
-    
-    // In a real scenario, this would call the provider's /models endpoint
     return m.isAvailable;
   }
 }

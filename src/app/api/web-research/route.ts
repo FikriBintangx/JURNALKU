@@ -41,17 +41,15 @@ export async function POST(request: Request) {
       ${answer}
       
       TUGAS:
-      Berikan analisis ringkas (2-3 paragraf) tentang bagaimana topik jurnal ini berkaitan dengan tren, berita, atau perkembangan terbaru di dunia nyata saat ini berdasarkan konteks web di atas.
-      
-      Format Output:
-      ## Tren Web Saat Ini
-      (Jelaskan apa yang sedang hangat dibahas di internet terkait topik ini)
-      
-      ## Hubungan dengan Jurnal
-      (Jelaskan relevansi temuan jurnal ini dengan situasi dunia nyata sekarang)
-      
-      ## Rekomendasi Aksi
-      (Berikan 1-2 saran praktis berdasarkan data terbaru)
+      Lakukan analisis sinergis antara tren dunia nyata saat ini dan literatur akademik. 
+      Jelaskan bagaimana topik penelitian ini berkaitan dengan perkembangan terbaru.
+
+      Struktur Analisis:
+      1. Tinjauan Tren Global (Apa yang sedang terjadi saat ini?)
+      2. Relevansi Saintifik (Bagaimana jurnal ini menjawab tantangan dunia nyata?)
+      3. Implikasi & Rekomendasi (Aksi praktis berdasarkan data terbaru)
+
+      JAWAB DALAM BAHASA INDONESIA FORMAL. JANGAN GUNAKAN SIMBOL # ATAU *. Gunakan baris baru untuk memisahkan bagian.
     `;
 
     const result = await geminiService.generateAI({

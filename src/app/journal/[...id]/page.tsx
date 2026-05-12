@@ -212,16 +212,16 @@ export default function JournalDetail() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-4 pt-4">
+            <div className="flex flex-wrap gap-4 pt-4 w-full">
               {journal?.url && (
                 <a 
                   href={journal.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-3 bg-foreground text-background px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:opacity-90 transition-all shadow-xl active:scale-95"
+                  className="btn-primary btn-fill-mewah flex-1 sm:flex-none flex items-center justify-center gap-3 bg-foreground text-background px-8 py-5 !rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95"
                 >
-                  <ExternalLink className="w-4 h-4" />
-                  Source Link
+                  <ExternalLink className="w-4 h-4 relative z-10" />
+                  <span className="relative z-10">Source Link</span>
                 </a>
               )}
 
@@ -230,28 +230,28 @@ export default function JournalDetail() {
                   href={`https://doi.org/${journal.doi}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-3 bg-muted border border-border px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all shadow-sm active:scale-95"
+                  className="btn-fill-mewah flex-1 sm:flex-none flex items-center justify-center gap-3 bg-muted border border-border px-8 py-5 !rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm active:scale-95 group relative overflow-hidden"
                 >
-                  <ExternalLink className="w-4 h-4 text-primary" />
-                  DOI Link
+                  <ExternalLink className="w-4 h-4 text-primary relative z-10" />
+                  <span className="relative z-10">DOI Link</span>
                 </a>
               )}
               
               {journal?.doi && (
                 <UnpaywallButton 
                   doi={journal.doi} 
-                  className="px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest h-full"
+                  className="btn-fill-mewah flex-1 sm:flex-none px-8 py-5 !rounded-2xl text-xs font-black uppercase tracking-widest h-auto"
                 />
               )}
 
-              <div className="flex gap-2">
-                <BookmarkButton journal={journal} className="!p-4 !rounded-2xl" />
+              <div className="flex gap-2 w-full sm:w-auto">
+                <BookmarkButton journal={journal} className="!p-5 !rounded-2xl flex-1 sm:flex-none" />
                 <Link 
                   href={`/search?recommend=${journal?.paperId}`}
-                  className="p-4 glass-card rounded-2xl hover:bg-muted transition-all text-primary"
+                  className="btn-fill-mewah p-5 glass-card rounded-2xl hover:bg-muted transition-all text-primary flex-1 sm:flex-none flex items-center justify-center relative overflow-hidden"
                   title="Cari Jurnal Serupa"
                 >
-                  <Target className="w-5 h-5" />
+                  <Target className="w-5 h-5 relative z-10" />
                 </Link>
               </div>
             </div>

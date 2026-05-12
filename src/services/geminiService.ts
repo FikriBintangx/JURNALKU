@@ -1,15 +1,10 @@
 import { GoogleGenerativeAI, GenerationConfig, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import { redis } from "@/lib/redis";
-import { aiKeyManager, classifyAIError } from "./AIKeyManager";
-import { callOpenRouter } from "./openRouterService";
-import { callHuggingFace } from "./huggingFaceService";
-import { callGroq, GROQ_MODELS } from "./groqService";
-import { ISAGIOrchestrator } from "./arai/orchestrator";
+import { aiKeyManager } from "./AIKeyManager";
 import { providerHealth } from "./arai/providerHealth";
+import { executeProviderSafely, SafeInferenceResult } from "./arai/providerUtils";
 
-// PRIMARY model — gemini-2.0-flash (latest stable)
 const PRIMARY_MODEL = "gemini-2.0-flash";
-const FALLBACK_MODEL = "gemini-1.5-flash-latest";
 const AI_TIMEOUT_MS = 25000; 
 
 const generationConfig: GenerationConfig = {
@@ -35,58 +30,24 @@ interface AIRequest {
   model?: string;
 }
 
-// Concurrency limiter
-let activeRequests = 0;
-const MAX_CONCURRENT = 5;
-const queue: (() => void)[] = [];
-
-const processQueue = () => {
-  if (queue.length > 0 && activeRequests < MAX_CONCURRENT) {
-    const next = queue.shift();
-    if (next) { activeRequests++; next(); }
-  }
-};
-
 /**
- * INTELLIGENT DEGRADATION SYSTEM
- * Replaces static fake text with real data-backed fallback logic.
+ * GEMINI SERVICE (Unified Version)
+ * 
+ * Acting as the legacy entry point for all API routes, this service now 
+ * delegates to the Intelligent Smart Orchestrator to ensure correct provider 
+ * selection, health checks, and fallback logic.
  */
-function handleDegradedMode(type: string, title: string, abstract: string): string {
-  const ab = (abstract || '').slice(0, 1000);
-  
-  const headers: Record<string, string> = {
-    summary: `Ringkasan Penelitian (Mode Terdegradasi)`,
-    gap: `Potensi Celah Riset (Berdasarkan Data)`,
-    citation: `Sitasi Akademik (Otomatis)`,
-  };
-
-  const header = headers[type] || `${type.toUpperCase()} (Mode Terdegradasi)`;
-
-  const output = `${header}
-
-Catatan: Sintesis AI tingkat lanjut saat ini tidak tersedia karena batas kuota penyedia. Sistem beralih ke Mode Ringan (ekstraksi data langsung).
-
-Data Sumber
-Judul: ${title}
-Abstrak Teridentifikasi: ${ab || 'Tidak ada abstrak tersedia.'}
-
-Analisis Awal
-- Domain: Riset Akademik
-- Konteks: Dokumen ini membahas tentang ${title.split(' ').slice(0, 5).join(' ')}.
-- Status: Sintesis AI sedang dalam antrean. Silakan coba lagi dalam 3-5 menit untuk analisis kognitif mendalam.
-
----
-Kernel Otonom ISAGI — Tingkat Resiliensi 5 Aktif`;
-
-  return output.replace(/[#*]/g, '');
-}
-
 export const geminiService = {
-  async generateAI({ paperId, type, prompt, abstract, title, model }: AIRequest): Promise<any> {
-    if (!paperId || !type) return { success: false, message: "Missing fields" };
-
+  /**
+   * LEGACY ENTRY POINT
+   * Dynamically routes to the orchestrator. This fixes all existing API routes
+   * that call geminiService directly.
+   */
+  async generateAI(req: AIRequest): Promise<any> {
+    const { paperId, type, model, prompt, abstract, title } = req;
+    
+    // 1. Check Cache First
     const cacheKey = `ai:v3:${type}:${paperId}${model ? `:${model.split('/').pop()}` : ''}`;
-
     if (redis) {
       try {
         const cached = await redis.get(cacheKey);
@@ -94,59 +55,96 @@ export const geminiService = {
       } catch (e) {}
     }
 
-    return new Promise((resolve) => {
-      const execute = async () => {
-        try {
-          const result = await this.executeWithRetry({ paperId, type, prompt, abstract, title, model });
-          if (result.success && !result.fallback && redis && result.data) {
-            await redis.set(cacheKey, result.data, { ex: 60 * 60 * 24 * 7 }).catch(() => {});
-          }
-          resolve(result);
-        } finally {
-          activeRequests--;
-          processQueue();
-        }
-      };
-
-      if (activeRequests < MAX_CONCURRENT) {
-        activeRequests++;
-        execute();
-      } else {
-        queue.push(execute);
-      }
+    // 2. Delegate to Smart Orchestrator
+    // We use dynamic import to avoid circular dependency
+    const { smartOrchestrator } = await import('./arai/smartOrchestrator');
+    
+    const result = await smartOrchestrator.execute({
+      prompt: `Judul: ${title || ''}\nAbstrak: ${abstract || ''}\n\nTugas: ${prompt}`,
+      type: type as any,
+      importance: 'standard',
+      userId: 'system',
+      paperId: paperId,
+      modelId: model
     });
+
+    // 3. Cache Success
+    if (result.success && redis && result.text) {
+      await redis.set(cacheKey, result.text, { ex: 60 * 60 * 24 * 7 }).catch(() => {});
+    }
+
+    return {
+      success: result.success,
+      data: result.text,
+      provider: result.provider,
+      model: result.model,
+      fallback: result.isDegraded || result.fallback || false,
+      intelligence: result.intelligence
+    };
   },
 
-  async executeWithRetry(req: AIRequest, attempt: number = 1): Promise<any> {
-    const { abstract, title, prompt, type, model, paperId } = req;
+  /**
+   * NATIVE GEMINI EXECUTION (Strictly Gemini only)
+   * Called by the Orchestrator.
+   */
+  async executeInternal(req: { prompt: string, model: string }): Promise<SafeInferenceResult> {
+    const maxRetries = Math.min(3, aiKeyManager.getHealthyCount());
+    let lastError: any = null;
 
-    const apiKey = aiKeyManager.getBestKey();
-    if (!apiKey) throw new Error('GEMINI_NO_KEY_AVAILABLE');
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const apiKey = aiKeyManager.getBestKey();
+      if (!apiKey) break;
 
-    const fullPrompt = `Judul: ${title}\nAbstrak: ${abstract}\n\nTugas: ${prompt}\n\nINSTRUKSI PENTING: JAWAB DALAM BAHASA INDONESIA FORMAL. JANGAN PERNAH MENGGUNAKAN SIMBOL MARKDOWN SEPERTI # ATAU * DALAM JAWABAN ANDA. Gunakan baris baru untuk struktur.`;
+      const geminiModelId = req.model.includes('/') ? req.model.split('/').pop()! : req.model;
+      const t0 = Date.now();
 
-    const t0 = Date.now();
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const gModel = genAI.getGenerativeModel({ model: model || PRIMARY_MODEL, generationConfig, safetySettings });
-      
-      const result = await Promise.race([
-        gModel.generateContent(fullPrompt),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), AI_TIMEOUT_MS))
-      ]) as any;
+      try {
+        const result = await executeProviderSafely('gemini', geminiModelId, async () => {
+          const genAI = new GoogleGenerativeAI(apiKey);
+          const gModel = genAI.getGenerativeModel({ 
+            model: geminiModelId, 
+            generationConfig, 
+            safetySettings 
+          });
+          
+          const response = await Promise.race([
+            gModel.generateContent(req.prompt),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), AI_TIMEOUT_MS))
+          ]) as any;
 
-      const text = result?.response?.text?.();
-      if (text) {
-        // Estimate tokens (approx 4 chars per token)
-        const estTokens = Math.ceil((fullPrompt.length + text.length) / 4);
-        aiKeyManager.markSuccess(apiKey, estTokens);
-        return { success: true, data: text.replace(/[#*]/g, ''), provider: 'gemini' };
+          const text = response?.response?.text?.();
+          if (!text) throw new Error('GEMINI_EMPTY_RESPONSE');
+          return text;
+        });
+
+        if (result.success) {
+          const estTokens = Math.ceil((req.prompt.length + result.data.length) / 4);
+          aiKeyManager.markSuccess(apiKey, estTokens);
+          providerHealth.reportSuccess('gemini', Date.now() - t0);
+          return result;
+        }
+
+        // Key failed — mark and potentially retry
+        const isRateLimit = result.errorType === 'RATE_LIMIT';
+        aiKeyManager.markFailure(apiKey, isRateLimit);
+        lastError = result;
+
+        if (!result.retryable) break;
+        console.warn(`[GEMINI] Key failed (Attempt ${attempt + 1}/${maxRetries}). Retrying with next key...`);
+
+      } catch (err: any) {
+        aiKeyManager.markFailure(apiKey, false);
+        lastError = { message: err.message };
       }
-      throw new Error('GEMINI_EMPTY_RESPONSE');
-    } catch (err: any) {
-      const errType = classifyAIError(err);
-      if (errType === 'RATE_LIMIT') aiKeyManager.markFailure(apiKey, true);
-      throw err;
     }
+
+    return { 
+      success: false, 
+      data: '', 
+      provider: 'gemini', 
+      model: req.model, 
+      message: lastError?.message || 'GEMINI_ALL_KEYS_FAILED',
+      retryable: false
+    };
   }
 };

@@ -12,30 +12,21 @@ export async function POST(request: Request) {
 
     const currentYear = new Date().getFullYear();
 
-    const prompt = `Buat format sitasi lengkap untuk jurnal akademik ini.
+    const prompt = `AUTONOMOUS CITATION INTELLIGENCE:
+Buat format sitasi ilmiah standar berdasarkan data paper ini.
 
-Sertakan format:
+Berikan format sitasi untuk:
+1. APA 7th Edition
+2. IEEE
+3. Harvard
+4. Vancouver
+5. MLA 9th Edition
 
-**APA 7th Edition:**
-[Format APA yang benar berdasarkan data judul]
+Sertakan juga:
+- Validasi DOI (Jika tersedia)
+- Kelengkapan Bibliografi (Status data penulis dan penerbit)
 
-**MLA 9th Edition:**
-[Format MLA yang benar]
-
-**IEEE:**
-[Format IEEE yang benar]
-
-**Harvard:**
-[Format Harvard yang benar]
-
-**Chicago:**
-[Format Chicago yang benar]
-
-CATATAN PENTING:
-- Gunakan data dari judul dan abstrak yang tersedia
-- Tahun estimasi: ${currentYear} jika tidak diketahui
-- Tandai data yang tidak tersedia dengan [tidak diketahui]
-- Jangan mengarang data penulis`;
+JAWAB DALAM BAHASA INDONESIA FORMAL. JANGAN GUNAKAN SIMBOL # ATAU *. Gunakan baris baru untuk memisahkan setiap format.`;
 
     const result = await geminiService.generateAI({ paperId, type: 'citation', prompt, abstract, title });
 

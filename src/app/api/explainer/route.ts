@@ -10,17 +10,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, fallback: true, message: "Paper ID diperlukan.", data: null });
     }
 
-    const prompt = `Jelaskan isi jurnal ini dengan bahasa yang sangat sederhana.
-Bayangkan Anda menjelaskan kepada mahasiswa baru yang belum pernah membaca jurnal ilmiah.
+    const { audience = 'Mahasiswa' } = body;
+    const prompt = `ADAPTIVE ACADEMIC EXPLAINER:
+Jelaskan konsep inti penelitian ini untuk audiens: ${audience.toUpperCase()}.
 
-Sertakan:
-1. **Apa yang diteliti?** — masalah yang ingin dipecahkan
-2. **Bagaimana caranya?** — metode dalam bahasa sehari-hari
-3. **Apa hasilnya?** — temuan utama
-4. **Kenapa penting?** — dampak nyata di kehidupan sehari-hari
-5. **Analogi sederhana** — bandingkan dengan hal yang mudah dipahami
+Struktur Penjelasan:
+1. Intisari Penelitian (Apa yang sebenarnya sedang dipecahkan?)
+2. Metodologi Sederhana (Bagaimana langkah-langkahnya dalam bahasa awam?)
+3. Dampak Nyata (Mengapa temuan ini penting bagi audiens ${audience}?)
+4. Analogi Kontekstual (Bandingkan dengan situasi sehari-hari yang relevan)
 
-Gunakan kalimat pendek, aktif, dan mudah dipahami.`;
+JAWAB DALAM BAHASA INDONESIA YANG DISESUAIKAN DENGAN TARGET AUDIENS. JANGAN GUNAKAN SIMBOL # ATAU *. Gunakan baris baru untuk memisahkan bagian.`;
 
     const result = await geminiService.generateAI({ paperId, type: 'explainer', prompt, abstract, title, model });
 

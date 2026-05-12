@@ -195,11 +195,11 @@ export default function JournalCard({ journal, index = 0, isSelected = false, on
           </div>
 
           <Link 
-            href={`/journal/${journal.paperId}?source=${journal.source || 'semantic'}`}
-            className="w-full btn-primary h-12 md:h-14 group/btn shadow-md"
+            href={`/journal/${journal.paperId || (journal as any).id}?source=${journal.source || 'semantic'}`}
+            className="w-full btn-primary btn-fill-mewah h-12 md:h-14 group/btn shadow-md !rounded-2xl"
           >
-            <span className="text-[11px] tracking-[0.15em]">Analyze Intelligence</span>
-            <Sparkles className="w-4 h-4 group-hover/btn:rotate-12 transition-transform" />
+            <span className="text-[11px] tracking-[0.15em] relative z-10">Analyze Intelligence</span>
+            <Sparkles className="w-4 h-4 group-hover/btn:rotate-12 transition-transform relative z-10" />
           </Link>
         </div>
       </div>

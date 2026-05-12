@@ -10,27 +10,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, fallback: true, message: "Paper ID diperlukan.", data: null });
     }
 
-    const prompt = `Berikan 8-10 kata kunci akademik terbaik dari jurnal ini untuk optimasi pencarian.
+    const prompt = `OPTIMASI KATA KUNCI SEMANTIK:
+Hasilkan 10 kata kunci akademik berimpak tinggi berdasarkan metodologi dan temuan paper ini.
 
 Sertakan:
-1. **Kata kunci dalam Bahasa Indonesia** (5-6 kata kunci)
-2. **Kata kunci dalam Bahasa Inggris** (5-6 kata kunci)
-3. **Kata kunci untuk database Scopus/WoS** (3-4 kata kunci spesifik)
+1. Kata kunci Bahasa Indonesia (Terpilih)
+2. Keywords (English - International Standards)
+3. Scopus Taxonomy & SDG Categories (Istilah spesifik indeksasi)
 
-Format jawaban:
-## Kata Kunci Bahasa Indonesia
-- kata kunci 1
-- kata kunci 2
-...
-
-## Keywords (English)
-- keyword 1
-- keyword 2
-...
-
-## Scopus/WoS Specific
-- specific term 1
-...`;
+JAWAB DALAM BAHASA INDONESIA FORMAL. JANGAN GUNAKAN SIMBOL # ATAU *. Gunakan baris baru untuk memisahkan kategori.`;
 
     const result = await geminiService.generateAI({ paperId, type: 'keywords', prompt, abstract, title, model });
 
