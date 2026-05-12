@@ -6,11 +6,11 @@ import { journalService } from '@/services/journalService';
 import { Journal } from '@/types/journal';
 import Navbar from '@/components/Navbar';
 import { 
-  Calendar, Users, Star, FileText, Sparkles, 
-  ExternalLink, ArrowLeft, Share2, Bookmark,
-  ChevronRight, Brain, Zap, Target, Quote,
-  AlertCircle, RotateCcw, RefreshCw, BookOpen,
-  Loader2, BookX, Search
+  Calendar, Users, Star, Sparkles, 
+  ExternalLink, ArrowLeft, Share2,
+  Brain, Zap, Target, Quote,
+  AlertCircle, RefreshCw, BookOpen,
+  ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';

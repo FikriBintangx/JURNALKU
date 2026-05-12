@@ -1,7 +1,6 @@
-'use client';
-
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, AlertCircle, RotateCcw, Loader2 } from 'lucide-react';
+import { Sparkles, AlertCircle, RotateCcw, Loader2, Brain } from 'lucide-react';
 import { useAIFeature } from '@/hooks/useAIFeature';
 import { QueueStatus } from './QueueStatus';
 import { cn } from '@/lib/utils';
