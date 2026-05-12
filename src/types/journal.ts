@@ -18,6 +18,7 @@ export interface Journal {
   relevanceScore?: number;
   embedding?: number[];
   keywords?: string[];
+  pdfUrl?: string;
   isScraped?: boolean;
 }
 

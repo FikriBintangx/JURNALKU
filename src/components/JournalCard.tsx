@@ -112,7 +112,7 @@ export default function JournalCard({ journal }: Props) {
             <div className="flex items-center gap-2 text-muted-foreground group/meta">
               <User className="w-3.5 h-3.5 opacity-50" />
               <span className="text-[11px] font-bold truncate max-w-[150px] tracking-tight italic">
-                {journal.authors?.[0]?.name || journal.author || 'Unknown Author'}
+                {journal.authors?.[0]?.name || 'Unknown Author'}
               </span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground group/meta">
