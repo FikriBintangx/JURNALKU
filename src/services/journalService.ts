@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Journal } from '@/types/journal';
-import { SearchResponse, SortBy } from '@/types/search';
+import { SearchResponse, SortBy, SearchFilters } from '@/types/search';
 
 const BASE_URL = '/api';
 
@@ -9,7 +9,7 @@ const BASE_URL = '/api';
  * Rule: Anti-Crash, Multi-Source Integration
  */
 export const journalService = {
-  async search(query: string, limit: number = 10, offset: number = 0, provider: string = 'default', sortBy: SortBy = 'relevance'): Promise<SearchResponse> {
+  async search(query: string, limit: number = 10, offset: number = 0, provider: string = 'default', filters?: SearchFilters): Promise<SearchResponse> {
     try {
       // Use 'q' param for consistency with backend rules
       const response = await axios.get(`${BASE_URL}/search`, {
@@ -18,7 +18,7 @@ export const journalService = {
           limit,
           offset,
           provider,
-          sortBy
+          ...filters
         }
       });
       
@@ -28,7 +28,8 @@ export const journalService = {
           total: response.data.total || 0,
           offset: offset,
           data: response.data.data || [],
-          success: true
+          success: true,
+          intelligence: response.data.intelligence
         };
       }
       

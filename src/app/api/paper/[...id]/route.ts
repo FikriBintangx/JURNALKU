@@ -96,9 +96,10 @@ async function fetchSemanticScholar(id: string) {
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string[] }> }
 ) {
-  const { id } = await params;
+  const { id: idArray } = await params;
+  const id = Array.isArray(idArray) ? idArray.join('/') : idArray;
   const { searchParams } = new URL(request.url);
   const sourceParam = searchParams.get('source') || 'openalex';
   const paperId = decodeURIComponent(id).trim();

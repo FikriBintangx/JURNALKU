@@ -10,7 +10,7 @@ import {
   ExternalLink, ArrowLeft, Share2, Bookmark,
   ChevronRight, Brain, Zap, Target, Quote,
   AlertCircle, RotateCcw, RefreshCw, BookOpen,
-  Loader2, BookX, Search
+  Loader2, BookX, Search, Maximize2, Minimize2
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,26 +21,30 @@ import { AIJournalAnalysis } from '@/components/AI/AIJournalAnalysis';
 import { AIAnalyticsPanel } from '@/components/AI/AIAnalyticsPanel';
 import UnpaywallButton from '@/components/UnpaywallButton';
 
-
-
 export default function JournalDetail() {
-  const { id } = useParams();
+  const params = useParams();
   const searchParams = useSearchParams();
   const [journal, setJournal] = useState<Journal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCiteModalOpen, setIsCiteModalOpen] = useState(false);
+  const [isTitleMinimized, setIsTitleMinimized] = useState(false);
+
+  // Handle catch-all id (it will be string[] for [...id])
+  const idRaw = params?.id;
+  const id = Array.isArray(idRaw) ? idRaw.join('/') : idRaw;
+  const decodedId = id ? decodeURIComponent(id) : null;
 
   const source = searchParams.get('source') || 'semantic';
 
   useEffect(() => {
     async function fetchDetail() {
-      if (!id) return;
+      if (!decodedId) return;
       setLoading(true);
       setError(null);
       
-      console.log(`[PAGE] Fetching Detail for: ${id} (${source})`);
-      const data = await journalService.getDetail(id as string, source);
+      console.log(`[PAGE] Fetching Detail for: ${decodedId} (${source})`);
+      const data = await journalService.getDetail(decodedId, source);
       
       if (data && data.error) {
         setError(data.message);
@@ -51,7 +55,7 @@ export default function JournalDetail() {
       setLoading(false);
     }
     fetchDetail();
-  }, [id, source]);
+  }, [decodedId, source]);
 
 
   if (loading) {
@@ -111,7 +115,7 @@ export default function JournalDetail() {
           <div className="pt-6 border-t border-white/5">
             <div className="text-[10px] uppercase tracking-[0.2em] text-slate-600 font-black mb-3">System Diagnostic</div>
             <div className="flex flex-wrap justify-center gap-2">
-              <span className="px-3 py-1 bg-black/40 rounded-lg border border-white/5 text-[10px] text-slate-500 font-mono">ID: {id}</span>
+              <span className="px-3 py-1 bg-black/40 rounded-lg border border-white/5 text-[10px] text-slate-500 font-mono">ID: {decodedId}</span>
               <span className="px-3 py-1 bg-black/40 rounded-lg border border-white/5 text-[10px] text-slate-500 font-mono uppercase">Source: {source}</span>
             </div>
           </div>
@@ -124,7 +128,6 @@ export default function JournalDetail() {
     <main className="min-h-screen bg-background text-foreground selection:bg-primary/30">
       <Navbar />
       
-      {/* Premium Subtle Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-accent/5 blur-[150px] rounded-full" />
@@ -133,7 +136,6 @@ export default function JournalDetail() {
       <div className="relative pt-24 md:pt-36 pb-20 px-4 md:px-8">
         <div className="max-w-6xl mx-auto space-y-10 md:space-y-16">
           
-          {/* Header & Hero Section */}
           <section className="space-y-8 md:space-y-10">
             <div className="flex flex-wrap items-center gap-4">
               <button 
@@ -160,14 +162,26 @@ export default function JournalDetail() {
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 relative group">
               <motion.h1 
+                layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground leading-[1] tracking-tight"
+                className={cn(
+                  "font-black text-foreground leading-tight tracking-tight transition-all duration-500 ease-out",
+                  isTitleMinimized ? "text-2xl md:text-3xl" : "text-4xl md:text-5xl lg:text-6xl"
+                )}
               >
                 {journal?.title}
               </motion.h1>
+
+              <button
+                onClick={() => setIsTitleMinimized(!isTitleMinimized)}
+                className="absolute -left-12 top-2 p-2 rounded-xl glass-card text-muted-foreground hover:text-primary transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
+                title={isTitleMinimized ? "Perbesar Judul" : "Perkecil Judul"}
+              >
+                {isTitleMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+              </button>
 
               <div className="flex flex-wrap gap-6 items-center">
                 <div className="flex items-center gap-3">
@@ -210,6 +224,18 @@ export default function JournalDetail() {
                   Source Link
                 </a>
               )}
+
+              {journal?.doi && (
+                <a 
+                  href={`https://doi.org/${journal.doi}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-3 bg-muted border border-border px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all shadow-sm active:scale-95"
+                >
+                  <ExternalLink className="w-4 h-4 text-primary" />
+                  DOI Link
+                </a>
+              )}
               
               {journal?.doi && (
                 <UnpaywallButton 
@@ -231,7 +257,6 @@ export default function JournalDetail() {
             </div>
           </section>
 
-          {/* AI Tools & Analysis Grid */}
           <section className="space-y-12">
             <div className="flex items-center gap-4">
               <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.4em] flex items-center gap-2 whitespace-nowrap">
@@ -242,7 +267,7 @@ export default function JournalDetail() {
             </div>
 
             <AIJournalAnalysis 
-              paperId={journal.paperId || (id as string)}
+              paperId={journal.paperId || (decodedId || "")}
               abstract={journal.abstract || ""}
               title={journal.title || ""}
             />
@@ -250,7 +275,6 @@ export default function JournalDetail() {
             <AIAnalyticsPanel paper={journal} />
           </section>
 
-          {/* Abstract Content */}
           <div className="grid lg:grid-cols-3 gap-12">
             <div className="lg:col-span-2">
               <div className="glass-card rounded-[2.5rem] p-8 md:p-12 shadow-sm border-border/40">
@@ -307,7 +331,6 @@ export default function JournalDetail() {
           </div>
         </div>
       </div>
-
 
       <CitationModal 
         journal={journal} 

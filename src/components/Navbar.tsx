@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, Library, Sparkles, BookMarked, ArrowRight, Command, LogIn, User } from 'lucide-react';
+import { Search, Library, Sparkles, BookMarked, ArrowRight, Command, LogIn, User, ChevronDown } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -13,6 +13,7 @@ function NavbarContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState('');
+  const [selectedYear, setSelectedYear] = useState<string>('');
   const [showDropdown, setShowDropdown] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -31,7 +32,9 @@ function NavbarContent() {
 
   useEffect(() => {
     const q = searchParams.get('q') || '';
+    const yStart = searchParams.get('yearStart') || '';
     setQuery(q);
+    setSelectedYear(yStart);
   }, [searchParams]);
 
   useEffect(() => {
@@ -48,51 +51,72 @@ function NavbarContent() {
     e.preventDefault();
     if (!query.trim()) return;
     setShowDropdown(false);
-    router.push(`/search?q=${encodeURIComponent(query)}`);
+    const yearParam = selectedYear ? `&yearStart=${selectedYear}` : '';
+    router.push(`/search?q=${encodeURIComponent(query)}${yearParam}`);
   };
 
   return (
     <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-[100]">
-      <div className="glass-nav border border-border rounded-full px-6 py-3 flex items-center justify-between shadow-2xl">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center space-x-2 group">
-            <div className="w-9 h-9 bg-foreground rounded-xl flex items-center justify-center transition-transform group-hover:rotate-12">
+      <div className="glass-nav rounded-full px-5 py-2.5 flex items-center justify-between shadow-md">
+        <div className="flex items-center gap-6">
+          <Link href="/" className="flex items-center space-x-2.5 group">
+            <div className="w-9 h-9 bg-foreground rounded-xl flex items-center justify-center transition-all group-hover:scale-105 active:scale-95 shadow-sm">
               <Sparkles className="w-5 h-5 text-background" />
             </div>
-            <span className="font-black text-xl tracking-tighter uppercase hidden sm:block">JurnalStar</span>
+            <span className="font-extrabold text-xl tracking-tighter uppercase hidden md:block text-foreground">JurnalStar</span>
           </Link>
           
-          <div className="hidden lg:flex items-center space-x-6 text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
-            <Link href="/trending" className="hover:opacity-100 transition-opacity">Trending</Link>
-            <Link href="/library" className="hover:opacity-100 transition-opacity">Library</Link>
+          <div className="hidden lg:flex items-center space-x-6">
+            <Link href="/workspace" className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 hover:text-indigo-600 transition-colors">Workspace</Link>
+            <Link href="/trending" className="text-[10px] font-bold uppercase tracking-widest text-foreground-muted hover:text-foreground transition-colors">Trending</Link>
+            <Link href="/library" className="text-[10px] font-bold uppercase tracking-widest text-foreground-muted hover:text-foreground transition-colors">Koleksi</Link>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 flex-1 max-w-xl mx-8 relative" ref={containerRef}>
-          <form onSubmit={handleSearch} className="w-full relative group">
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onFocus={() => setShowDropdown(true)}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search research..."
-              className="w-full bg-muted/50 border border-border/50 rounded-full py-2.5 px-10 text-xs font-bold transition-all outline-none focus:bg-background focus:border-foreground/20"
-            />
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 opacity-20 group-focus-within:opacity-40 transition-opacity">
-              <Command className="w-3 h-3" />
-              <span className="text-[10px] font-black">K</span>
+        <div className="hidden md:flex items-center gap-4 flex-1 max-w-xl mx-6 relative" ref={containerRef}>
+          <form onSubmit={handleSearch} className="w-full relative group flex items-center bg-muted/30 border border-border rounded-full transition-all focus-within:bg-background focus-within:ring-4 focus-within:ring-foreground/5 focus-within:border-foreground-muted overflow-hidden h-11">
+            <div className="relative flex items-center px-4 h-full border-r border-border cursor-pointer hover:bg-muted transition-colors">
+              <select 
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              >
+                <option value="" className="bg-background">Kapan pun</option>
+                <option value="2026" className="bg-background">2026</option>
+                <option value="2025" className="bg-background">2025</option>
+                <option value="2024" className="bg-background">2024</option>
+                <option value="2023" className="bg-background">2023</option>
+                <option value="2020" className="bg-background">2020+</option>
+              </select>
+              <div className="flex items-center gap-2 pointer-events-none">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-foreground-muted whitespace-nowrap">
+                  {selectedYear || 'Tahun'}
+                </span>
+                <ChevronDown className="w-3 h-3 text-foreground-muted" />
+              </div>
+            </div>
+            
+            <div className="relative flex-1 h-full">
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onFocus={() => setShowDropdown(true)}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Cari di mesin riset..."
+                className="w-full h-full bg-transparent pl-11 pr-4 text-[13px] font-bold outline-none placeholder:text-foreground-muted placeholder:opacity-30"
+              />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted/40 group-focus-within:text-foreground transition-all" />
             </div>
           </form>
 
           <AnimatePresence>
-            {showDropdown && query.length > 2 && (
+            {showDropdown && (
               <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                initial={{ opacity: 0, y: 15, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                className="absolute top-full mt-4 left-0 right-0 mono-card p-2 shadow-2xl z-[110] overflow-hidden"
+                className="absolute top-full mt-4 left-0 right-0 bg-card p-3 shadow-md z-[110] overflow-hidden rounded-[2rem] border border-border-strong"
               >
                 <SearchSuggestions query={query} onSelect={(val) => {
                   setQuery(val);
@@ -104,28 +128,31 @@ function NavbarContent() {
           </AnimatePresence>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-4">
             <ThemeToggle />
             {user ? (
               <Link 
                 href="/profile" 
-                className="w-12 h-12 rounded-2xl bg-foreground text-background flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xl shadow-foreground/10 group overflow-hidden relative"
+                className="w-9 h-9 rounded-full bg-foreground text-background flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-sm group overflow-hidden"
               >
-                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-0 transition-transform" />
-                <User className="w-5 h-5 relative z-10" />
+                <User className="w-5 h-5" />
               </Link>
             ) : (
               <Link 
                 href="/login" 
-                className="bg-foreground text-background px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                className="btn-primary !px-5 !py-2.5 !text-[10px]"
               >
-                Sign In
+                Masuk
               </Link>
             )}
           </div>
-          <button className="sm:hidden w-10 h-10 flex items-center justify-center rounded-full bg-muted border border-border">
-            <Search className="w-5 h-5" />
+          <button 
+            onClick={() => router.push('/')}
+            className="sm:hidden w-9 h-9 flex items-center justify-center rounded-full bg-muted border border-border text-foreground active:scale-95 transition-all"
+            title="Cari Jurnal"
+          >
+            <Search className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -136,7 +163,7 @@ function NavbarContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-background/60 backdrop-blur-xl -z-10"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm -z-10"
             onClick={() => setShowDropdown(false)}
           />
         )}

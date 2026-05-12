@@ -1,9 +1,11 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, AlertCircle, RotateCcw, Loader2 } from 'lucide-react';
+import { Sparkles, AlertCircle, RotateCcw, Loader2, Brain, CheckCircle2, Clipboard, Share2, ChevronRight, Check } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { useAIFeature } from '@/hooks/useAIFeature';
 import { QueueStatus } from './QueueStatus';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface AIFeatureCardProps {
@@ -25,40 +27,57 @@ export const AIFeatureCard = ({
   paperTitle,
   description
 }: AIFeatureCardProps) => {
-  const { data, loading, error, generate } = useAIFeature({
+  const { data, intelligence, loading, error, generate } = useAIFeature({
     endpoint,
     paperId,
     abstract,
     title: paperTitle
   });
 
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!data) return;
+    try {
+      // Remove raw markdown symbols like ** and ##
+      const cleanText = String(data)
+        .replace(/(\*\*|__)(.*?)\1/g, '$2')
+        .replace(/(#+)\s/g, '')
+        .replace(/(\*|_)(.*?)\1/g, '$2')
+        .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+      await navigator.clipboard.writeText(cleanText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text', err);
+    }
+  };
+
   return (
     <motion.div 
       layout
-      className="glass-card rounded-[2rem] p-6 flex flex-col h-full min-h-[240px] relative overflow-hidden group/aicolor"
+      className="mono-card p-8 flex flex-col h-full min-h-[280px] relative overflow-hidden group/aicolor"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 glass-card rounded-xl flex items-center justify-center text-primary group-hover/aicolor:scale-110 transition-transform">
-            <Icon size={20} />
+          <div className="w-12 h-12 glass-card !bg-white/5 !rounded-2xl flex items-center justify-center text-primary group-hover/aicolor:scale-110 transition-transform border border-white/10">
+            <Icon size={22} />
           </div>
-          <h3 className="font-bold text-foreground tracking-tight text-sm">{title}</h3>
+          <h3 className="font-black text-card-foreground tracking-tight text-base">{title}</h3>
         </div>
         {!data && (
           <button 
             onClick={generate}
             disabled={loading}
             className={cn(
-              "text-[9px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-full transition-all flex items-center gap-2",
-              loading 
-                ? "bg-muted text-muted-foreground cursor-not-allowed" 
-                : "bg-foreground text-background hover:opacity-90 active:scale-95 shadow-md"
+              "btn-primary h-10 px-6",
+              loading && "opacity-50 cursor-not-allowed"
             )}
           >
-            {loading ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
-            {loading ? 'Analyzing' : 'Generate'}
+            {loading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+            <span>{loading ? 'Menganalisis' : 'Buat'}</span>
           </button>
         )}
       </div>
@@ -71,13 +90,13 @@ export const AIFeatureCard = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center py-10 text-center"
+              className="flex flex-col items-center justify-center py-12 text-center"
             >
-              <div className="relative mb-4">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                <div className="absolute inset-0 w-8 h-8 bg-primary/10 rounded-full blur-xl animate-pulse" />
+              <div className="relative mb-6">
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                <div className="absolute inset-0 w-10 h-10 bg-primary/20 rounded-full blur-2xl animate-pulse" />
               </div>
-              <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] animate-pulse">Processing Intel...</p>
+              <p className="label-caps !text-primary !opacity-100 animate-pulse">Memproses Intelijen...</p>
               <QueueStatus isVisible={true} />
             </motion.div>
           ) : error ? (
@@ -86,18 +105,18 @@ export const AIFeatureCard = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center py-8 text-center space-y-4"
+              className="flex flex-col items-center justify-center py-10 text-center space-y-5"
             >
-              <div className="w-12 h-12 bg-red-500/5 rounded-2xl flex items-center justify-center border border-red-500/10">
-                <AlertCircle className="text-red-500/70 w-5 h-5" />
+              <div className="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center border border-red-500/20">
+                <AlertCircle className="text-red-500 w-6 h-6" />
               </div>
-              <p className="text-[11px] text-red-500/60 font-bold leading-tight">{error}</p>
+              <p className="text-xs text-red-500/80 font-bold leading-tight max-w-[200px]">{error}</p>
               <button 
                 onClick={generate}
-                className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest px-5 py-2.5 bg-muted/50 text-foreground rounded-xl border border-border/50 hover:bg-muted transition-all"
+                className="label-caps !text-white/60 hover:!text-white transition-all flex items-center gap-2"
               >
-                <RotateCcw size={10} />
-                Try Again
+                <RotateCcw size={12} />
+                Coba Lagi
               </button>
             </motion.div>
           ) : data ? (
@@ -105,10 +124,66 @@ export const AIFeatureCard = ({
               key="content"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap max-h-[400px] overflow-y-auto pr-2 custom-scrollbar font-medium"
+              className="flex flex-col h-full"
             >
-              <div className="p-4 bg-muted/30 rounded-2xl border border-border/30">
-                {data}
+              <div className="flex-1 text-sm text-card-foreground/90 leading-relaxed max-h-[500px] overflow-y-auto pr-4 custom-scrollbar font-medium">
+                <div className="relative p-7 glass-card !bg-white/5 border border-white/10 shadow-2xl rounded-[2.5rem] group/content overflow-hidden">
+                  {/* ISAGI Branding */}
+                  {!String(data).includes('(Fallback)') && (
+                    <div className="flex items-center gap-2 mb-6 py-1.5 px-4 bg-primary/10 border border-primary/20 rounded-full w-fit">
+                      <Sparkles size={10} className="text-primary animate-pulse" />
+                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">ISAGI Intelligence Certified</span>
+                    </div>
+                  )}
+
+                  {/* Premium Markdown Renderer */}
+                  <div className="prose prose-invert prose-sm max-w-none 
+                    prose-headings:font-black prose-headings:tracking-tight prose-headings:text-foreground
+                    prose-h2:text-lg prose-h2:mt-6 prose-h2:mb-4 prose-h2:border-b prose-h2:border-white/5 prose-h2:pb-2
+                    prose-h3:text-base prose-h3:mt-4 prose-h3:mb-2
+                    prose-p:leading-relaxed prose-p:mb-4 prose-p:text-card-foreground/80
+                    prose-strong:text-foreground prose-strong:font-bold
+                    prose-ul:my-4 prose-li:my-1
+                    prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg
+                  ">
+                    <ReactMarkdown
+                      components={{
+                        // Ensure no raw markers are shown by providing clean wrappers
+                        h2: ({node, ...props}) => <h2 className="!m-0 !mb-4 pt-4 first:pt-0" {...props} />,
+                        h3: ({node, ...props}) => <h3 className="!m-0 !mb-2 pt-2" {...props} />,
+                        p: ({node, ...props}) => <p className="!m-0 !mb-5 last:mb-0" {...props} />,
+                        li: ({node, ...props}) => <li className="!m-0 !mb-1.5 marker:text-primary" {...props} />,
+                        strong: ({node, ...props}) => <strong className="text-foreground font-black" {...props} />,
+                      }}
+                    >
+                      {String(data)}
+                    </ReactMarkdown>
+                  </div>
+
+                  {/* Actions Area */}
+                  <div className="mt-10 pt-6 border-t border-white/5 flex items-center justify-between">
+                    <div className="flex gap-4">
+                      <button 
+                        onClick={handleCopy}
+                        className={cn(
+                          "flex items-center gap-2 text-[10px] font-bold transition-all px-3 py-1.5 rounded-lg border border-transparent",
+                          copied ? "bg-green-500/10 text-green-500 border-green-500/20" : "text-card-foreground/40 hover:text-primary hover:bg-primary/5"
+                        )}
+                      >
+                        {copied ? <Check size={12} /> : <Clipboard size={12} />}
+                        {copied ? 'Tersalin' : 'Salin Teks Bersih'}
+                      </button>
+                      <button className="flex items-center gap-2 text-[10px] font-bold text-card-foreground/40 hover:text-primary transition-colors px-3 py-1.5">
+                        <Share2 size={12} />
+                        Bagikan
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary/40 group-hover/content:text-primary/70 transition-colors">
+                      ISAGI Analysis
+                      <CheckCircle2 size={12} className="text-primary/60" />
+                    </div>
+                  </div>
+                </div>
               </div>
             </motion.div>
           ) : (
@@ -116,7 +191,7 @@ export const AIFeatureCard = ({
               key="description"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-xs text-muted-foreground leading-relaxed font-medium px-1"
+              className="text-sm text-foreground-secondary leading-relaxed font-medium px-1"
             >
               {description}
             </motion.p>

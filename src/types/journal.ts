@@ -19,6 +19,11 @@ export interface Journal {
   embedding?: number[];
   keywords?: string[];
   isScraped?: boolean;
+  trendScore?: number;
+  isTrending?: boolean;
+  isNew?: boolean;     // Published current or last year
+  isRising?: boolean;  // High citation velocity + recent
+  pdfUrl?: string;
 }
 
 

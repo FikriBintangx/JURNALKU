@@ -42,11 +42,9 @@ function RadarChart({ data, headers }: { data: any[], headers: string[] }) {
   };
 
   const colors = [
-    'stroke-foreground fill-foreground/20',
-    'stroke-muted-foreground fill-muted-foreground/10',
-    'stroke-foreground/60 fill-foreground/5',
-    'stroke-foreground/40 fill-foreground/5',
-    'stroke-foreground/20 fill-foreground/5',
+    'stroke-foreground fill-foreground/10',
+    'stroke-foreground-secondary fill-foreground/5',
+    'stroke-foreground-muted fill-foreground/5',
   ];
 
   return (
@@ -62,7 +60,7 @@ function RadarChart({ data, headers }: { data: any[], headers: string[] }) {
               const y = center + (radius * step) * Math.sin(angle);
               return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
             }).join(' ') + ' Z'}
-            className="stroke-white/10 fill-none"
+            className="stroke-border fill-none"
             strokeWidth="1"
           />
         ))}
@@ -74,21 +72,21 @@ function RadarChart({ data, headers }: { data: any[], headers: string[] }) {
             y1={center}
             x2={p.x}
             y2={p.y}
-            className="stroke-white/10"
+            className="stroke-border"
           />
         ))}
         {/* Labels */}
         {points.map((p, i) => {
           const angle = i * angleStep - Math.PI / 2;
-          const lx = center + (radius + 20) * Math.cos(angle);
-          const ly = center + (radius + 20) * Math.sin(angle);
+          const lx = center + (radius + 25) * Math.cos(angle);
+          const ly = center + (radius + 25) * Math.sin(angle);
           return (
             <text
               key={i}
               x={lx}
               y={ly}
               textAnchor="middle"
-              className="fill-slate-400 text-[10px] font-black uppercase tracking-widest"
+              className="fill-foreground-muted text-[9px] font-bold uppercase tracking-widest"
             >
               {p.label}
             </text>
@@ -106,11 +104,11 @@ function RadarChart({ data, headers }: { data: any[], headers: string[] }) {
           />
         ))}
       </svg>
-      <div className="mt-8 flex flex-wrap justify-center gap-4">
+      <div className="mt-8 flex flex-wrap justify-center gap-6">
         {headers.slice(1).map((h, idx) => (
           <div key={idx} className="flex items-center gap-2">
-            <div className={cn("w-3 h-3 rounded-full", colors[idx % colors.length].split(' ')[0].replace('stroke-', 'bg-'))} />
-            <span className="text-[10px] font-bold text-slate-400 truncate max-w-[80px]">{h}</span>
+            <div className={cn("w-2 h-2 rounded-full bg-foreground")} />
+            <span className="text-[10px] font-bold text-foreground-secondary truncate max-w-[100px] uppercase tracking-wider">{h}</span>
           </div>
         ))}
       </div>
@@ -133,11 +131,9 @@ function CompareContent() {
       setLoading(true);
       try {
         const data = await Promise.all(ids.map(async id => {
-          // Auto-detect source: OpenAlex IDs start with 'W'
           const source = id.toUpperCase().startsWith('W') ? 'openalex' : 'semantic';
           return journalService.getDetail(id, source);
         }));
-        // Include partial data papers too — they still have a title/id for comparison
         setPapers(data.filter(p => p && p.title) as Journal[]);
       } catch (e) {
         console.error('[COMPARE PAGE] Failed to load papers:', e);
@@ -172,242 +168,228 @@ function CompareContent() {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-12 h-12 text-foreground animate-spin" />
-        <p className="text-muted-foreground font-black text-[10px] animate-pulse tracking-[0.4em] uppercase">Initializing Neural Synthesis...</p>
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="flex flex-col items-center gap-6 text-center">
+        <div className="relative">
+          <Loader2 className="w-16 h-16 text-foreground animate-spin opacity-10" />
+          <Sparkles className="w-6 h-6 text-foreground absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+        </div>
+        <div className="space-y-2">
+          <p className="text-[10px] font-black tracking-[0.3em] uppercase animate-pulse text-foreground">Initializing Neural Synthesis...</p>
+          <p className="text-[9px] text-foreground-muted uppercase tracking-[0.2em] font-bold opacity-30">MAPPING VECTOR DIMENSIONS</p>
+        </div>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-background pb-32 text-foreground">
+    <div className="min-h-screen bg-background pb-32 text-foreground selection:bg-foreground selection:text-background">
       <Navbar />
       
-      {/* Background Decor */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-50">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/5 blur-[120px] rounded-full" />
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 pt-32 md:pt-40 relative">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-10 mb-20">
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-32 md:pt-48 relative">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-16 md:mb-24">
+          <div className="space-y-8 max-w-3xl">
+            <div className="flex flex-wrap items-center gap-4">
               <button 
                 onClick={() => window.history.back()}
-                className="p-3 glass-card rounded-2xl hover:bg-muted transition-all group"
+                className="p-4 bg-card rounded-2xl hover:bg-foreground hover:text-background transition-all group border border-border shadow-sm"
               >
                 <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               </button>
-              <div className="px-4 py-1.5 glass-card rounded-full text-[10px] font-black text-primary uppercase tracking-[0.2em] border-primary/20">
-                AI Synthesis Suite v2.0
+              <div className="px-5 py-2.5 bg-card rounded-full text-[10px] font-black text-foreground uppercase tracking-[0.3em] border border-border-strong">
+                Compare Engine <span className="opacity-20 mx-2">|</span> AI OS v2.0
               </div>
             </div>
-            <h1 className="text-5xl md:text-7xl font-black text-foreground tracking-tight leading-[0.9]">
-              Compare <br /><span className="text-primary">Research</span>
+            <h1 className="text-[clamp(2.5rem,8vw,5.5rem)] font-black text-foreground tracking-tighter leading-[0.85] uppercase">
+              Research <br /><span className="text-foreground-muted opacity-30">Synthesis</span>
             </h1>
-            <p className="text-muted-foreground max-w-xl font-medium leading-relaxed text-lg">
-              Analisis mendalam terhadap metodologi, temuan kunci, dan kebaruan riset menggunakan AI Intelijen.
+            <p className="text-foreground-secondary font-medium leading-relaxed text-lg md:text-xl max-w-2xl">
+              Advanced cross-pollination of academic methodologies, findings, and innovation metrics powered by JurnalStar Intelligence.
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button className="p-5 glass-card rounded-[2rem] text-muted-foreground hover:text-foreground transition-all">
-              <Share2 className="w-6 h-6" />
-            </button>
+          <div className="flex items-center gap-4 w-full lg:w-auto">
             <button 
               onClick={handleCompare}
               disabled={comparing || papers.length < 2}
-              className="flex-1 md:flex-none bg-foreground text-background px-10 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest flex items-center justify-center space-x-3 shadow-2xl hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+              className="flex-1 lg:flex-none btn-primary h-20 md:h-24 px-12 md:px-20 !rounded-[2.5rem] !text-xs !tracking-[0.2em] active:scale-95 disabled:opacity-30 shadow-2xl"
             >
-              {comparing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 fill-current" />}
-              <span>{comparing ? 'ANALYZING...' : `START AI ANALYSIS${papers.length > 0 ? ` (${papers.length})` : ''}`}</span>
+              {comparing ? (
+                <div className="flex items-center gap-4">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>SYNTHESIZING...</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-4">
+                  <Sparkles className="w-5 h-5" />
+                  <span>START DEEP ANALYSIS ({papers.length})</span>
+                </div>
+              )}
             </button>
           </div>
         </div>
 
         {/* Paper Cards Preview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 mb-20 md:mb-32">
           {papers.map((paper, index) => (
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ delay: index * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               key={`${paper.source || 'journal'}-${paper.paperId || index}`} 
-              className="glass-card p-8 rounded-[2.5rem] relative overflow-hidden group border-border/40"
+              className="mono-card p-10 rounded-[3rem] relative flex flex-col h-full bg-card"
             >
-               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-                  <FileText className="w-24 h-24" />
-               </div>
-               <div className="flex justify-between items-start mb-8">
-                 <span className={cn(
-                   "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] border",
-                   paper.source === 'openalex' ? "bg-amber-500/5 border-amber-500/10 text-amber-500/80" :
-                   paper.source === 'googlescholar' ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-500/80" :
-                   "bg-primary/5 border-primary/10 text-primary/80"
-                 )}>
-                   {paper.source || 'Research'}
+               <div className="flex justify-between items-start mb-10">
+                 <span className="text-[10px] font-black uppercase tracking-widest text-foreground bg-muted px-4 py-2 rounded-xl border border-border">
+                   {paper.source || 'Intel'}
                  </span>
-                 <div className="flex items-center gap-2 text-muted-foreground/60">
+                 <div className="flex items-center gap-2 text-foreground-muted">
                     <TrendingUp className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">{paper.citationCount || 0} Citations</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">{(paper.citationCount || 0).toLocaleString()}</span>
                  </div>
                </div>
-               <h3 className="text-base font-bold text-foreground leading-snug mb-6 line-clamp-3 group-hover:text-primary transition-colors">{paper.title}</h3>
-               <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-muted/30 px-3 py-2 rounded-xl border border-border/30 w-fit">
-                 {paper.year || 'N/A'} <span className="opacity-30">•</span> {paper.venue || 'Research Venue'}
+               <div className="flex-grow">
+                 <h3 className="text-xl font-extrabold text-foreground leading-[1.2] mb-8 tracking-tighter line-clamp-3 uppercase">{paper.title}</h3>
+                 <div className="flex flex-wrap items-center gap-3">
+                   <div className="px-4 py-2 rounded-xl bg-muted text-[10px] font-bold text-foreground-secondary uppercase tracking-widest border border-border">
+                     {paper.year || 'N/A'}
+                   </div>
+                   <div className="px-4 py-2 rounded-xl bg-muted text-[10px] font-bold text-foreground-secondary uppercase tracking-widest border border-border truncate max-w-[150px]">
+                     {paper.venue || 'Research Venue'}
+                   </div>
+                 </div>
                </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Compare Error State */}
-        {compareError && (
-          <div className="mb-12 p-8 bg-red-500/5 border border-red-500/10 rounded-[2rem] flex items-center gap-6">
-            <div className="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center flex-shrink-0">
-              <X className="w-6 h-6 text-red-500/70" />
-            </div>
-            <div>
-              <p className="text-red-500/80 font-bold text-sm tracking-tight">{compareError}</p>
-              <button
-                onClick={() => setCompareError(null)}
-                className="text-[10px] font-black uppercase tracking-widest text-red-500/50 hover:text-red-500 mt-2 underline transition-all"
-              >Dismiss</button>
-            </div>
-          </div>
-        )}
-
         {/* Comparison Results */}
-        {comparison && comparison.headers ? (
-          <div className="space-y-20">
-            
-            {/* AI Critical Insights Grid */}
-            <div className="grid lg:grid-cols-3 gap-10">
-              {/* Radar Chart Card */}
-              <div className="lg:col-span-1 glass-card p-10 rounded-[3rem] border-border/40 shadow-sm">
-                <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-10 flex items-center gap-3">
-                  <Target className="w-4 h-4" />
-                  Score Matrix
-                </h3>
-                <RadarChart data={comparison.radarData} headers={comparison.headers} />
-              </div>
-
-              {/* Critical Verdict Card */}
-              <div className="lg:col-span-2 bg-muted/20 border border-border/40 p-12 rounded-[3.5rem] relative overflow-hidden">
-                <div className="absolute -top-10 -right-10 opacity-5">
-                   <Brain className="w-80 h-80" />
-                </div>
-                <div className="flex items-center gap-4 mb-12">
-                  <div className="w-14 h-14 glass-card rounded-2xl flex items-center justify-center text-primary shadow-lg shadow-primary/5 border-primary/20">
-                    <ShieldCheck className="w-7 h-7" />
+        <AnimatePresence mode="wait">
+          {comparison ? (
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-24 md:space-y-32"
+            >
+              {/* AI Verdict & Radar */}
+              <div className="grid lg:grid-cols-12 gap-8 md:gap-12">
+                <div className="lg:col-span-4 mono-card p-12 rounded-[3.5rem] flex flex-col items-center justify-center bg-card">
+                  <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground-muted mb-12 self-start flex items-center gap-3">
+                    <Target className="w-4 h-4" /> Vector Analysis
+                  </h3>
+                  <div className="w-full">
+                    <RadarChart data={comparison.radarData} headers={comparison.headers} />
                   </div>
-                  <h3 className="text-3xl font-black text-foreground tracking-tight">AI Critical Verdict</h3>
                 </div>
-                
-                <div className="space-y-10 relative z-10">
-                  <div className="space-y-4">
-                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Synthesis Summary</h4>
-                    <p className="text-foreground leading-relaxed italic text-2xl font-medium">
-                      "{comparison.verdict?.summary || comparison.conclusion}"
-                    </p>
+
+                <div className="lg:col-span-8 bg-foreground text-background p-12 md:p-20 rounded-[4rem] relative overflow-hidden shadow-2xl">
+                  <div className="absolute -top-20 -right-20 opacity-[0.03] pointer-events-none">
+                    <Brain className="w-[600px] h-[600px] text-background" />
                   </div>
                   
-                  <div className="glass-card border-border/30 p-8 rounded-[2rem]">
-                    <h4 className="text-[10px] font-black text-accent uppercase tracking-[0.4em] mb-4">Research Recommendation</h4>
-                    <p className="text-muted-foreground text-base leading-relaxed font-medium">
-                      {comparison.verdict?.recommendation || "Lakukan analisis lanjutan berdasarkan perbandingan parameter di bawah."}
-                    </p>
+                  <div className="relative z-10 space-y-16">
+                    <div className="flex items-center gap-6">
+                      <div className="w-20 h-20 bg-background text-foreground rounded-3xl flex items-center justify-center border border-background/20 shadow-xl">
+                        <ShieldCheck className="w-10 h-10" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase text-background">Critical Verdict</h3>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-background/60">Sourced via {comparison.provider || 'Neural Core'}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-12">
+                      <div className="space-y-6">
+                        <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-background/60">Deep Synthesis</h4>
+                        <p className="text-2xl md:text-4xl font-medium leading-[1.2] tracking-tight text-background">
+                          {comparison.verdict?.summary || comparison.conclusion}
+                        </p>
+                      </div>
+                      
+                      <div className="bg-background/10 border border-background/20 p-10 rounded-[3rem]">
+                        <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-background/50 mb-4">Strategic Recommendation</h4>
+                        <p className="text-background text-lg md:text-xl leading-relaxed font-medium">
+                          {comparison.verdict?.recommendation}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Comparison Table */}
-            <div className="space-y-8">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <h3 className="text-2xl font-black text-foreground flex items-center gap-4">
-                  <span className="w-2 h-8 bg-primary rounded-full" />
-                  Deep Comparison Matrix
-                </h3>
-                <div className="flex gap-3">
-                   <button className="flex items-center gap-3 px-6 py-3 glass-card rounded-2xl text-[10px] font-black text-muted-foreground uppercase tracking-widest hover:bg-muted transition-all border-border/50">
-                      <Download className="w-4 h-4" /> EXPORT PDF
-                   </button>
-                   <button className="flex items-center gap-3 px-6 py-3 bg-primary/5 border border-primary/20 rounded-2xl text-[10px] font-black text-primary uppercase tracking-widest hover:bg-primary/10 transition-all">
-                      <Quote className="w-4 h-4" /> CITE ALL
-                   </button>
+              {/* Matrix Table */}
+              <div className="space-y-12">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-4">
+                  <div className="space-y-4">
+                    <h3 className="text-4xl md:text-6xl font-black tracking-tighter uppercase">Comparison Matrix</h3>
+                    <p className="text-foreground-secondary text-lg md:text-xl font-medium">Detailed breakdown of research methodologies and novelty parameters.</p>
+                  </div>
+                  <div className="flex gap-4">
+                    <button className="h-16 px-10 rounded-2xl border border-border-strong text-[10px] font-bold uppercase tracking-widest text-foreground hover:bg-foreground hover:text-background transition-all shadow-sm">
+                      Export Data
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              <div className="overflow-x-auto rounded-[3rem] border border-border/40 glass-card shadow-sm">
-                <table className="w-full text-left border-collapse table-fixed">
-                  <thead>
-                    <tr className="bg-muted/30 border-b border-border/40">
-                      {comparison.headers.map((header: string, i: number) => (
-                        <th key={i} className={cn(
-                          "p-10 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]",
-                          i === 0 ? "w-56" : ""
-                        )}>
-                          {header}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/20">
-                    {comparison.rows?.map((row: string[], i: number) => (
-                      <tr key={i} className="hover:bg-muted/10 transition-colors group">
-                        {row.map((cell, j) => (
-                          <td key={j} className={cn(
-                            "p-10 text-base leading-relaxed font-medium",
-                            j === 0 ? "text-foreground font-black bg-muted/20 w-56 border-r border-border/20" : "text-muted-foreground"
+                <div className="overflow-x-auto rounded-[3.5rem] border border-border-strong bg-card shadow-2xl">
+                  <table className="w-full text-left border-collapse min-w-[1000px]">
+                    <thead>
+                      <tr className="border-b border-border-strong">
+                        {comparison.headers.map((header: string, i: number) => (
+                          <th key={i} className={cn(
+                            "p-12 text-[10px] font-black uppercase tracking-widest text-foreground-muted",
+                            i === 0 ? "w-80 bg-muted/30" : ""
                           )}>
-                            {cell}
-                          </td>
+                            {header}
+                          </th>
                         ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {comparison.rows?.map((row: string[], i: number) => (
+                        <tr key={i} className="group hover:bg-muted/10 transition-colors">
+                          {row.map((cell, j) => (
+                            <td key={j} className={cn(
+                              "p-12 text-lg font-medium leading-relaxed",
+                              j === 0 ? "bg-muted/30 font-extrabold text-foreground w-80 tracking-tighter uppercase" : "text-foreground-secondary group-hover:text-foreground transition-colors"
+                            )}>
+                              {cell}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-
-            {/* Research Gap Banner */}
-            <div className="glass-card bg-emerald-500/[0.03] border-emerald-500/20 p-10 rounded-[3rem] flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="flex items-center gap-6">
-                 <div className="w-16 h-16 bg-emerald-500/10 rounded-[1.5rem] flex items-center justify-center border border-emerald-500/20">
-                    <Zap className="w-7 h-7 text-emerald-500/80" />
-                 </div>
-                 <div>
-                    <h4 className="text-foreground text-xl font-black tracking-tight">Temukan Peluang Riset Baru?</h4>
-                    <p className="text-muted-foreground font-medium">Berdasarkan celah (gap) yang ditemukan, Anda bisa mengeksplorasi variabel yang belum tersentuh.</p>
-                 </div>
-              </div>
-              <button className="bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-500 px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center gap-3">
-                 START NEW RESEARCH <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        ) : (
-          <AnimatePresence>
+            </motion.div>
+          ) : (
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="py-48 text-center space-y-10 glass-card rounded-[4rem] border border-dashed border-border/60 relative overflow-hidden"
+              className="py-40 text-center space-y-12 mono-card rounded-[4rem] border-dashed border-border-strong bg-card flex flex-col items-center"
             >
-              <div className="w-28 h-28 bg-muted/50 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 relative">
-                <Scale className="w-12 h-12 text-muted-foreground/30" />
-                <div className="absolute inset-0 border-2 border-primary/10 rounded-[2.5rem] animate-ping" />
+              <div className="w-32 h-32 bg-muted rounded-[3rem] flex items-center justify-center relative group">
+                <Scale className="w-14 h-14 text-foreground/20 group-hover:scale-110 transition-all duration-500" />
+                <div className="absolute inset-0 border-2 border-foreground/10 rounded-[3rem] animate-ping opacity-20" />
               </div>
-              <div className="space-y-4">
-                <h2 className="text-3xl font-black text-foreground tracking-tight">Ready to Bridge the Knowledge Gap?</h2>
-                <p className="text-muted-foreground max-w-sm mx-auto font-medium text-lg">
-                  Klik tombol <span className="text-primary font-black uppercase text-[10px] tracking-[0.2em] px-2 py-1 bg-primary/5 border border-primary/10 rounded-md">Start AI Analysis</span> untuk membedah perbedaan metodologi & temuan riset.
+              <div className="space-y-6 px-6">
+                <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase">Ready for Neural Synthesis?</h2>
+                <p className="text-foreground-secondary max-w-lg mx-auto font-medium text-xl leading-relaxed">
+                  Select papers above and initiate the deep analysis engine to uncover cross-disciplinary research patterns.
                 </p>
+                <div className="pt-6">
+                  <button 
+                    onClick={handleCompare}
+                    className="text-[10px] font-bold uppercase tracking-widest px-12 py-6 bg-foreground text-background rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl"
+                  >
+                    Quick Analysis Start
+                  </button>
+                </div>
               </div>
             </motion.div>
-          </AnimatePresence>
-        )}
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -417,7 +399,10 @@ export default function ComparePage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-10 h-10 text-foreground animate-spin" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-foreground animate-spin opacity-20" />
+          <span className="text-[10px] font-bold tracking-widest uppercase opacity-40">Loading Core...</span>
+        </div>
       </div>
     }>
       <CompareContent />

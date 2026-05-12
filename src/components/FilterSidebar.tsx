@@ -37,25 +37,27 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 }
 
 // ─── Section wrapper with collapsible support ───────────────
-function FilterSection({ title, icon: Icon, children, defaultOpen = true }: {
+function FilterSection({ title, icon: Icon, children, defaultOpen = true, action }: {
   title: string;
   icon: any;
   children: React.ReactNode;
   defaultOpen?: boolean;
+  action?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <section className="border border-border rounded-2xl overflow-hidden">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-      >
-        <span className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-          <Icon className="w-3.5 h-3.5 text-primary" />
+      <div className="flex items-center justify-between p-4 bg-muted/5">
+        <button
+          onClick={() => setOpen(!open)}
+          className="flex flex-1 items-center gap-2 text-[11px] font-black text-card-foreground/50 uppercase tracking-[0.15em] hover:text-card-foreground transition-colors"
+        >
+          <Icon className="w-4 h-4" />
           {title}
-        </span>
-        {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-      </button>
+          {open ? <ChevronUp className="w-3 h-3 opacity-30 ml-auto" /> : <ChevronDown className="w-3 h-3 opacity-30 ml-auto" />}
+        </button>
+        {action && <div className="ml-2">{action}</div>}
+      </div>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
@@ -105,7 +107,7 @@ function PillSelector<T extends string>({
               "px-3 py-1.5 rounded-full text-xs font-bold transition-all border",
               isSelected
                 ? "bg-foreground text-background border-foreground shadow-md shadow-foreground/25"
-                : "bg-muted border-border text-muted-foreground hover:border-foreground/50 hover:text-foreground"
+                : "bg-muted/10 border-border/50 text-card-foreground/50 hover:border-card-foreground/50 hover:text-card-foreground"
             )}
           >
             {opt.label}
@@ -141,7 +143,7 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
     local.minRelevanceScore && local.minRelevanceScore > 0,
   ].filter(Boolean).length;
 
-  const selectClass = "w-full rounded-xl px-3 py-2 text-sm font-black focus:ring-2 focus:ring-primary outline-none transition-all border border-border appearance-none cursor-pointer bg-foreground text-background";
+  const selectClass = "w-full rounded-xl px-3 py-2 text-sm font-black focus:ring-2 focus:ring-primary outline-none transition-all border border-border appearance-none cursor-pointer bg-muted/20 text-card-foreground";
 
   return (
     <AnimatePresence>
@@ -153,7 +155,7 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150]"
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[100]"
           />
 
           {/* Sidebar */}
@@ -161,22 +163,22 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-card border-l border-border z-[160] shadow-2xl flex flex-col"
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-y-0 right-0 w-full sm:w-[450px] glass-card !rounded-none !border-y-0 !border-r-0 border-l border-border shadow-2xl z-[101] flex flex-col"
           >
             {/* Header */}
-            <div className="p-5 border-b border-border flex items-center justify-between bg-card/80 backdrop-blur-md">
+            <div className="p-6 border-b border-border flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-black text-foreground">Filter Cerdas</h2>
+                  <h2 className="text-xl font-black text-card-foreground">Filter Cerdas</h2>
                   {activeCount > 0 && (
-                    <span className="bg-foreground text-background text-[10px] font-black px-2 py-0.5 rounded-full">
-                      {activeCount} aktif
+                    <span className="bg-card-foreground text-card text-[10px] font-black px-2.5 py-1 rounded-full">
+                      {activeCount} AKTIF
                     </span>
                   )}
                 </div>
-                <p className="text-muted-foreground text-xs font-medium mt-0.5">
-                  {resultCount !== undefined ? `${resultCount} karya ditemukan` : 'Saring dengan AI'}
+                <p className="text-card-foreground/40 text-xs font-bold mt-1 uppercase tracking-widest">
+                  {resultCount !== undefined ? `${resultCount} KARYA DITEMUKAN` : 'Saring dengan AI'}
                 </p>
               </div>
               <button
@@ -211,10 +213,10 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
                     <select
                       value={local.yearStart || 1990}
                       onChange={e => set({ yearStart: parseInt(e.target.value) })}
-                      className={selectClass}
+                      className={cn(selectClass, "bg-background text-foreground")}
                     >
-                      <option value={1900}>Semua</option>
-                      {years.map(y => <option key={y} value={y}>{y}</option>)}
+                      <option value={1900} className="bg-background text-foreground">Semua</option>
+                      {years.map(y => <option key={y} value={y} className="bg-background text-foreground">{y}</option>)}
                     </select>
                   </div>
                   <div className="space-y-1">
@@ -222,17 +224,37 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
                     <select
                       value={local.yearEnd || currentYear}
                       onChange={e => set({ yearEnd: parseInt(e.target.value) })}
-                      className={selectClass}
+                      className={cn(selectClass, "bg-background text-foreground")}
                     >
-                      <option value={currentYear}>Sekarang</option>
-                      {years.map(y => <option key={y} value={y}>{y}</option>)}
+                      <option value={currentYear} className="bg-background text-foreground">Sekarang</option>
+                      {years.map(y => <option key={y} value={y} className="bg-background text-foreground">{y}</option>)}
                     </select>
                   </div>
                 </div>
               </FilterSection>
 
               {/* Source Provider */}
-              <FilterSection title="Sumber Database" icon={Database}>
+              <FilterSection 
+                title="Sumber Database" 
+                icon={Database}
+                action={
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const allSources: JournalSource[] = ['openalex', 'semantic', 'crossref', 'core', 'arxiv' as any, 'pubmed' as any, 'doaj' as any, 'zenodo' as any];
+                      const currentCount = local.sources?.length || 0;
+                      if (currentCount === allSources.length) {
+                        set({ sources: [] });
+                      } else {
+                        set({ sources: allSources });
+                      }
+                    }}
+                    className="text-[9px] font-black text-primary bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded-md uppercase tracking-wider transition-all"
+                  >
+                    {(local.sources?.length || 0) === 8 ? 'Hapus Semua' : 'Pilih Semua'}
+                  </button>
+                }
+              >
                 <PillSelector<JournalSource>
                   options={[
                     { value: 'openalex', label: 'OpenAlex' },
@@ -254,11 +276,11 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
               <FilterSection title="Akses & Tipe" icon={BookOpen}>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between py-2">
-                    <span className="text-sm font-semibold text-foreground">Open Access Saja</span>
+                    <span className="text-sm font-semibold text-card-foreground/80">Open Access Saja</span>
                     <Toggle checked={!!local.openAccess} onChange={() => set({ openAccess: !local.openAccess })} />
                   </div>
-                  <div className="flex items-center justify-between py-2 border-t border-border">
-                    <span className="text-sm font-semibold text-foreground">Ada PDF</span>
+                  <div className="flex items-center justify-between py-2 border-t border-border/50">
+                    <span className="text-sm font-semibold text-card-foreground/80">Ada PDF</span>
                     <Toggle checked={!!local.hasPdf} onChange={() => set({ hasPdf: !local.hasPdf })} />
                   </div>
                 </div>
@@ -389,16 +411,16 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
                     onReset();
                     setLocal({});
                   }}
-                  className="px-4 py-3 bg-muted hover:bg-muted/80 text-foreground rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-border"
+                  className="px-4 py-3 bg-card-foreground/5 hover:bg-card-foreground/10 text-card-foreground/60 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-border/50"
                 >
                   Reset Semua
                 </button>
                 <button
                   onClick={() => { onApply(local); onClose(); }}
-                  className="px-4 py-3 bg-foreground text-background hover:opacity-90 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-foreground/20 relative overflow-hidden"
+                  className="px-4 py-3 bg-card-foreground text-card hover:opacity-90 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-white/5 relative overflow-hidden"
                 >
                   {activeCount > 0 && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-background/80 rounded-full animate-pulse" />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-card/50 rounded-full animate-pulse" />
                   )}
                   Terapkan{activeCount > 0 ? ` (${activeCount})` : ''}
                 </button>

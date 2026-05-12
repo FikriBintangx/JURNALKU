@@ -1,58 +1,73 @@
 @import "tailwindcss";
 
 :root {
-  /* MONOCHROME LIGHT MODE */
-  --background: #ffffff;
-  --foreground: #000000;
+  /* STRICT MONOCHROME LIGHT */
+  --background: #FFFFFF;
+  --background-secondary: #FAFAFA;
+  --foreground: #050505;
+  --foreground-secondary: rgba(0, 0, 0, 0.72);
+  --foreground-muted: rgba(0, 0, 0, 0.45);
   
-  --primary: #000000;
-  --primary-foreground: #ffffff;
+  --primary: #050505;
+  --primary-foreground: #FFFFFF;
   
-  --card: #000000;
-  --card-foreground: #ffffff;
+  --card: #FFFFFF;
+  --card-foreground: #050505;
   
-  --muted: 0 0% 92%;
-  --muted-foreground: 0 0% 40%;
-  --accent: 0 0% 96%;
-  --accent-foreground: 0 0% 0%;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.12);
   
-  --border: #e4e4e7;
-  --input: #e4e4e7;
+  --muted: #F5F5F5;
+  --muted-foreground: rgba(0, 0, 0, 0.45);
   
-  --radius: 1.5rem;
-  --radius-xl: 2rem;
-  --radius-2xl: 2.5rem;
+  --radius: 0.75rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 2rem;
+  --radius-full: 9999px;
+
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 12px 40px -10px rgba(0, 0, 0, 0.08);
 }
 
 .dark {
-  /* MONOCHROME DARK MODE - COMPLETE INVERSE */
-  --background: #000000;
-  --foreground: #ffffff;
+  /* STRICT DEEP BLACK DARK MODE */
+  --background: #050505;
+  --background-secondary: #0A0A0A;
   
-  --primary: #ffffff;
+  --foreground: #FFFFFF;
+  --foreground-secondary: rgba(255, 255, 255, 0.72);
+  --foreground-muted: rgba(255, 255, 255, 0.45);
+  
+  --primary: #FFFFFF;
   --primary-foreground: #000000;
   
-  --card: #ffffff;
-  --card-foreground: #000000;
+  --card: #0A0A0A;
+  --card-foreground: #FFFFFF;
   
-  --muted: #18181b;
-  --muted-foreground: #a1a1aa;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
   
-  --border: #27272a;
-  --input: #27272a;
+  --muted: #111111;
+  --muted-foreground: rgba(255, 255, 255, 0.45);
+
+  --shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 20px 50px -12px rgba(0, 0, 0, 0.8);
 }
 
 @theme {
   --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
   --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  
   --font-sans: var(--font-jakarta), var(--font-geist-sans), 'Inter', system-ui, sans-serif;
 }
 
@@ -61,62 +76,85 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
-    transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    line-height: 1.5;
   }
   
-  h1, h2, h3, h4, h5, h6 {
+  h1, h2, h3, h4 {
     letter-spacing: -0.04em;
     font-weight: 800;
+    line-height: 1.1;
+    color: var(--foreground);
+  }
+
+  p {
+    color: var(--foreground-secondary);
+    line-height: 1.6;
   }
 }
+
+/* SOLID COMPONENT SYSTEM */
 
 @utility mono-card {
   background-color: var(--card);
   color: var(--card-foreground);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-}
+  border-radius: var(--radius-2xl);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow);
 
-@utility mono-card-hover {
   &:hover {
-    transform: translateY(-8px) scale(1.01);
-    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.15);
-  }
-
-  .dark &:hover {
-    box-shadow: 0 40px 80px -20px rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-strong);
   }
 }
 
 @utility glass-nav {
-  background-color: color-mix(in srgb, var(--background) 70%, transparent);
-  backdrop-filter: blur(20px);
+  background-color: color-mix(in srgb, var(--background) 90%, transparent);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
 }
 
-@utility mono-button {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border-radius: var(--radius);
+@utility glass-card {
+  background-color: color-mix(in srgb, var(--card) 85%, transparent);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+}
+
+@utility btn-primary {
+  background-color: var(--foreground);
+  color: var(--background);
   font-weight: 700;
-  transition: all 0.3s ease;
-  display: flex;
-  items-center: center;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.85rem 1.75rem;
+  border-radius: var(--radius-full);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
   gap: 0.5rem;
+
+  &:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+    background-color: #111111;
+    .dark & { background-color: #FAFAFA; }
+  }
 }
 
-@utility mono-button-hover {
-  &:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px -5px rgba(var(--primary), 0.3);
-  }
-  &:active {
-    transform: translateY(0) scale(0.95);
-  }
+@utility label-caps {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--foreground-muted);
 }
 
 /* Custom Scrollbar */

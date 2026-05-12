@@ -17,6 +17,14 @@ export interface AIEnrichment {
   enrichedAt: number;
 }
 
+export interface ResearchIntelligence {
+  intent: 'exploratory' | 'methodological' | 'review' | 'comparative' | 'generic';
+  domains: string[];
+  keywords: string[];
+  questions: string[];
+  summary?: string;
+}
+
 export interface UniversalPaperEnriched {
   id: string;
   paperId: string;
@@ -37,6 +45,10 @@ export interface UniversalPaperEnriched {
   relevanceScore: number;
   embedding?: number[];
   aiEnrichment?: AIEnrichment;
+  trendScore?: number;
+  isTrending?: boolean;
+  isNew?: boolean;     // Published current year or last year
+  isRising?: boolean;  // High citation velocity + recent (≤5 yrs)
 }
 
 export interface SearchFilters {
@@ -62,4 +74,5 @@ export interface SearchResponse {
   success?: boolean;
   error?: boolean;
   message?: string;
+  intelligence?: ResearchIntelligence;
 }

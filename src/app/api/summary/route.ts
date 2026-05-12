@@ -10,30 +10,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, fallback: true, message: "Paper ID diperlukan.", data: null });
     }
 
-    const prompt = `Bertindaklah sebagai Senior Research Consultant. Buat ringkasan eksekutif dari jurnal akademik ini.
+    const prompt = `Buat ringkasan jurnal akademik ini dalam Bahasa Indonesia yang formal dan akademik.
 
-Struktur Output (Markdown):
+Struktur ringkasan:
 
-### 🎯 Tujuan & Masalah
-Identifikasi masalah utama yang melatarbelakangi penelitian ini dan tujuan spesifik yang ingin dicapai. (2-3 kalimat padat)
+## Tujuan Penelitian
+Apa masalah yang ingin dipecahkan? (2-3 kalimat)
 
-### 🔬 Metodologi & Pendekatan
-Jelaskan desain penelitian, sampel, dan instrumen yang digunakan secara teknis namun mudah dipahami. (2-3 kalimat)
+## Metodologi
+Pendekatan dan metode yang digunakan peneliti. (2-3 kalimat)
 
-### 💡 Temuan Utama & Kesimpulan
-Ringkas hasil terpenting dan apa makna dari temuan tersebut bagi bidang ilmu terkait. (3-4 kalimat)
+## Temuan Utama
+Hasil atau kesimpulan terpenting dari penelitian ini. (3-4 kalimat)
 
-### 🚀 Kontribusi & Dampak
-Apa kebaruan (novelty) dari penelitian ini dibandingkan riset terdahulu? (2 kalimat)
+## Kontribusi
+Kontribusi penelitian ini terhadap ilmu pengetahuan. (1-2 kalimat)
 
-### 🌍 Implikasi Praktis
-Bagaimana praktisi atau masyarakat umum dapat menggunakan hasil penelitian ini? (2 kalimat)
+## Implikasi Praktis
+Bagaimana hasil penelitian bisa diterapkan di dunia nyata. (1-2 kalimat)
 
-INSTRUKSI PENTING:
-- Gunakan Bahasa Indonesia formal (EYD).
-- Maksimal 300 kata.
-- Jangan gunakan kata-kata klise seperti "Penelitian ini..." di setiap awal paragraf.
-- Fokus pada substansi ilmiah.`;
+PENTING: Maksimal 250 kata total. Gunakan bahasa formal dan akademik.`;
 
     const result = await geminiService.generateAI({ paperId, type: 'summary', prompt, abstract, title, model });
 

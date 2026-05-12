@@ -57,10 +57,6 @@ interface KeyState {
   lastUsed?: number;
 }
 
-import { sendTelegramAlert } from "./telegramService";
-
-// ... (classifyAIError remains same)
-
 class AIKeyManager {
   private keys: KeyState[] = [];
   private static instance: AIKeyManager;
@@ -78,24 +74,30 @@ class AIKeyManager {
   }
 
   private initKeys() {
-    this.keys = [];
-    for (let i = 1; i <= 5; i++) {
+    const keyList: { key: string; id: number }[] = [];
+    for (let i = 1; i <= 20; i++) {
       const key = process.env[`GEMINI_API_KEY_${i}`];
-      if (key && key.trim()) {
-        this.keys.push({
-          key: key.trim(),
-          projectId: i,
-          active: true,
-          healthy: true,
-          totalRequests: 0,
-          totalFailures: 0,
-          totalSuccess: 0,
-          rateLimitCount: 0,
-          networkFailCount: 0,
-        });
+      if (key && key.trim() && key.trim() !== 'your_key_here') {
+        keyList.push({ key: key.trim(), id: i });
       }
     }
-    console.log(`[KEY MANAGER] Initialized with ${this.keys.length} keys.`);
+
+    this.keys = keyList.map((item) => ({
+      key: item.key,
+      projectId: item.id,
+      active: true,
+      healthy: true,
+      totalRequests: 0,
+      totalFailures: 0,
+      totalSuccess: 0,
+      rateLimitCount: 0,
+      networkFailCount: 0,
+    }));
+
+    console.log(`[KEY ROTATION] Initialized with ${this.keys.length} active keys.`);
+    if (this.keys.length === 0) {
+      console.error('[KEY ROTATION] WARNING: No valid GEMINI_API_KEY_* found in environment!');
+    }
   }
 
   public getBestKey(): string | null {
@@ -118,13 +120,7 @@ class AIKeyManager {
 
     const healthyKeys = this.keys.filter((k) => k.active && k.healthy);
 
-    if (healthyKeys.length === 0 && this.keys.length > 0) {
-      // 🚨 EMERGENCY: ALL KEYS DOWN
-      sendTelegramAlert(
-        `🚨 *EMERGENCY: ALL API KEYS EXHAUSTED!*\n\nSemua ${this.keys.length} kunci AI sedang dalam masa cooldown (Rate Limited). Trafik sangat tinggi! Segera tambah kunci baru di .env.`,
-        'emergency_all_down'
-      );
-
+    if (healthyKeys.length === 0) {
       // All keys in cooldown — force pick the one with soonest recovery
       const soonest = this.keys
         .filter((k) => k.active)
@@ -167,24 +163,17 @@ class AIKeyManager {
     if (isRateLimit) {
       keyState.rateLimitCount++;
       keyState.healthy = false;
-      const cooldownMs = 3 * 60 * 1000; // 3 minutes
+      const cooldownMs = 3 * 60 * 1000; // 3 minutes as requested
       keyState.cooldownUntil = Date.now() + cooldownMs;
       console.error(`[KEY ROTATION] [RATE LIMIT] Project ${keyState.projectId} — cooldown 3 minutes.`);
-
-      // ⚠️ WARNING: KEY RATE LIMITED
-      const healthyLeft = this.getHealthyCount();
-      sendTelegramAlert(
-        `⚠️ *API Key Rate Limited!*\n\nProject ID: ${keyState.projectId}\nKey: \`${this.maskKey(keyState.key)}\`\n\nSisa kunci sehat: *${healthyLeft}*`,
-        `rate_limit_${keyState.projectId}`
-      );
     } else {
-      // Network/transient error
+      // Network/transient error — short cooldown after 3 consecutive failures
       keyState.networkFailCount = (keyState.networkFailCount || 0) + 1;
       if (keyState.networkFailCount >= 3) {
         keyState.healthy = false;
         keyState.cooldownUntil = Date.now() + (60 * 1000); // 1 minute
         keyState.networkFailCount = 0;
-        console.warn(`[KEY ROTATION] [NETWORK] Project ${keyState.projectId} — cooldown 1 minute.`);
+        console.warn(`[KEY ROTATION] [NETWORK] Project ${keyState.projectId} — cooldown 1 minute (3 consecutive failures).`);
       }
     }
   }

@@ -28,13 +28,21 @@ export async function sendTelegramAlert(message: string, alertType: string = 'ge
   }
 
   try {
+    const isCritical = alertType.includes('exhausted') || alertType.includes('quota') || alertType.includes('critical');
+    
     const response = await fetch(`${TELEGRAM_API_URL}${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: chatId,
-        text: `⚠️ [JURNALSTAR ALERT]\n\n${message}\n\n🕒 ${new Date().toLocaleString('id-ID')}`,
+        text: `⚠️ *[JURNALSTAR ALERT]*\n\n${message}\n\n🕒 ${new Date().toLocaleString('id-ID')}`,
         parse_mode: 'Markdown',
+        reply_markup: isCritical ? {
+          inline_keyboard: [
+            [{ text: '🔑 Generate Google API Key Baru', url: 'https://aistudio.google.com/app/apikey' }],
+            [{ text: '⚙️ Buka Panel Admin (Inject API)', url: 'http://localhost:3000/admin' }]
+          ]
+        } : undefined
       }),
     });
 

@@ -26,61 +26,61 @@ interface AIJournalAnalysisProps {
 export const AIJournalAnalysis = ({ paperId, abstract, title }: AIJournalAnalysisProps) => {
   const features = [
     {
-      title: "AI Summarizer",
+      title: "Ringkasan AI",
       description: "Ringkasan jurnal menjadi bahasa yang mudah dipahami.",
       icon: FileText,
       endpoint: "/api/summary",
     },
     {
-      title: "Research Gap Analyzer",
+      title: "Analisis Celah Penelitian",
       description: "Temukan celah penelitian dan peluang baru dari jurnal ini.",
       icon: Search,
       endpoint: "/api/research-gap",
     },
     {
-      title: "Keyword Optimizer",
+      title: "Optimasi Kata Kunci",
       description: "Optimalkan keyword untuk pencarian jurnal internasional.",
       icon: TrendingUp,
       endpoint: "/api/keywords",
     },
     {
-      title: "Smart Title Generator",
+      title: "Pembuat Judul Pintar",
       description: "Buat 5 judul penelitian modern berdasarkan topik ini.",
       icon: Type,
       endpoint: "/api/title-generator",
     },
     {
-      title: "Future Research Ideas",
+      title: "Ide Riset Masa Depan",
       description: "Ide pengembangan dan aplikasi praktis dari penelitian ini.",
       icon: Lightbulb,
       endpoint: "/api/future-research",
     },
     {
-      title: "Simple Explainer",
+      title: "Penjelasan Sederhana",
       description: "Penjelasan isi jurnal dengan gaya ELI5 (Anak 5 tahun).",
       icon: UserCircle,
       endpoint: "/api/explainer",
     },
     {
-      title: "Auto Tag Generator",
+      title: "Pembuat Tag Otomatis",
       description: "Generate hashtag dan tag otomatis yang relevan.",
       icon: Tags,
       endpoint: "/api/tags",
     },
     {
-      title: "AI Citation Helper",
+      title: "Asisten Sitasi AI",
       description: "Generate sitasi APA, MLA, dan IEEE secara otomatis.",
       icon: Quote,
       endpoint: "/api/citation",
     },
     {
-      title: "AI Study Recommendation",
+      title: "Rekomendasi Studi AI",
       description: "Rekomendasi topik dan jurnal terkait untuk dipelajari.",
       icon: BookOpen,
       endpoint: "/api/recommendations",
     },
     {
-      title: "Real-time Web Research",
+      title: "Riset Web Real-time",
       description: "Hubungkan topik jurnal dengan tren & berita dunia nyata terbaru.",
       icon: Globe,
       endpoint: "/api/web-research",
@@ -95,7 +95,7 @@ export const AIJournalAnalysis = ({ paperId, abstract, title }: AIJournalAnalysi
             <Brain size={24} />
           </div>
           <div>
-            <h2 className="text-lg font-black text-foreground tracking-tight leading-none mb-1">AI Research Laboratory</h2>
+            <h2 className="text-lg font-black text-foreground tracking-tight leading-none mb-1">Laboratorium Riset AI</h2>
             <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Pilih model intelijen untuk analisis mendalam</p>
           </div>
         </div>
@@ -115,7 +115,7 @@ export const AIJournalAnalysis = ({ paperId, abstract, title }: AIJournalAnalysi
         
         {/* Comparison is separate since it might need more UI for picking multiple papers */}
         <AIFeatureCard
-          title="AI Comparison Insight"
+          title="Insight Perbandingan AI"
           description="Bandingkan jurnal ini dengan penelitian serupa lainnya."
           icon={BarChart2}
           endpoint="/api/comparison"

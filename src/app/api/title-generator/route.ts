@@ -3,7 +3,7 @@ import { geminiService } from '@/services/geminiService';
 
 export async function POST(request: Request) {
   try {
-    const { paperId, abstract, title } = await request.json();
+    const { paperId, abstract, title, model } = await request.json();
     const prompt = `Berdasarkan isi jurnal ini, buatkan 5 saran judul penelitian baru yang lebih modern, menarik, dan berpotensi tembus jurnal internasional.`;
 
     const result = await geminiService.generateAI({
@@ -11,7 +11,8 @@ export async function POST(request: Request) {
       type: 'title-generator',
       prompt,
       abstract,
-      title
+      title,
+      model
     });
 
     return NextResponse.json(result);

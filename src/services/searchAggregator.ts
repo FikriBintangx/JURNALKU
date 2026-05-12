@@ -4,14 +4,15 @@ import { fetchPubMed } from './providers/pubmedProvider';
 import { fetchDOAJ } from './providers/doajProvider';
 import { fetchZenodo } from './providers/zenodoProvider';
 import type { UniversalPaperEnriched } from '@/types/search';
+import { intelligenceService, ResearchIntelligence } from './intelligenceService';
 
 // Re-export for compatibility with existing imports
 export type UniversalPaper = UniversalPaperEnriched;
 
-const FETCH_TIMEOUT = 10000;
+const FETCH_TIMEOUT = 7000;
 
 // ─────────────────────────────────────────────────────────────
-// Query expander — when results are sparse
+// Query expansions — when results are sparse
 // ─────────────────────────────────────────────────────────────
 const QUERY_EXPANSIONS: Record<string, string[]> = {
   'tiktok shop': ['social commerce', 'e-commerce behavior', 'online shopping'],
@@ -42,6 +43,14 @@ export const searchAggregator = {
     return query.split(/\s+/).filter(w => w.length > 2).slice(0, 3).join(' ');
   },
 
+  detectDOI(query: string): string | null {
+    if (!query) return null;
+    // Regex for DOI (Standard: 10.xxxx/yyyy)
+    const doiRegex = /(10\.\d{4,9}\/[-._;()/:A-Z0-9]+)/i;
+    const match = query.match(doiRegex);
+    return match ? match[1] : null;
+  },
+
   expandQuery(query: string): string[] {
     const lower = query.toLowerCase();
     for (const [key, expansions] of Object.entries(QUERY_EXPANSIONS)) {
@@ -55,69 +64,86 @@ export const searchAggregator = {
 
   /**
    * Main search entry point — runs all 8 providers in parallel.
-   * Auto-retries with simplified/expanded queries if results are sparse.
-   * Never throws.
+   * Auto-retries with AI-driven expansions if results are sparse.
    */
-  async search(rawQuery: string, limit: number = 20): Promise<UniversalPaperEnriched[]> {
+  async search(rawQuery: string, limit: number = 20, filters?: any): Promise<{ results: UniversalPaperEnriched[], intelligence?: ResearchIntelligence }> {
     const query = this.sanitizeQuery(rawQuery);
     if (!query) {
       console.warn("[SEARCH] Empty query.");
-      return [];
+      return { results: [] };
     }
 
     const t0 = Date.now();
-    console.log(`[SEARCH] Starting 8-provider search: "${query}"`);
+    console.log(`[INTELLIGENCE] Initializing Research Engine: "${query}"`);
 
-    let papers = await this.runParallelFetch(query, limit);
+    // Detect if it's a DOI search
+    const doi = this.detectDOI(query);
+    if (doi) {
+      console.log(`[INTELLIGENCE] DOI detected: ${doi}. Performing targeted lookup.`);
+      // If DOI, we only need targeted fetch from Crossref/OpenAlex/Semantic
+      const results = await Promise.allSettled([
+        this.fetchCrossref(doi, 1, filters),
+        this.fetchOpenAlex(doi, 1, filters),
+        this.fetchSemanticScholar(doi, 1, filters)
+      ]);
+      
+      const papers: UniversalPaperEnriched[] = [];
+      results.forEach(res => {
+        if (res.status === 'fulfilled' && Array.isArray(res.value)) {
+          papers.push(...res.value);
+        }
+      });
 
-    // Auto-retry with simplified query if sparse
-    if (papers.length < 5 && query.split(/\s+/).length > 3) {
-      const simplified = this.simplifyQuery(query);
-      if (simplified && simplified !== query) {
-        console.log(`[SEARCH] Sparse results (${papers.length}). Retry with simplified: "${simplified}"`);
-        const extra = await this.runParallelFetch(simplified, limit);
-        papers = this.deduplicate([...papers, ...extra]);
+      if (papers.length > 0) {
+        const final = this.deduplicate(papers);
+        return { results: final };
       }
+      // If DOI lookup fails, fallback to normal search
     }
 
-    // Auto-retry with expanded query if still sparse
+    // 1. Parallel Intelligence & Initial Fetch
+    const [queryIntel, initialPapers] = await Promise.all([
+      intelligenceService.analyzeQuery(query),
+      this.runParallelFetch(query, limit, filters)
+    ]);
+
+    let papers = initialPapers;
+
+    console.log(`[INTELLIGENCE] Intent: ${queryIntel.intent}, Domains: ${queryIntel.domains.join(', ')}`);
+
+    // 2. Semantic Expansion (AI-Driven)
+    if (papers.length < 10 && queryIntel.keywords.length > 0) {
+      const expansionQuery = queryIntel.keywords.slice(0, 2).join(' ');
+      console.log(`[INTELLIGENCE] Sparse results. Triggering semantic expansion: "${expansionQuery}"`);
+      const extra = await this.runParallelFetch(expansionQuery, limit, filters);
+      papers = this.deduplicate([...papers, ...extra]);
+    }
+
+    // 3. Fallback to basic expansion if still sparse
     if (papers.length < 5) {
-      const expansions = this.expandQuery(query);
-      if (expansions.length > 0) {
-        console.log(`[SEARCH] Still sparse. Trying expansion: "${expansions[0]}"`);
-        const extra = await this.runParallelFetch(expansions[0], limit);
+      const basicExpansions = this.expandQuery(query);
+      if (basicExpansions.length > 0) {
+        const extra = await this.runParallelFetch(basicExpansions[0], limit, filters);
         papers = this.deduplicate([...papers, ...extra]);
       }
     }
 
-    const ranked = this.rankResults(papers, query);
+    // 4. Advanced Intelligence Ranking (ARIS)
+    const ranked = this.rankResults(papers, query, queryIntel);
     const final = ranked.slice(0, limit);
 
-    console.log(`[SEARCH] Done: ${papers.length} raw → ${ranked.length} unique → ${final.length} returned in ${Date.now() - t0}ms`);
-    return final;
+    console.log(`[INTELLIGENCE] Pipeline Complete: ${papers.length} raw → ${ranked.length} unique → ${final.length} returned in ${Date.now() - t0}ms`);
+    return { results: final, intelligence: queryIntel };
   },
 
-  /**
-   * Runs all 8 providers in parallel using Promise.allSettled.
-   * Individual failures never crash the pipeline.
-   *
-   * Priority tiers:
-   * - PRIMARY (always run): OpenAlex, CORE, Crossref
-   * - SECONDARY (always run): Semantic Scholar, arXiv, PubMed
-   * - OPTIONAL (run if needed): DOAJ, Zenodo
-   */
-  async runParallelFetch(query: string, limit: number): Promise<UniversalPaperEnriched[]> {
+  async runParallelFetch(query: string, limit: number, filters?: any): Promise<UniversalPaperEnriched[]> {
     const perSource = Math.ceil(limit / 3);
 
-    const [
-      openAlex, core, crossref,       // PRIMARY
-      semantic, arxiv, pubmed,        // SECONDARY
-      doaj, zenodo                    // OPTIONAL
-    ] = await Promise.allSettled([
-      this.fetchOpenAlex(query, perSource),
-      this.fetchCORE(query, perSource),
-      this.fetchCrossref(query, perSource),
-      this.fetchSemanticScholar(query, perSource),
+    const results = await Promise.allSettled([
+      this.fetchOpenAlex(query, perSource, filters),
+      this.fetchCORE(query, perSource, filters),
+      this.fetchCrossref(query, perSource, filters),
+      this.fetchSemanticScholar(query, perSource, filters),
       fetchArxiv(query, perSource),
       fetchPubMed(query, Math.ceil(perSource / 2)),
       fetchDOAJ(query, Math.ceil(perSource / 2)),
@@ -125,7 +151,6 @@ export const searchAggregator = {
     ]);
 
     const providerNames = ['OpenAlex', 'CORE', 'Crossref', 'Semantic Scholar', 'arXiv', 'PubMed', 'DOAJ', 'Zenodo'];
-    const results = [openAlex, core, crossref, semantic, arxiv, pubmed, doaj, zenodo];
     const papers: UniversalPaperEnriched[] = [];
 
     results.forEach((result, i) => {
@@ -142,13 +167,7 @@ export const searchAggregator = {
   },
 
   isValidPaper(paper: any): boolean {
-    return !!(
-      paper &&
-      paper.id &&
-      paper.title &&
-      typeof paper.title === 'string' &&
-      paper.title.trim().length > 3
-    );
+    return !!(paper && paper.id && paper.title && typeof paper.title === 'string' && paper.title.trim().length > 3);
   },
 
   deduplicate(papers: UniversalPaperEnriched[]): UniversalPaperEnriched[] {
@@ -169,62 +188,98 @@ export const searchAggregator = {
     });
   },
 
-  rankResults(papers: UniversalPaperEnriched[], query: string): UniversalPaperEnriched[] {
+  rankResults(papers: UniversalPaperEnriched[], query: string, queryIntel?: ResearchIntelligence): UniversalPaperEnriched[] {
     const deduped = this.deduplicate(papers);
     const currentYear = new Date().getFullYear();
     const queryTerms = query.toLowerCase().split(/\s+/).filter(t => t.length > 2);
     const maxCitations = Math.max(...deduped.map(p => p.citations || 0), 1);
 
-    // Source priority boosts
     const sourcePriority: Record<string, number> = {
       openalex: 5, crossref: 4, semantic: 4, core: 3,
       pubmed: 3, arxiv: 3, doaj: 2, zenodo: 2,
     };
 
     return deduped.map(paper => {
-      const titleLower = (paper.title || '').toLowerCase();
+      const titleLower  = (paper.title    || '').toLowerCase();
       const abstractLower = (paper.abstract || '').toLowerCase();
+      const paperYear   = paper.year || (currentYear - 10);
+      const age         = Math.max(0, currentYear - paperYear);
+      const citations   = paper.citations || 0;
 
-      // 40% keyword relevance (title weighted 2x abstract)
-      const titleMatches = queryTerms.filter(t => titleLower.includes(t)).length;
+      // ── 1. Keyword Relevance (0–30) ─────────────────────────────────────
+      const titleMatches    = queryTerms.filter(t => titleLower.includes(t)).length;
       const abstractMatches = queryTerms.filter(t => abstractLower.includes(t)).length;
-      const keywordScore = queryTerms.length > 0
-        ? Math.min((titleMatches * 2 + abstractMatches) / (queryTerms.length * 3), 1)
-        : 0.5;
+      const baseScore = queryTerms.length > 0
+        ? Math.min((titleMatches * 2.5 + abstractMatches) / (queryTerms.length * 3.5), 1) * 30
+        : 15;
 
-      // 20% citation score (log scale)
-      const citationScore = Math.log10((paper.citations || 0) + 1) / Math.log10(maxCitations + 1);
+      // ── 2. IRIS Intelligence Score (0–25) ───────────────────────────────
+      const intelligenceScore = queryIntel
+        ? Math.min(intelligenceService.calculateIRIS(paper, queryIntel) * 0.25, 25)
+        : Math.min((Math.log10(citations + 1) / Math.log10(maxCitations + 1)) * 20, 20);
 
-      // 20% recency (prefer last 10 years)
-      const age = Math.max(0, currentYear - (paper.year || currentYear - 20));
-      const recencyScore = Math.max(0, 1 - age / 20);
+      // ── 3. Recency Boost — Tiered (0–30) ────────────────────────────────
+      // This is the primary lever for "newest first" ranking
+      let recencyScore: number;
+      if      (age === 0)  recencyScore = 30;   // Current year — maximum boost
+      else if (age === 1)  recencyScore = 26;   // Last year
+      else if (age <= 3)   recencyScore = 20;   // 2–3 years old
+      else if (age <= 5)   recencyScore = 13;   // 4–5 years old
+      else if (age <= 10)  recencyScore = 7;    // 6–10 years old
+      else                 recencyScore = Math.max(0, 4 - (age - 10) * 0.3); // Older: decays to 0
 
-      // 10% completeness bonus
-      const completeness = (paper.abstract ? 0.4 : 0) + (paper.pdfUrl ? 0.3 : 0) + (paper.doi ? 0.3 : 0);
+      // Seminal exception: very highly cited old papers get an authority bonus
+      // (preserves foundational works without letting them dominate fresh results)
+      const isSeminal = citations >= 500 && age > 10;
+      if (isSeminal) recencyScore = Math.max(recencyScore, 10);
 
-      // 10% source priority
-      const sourceBoost = (sourcePriority[paper.source?.toLowerCase() || ''] || 1) / 5;
+      // ── 4. Citation Velocity — Trend Score (0–10) ───────────────────────
+      // Fast-growing papers outrank static high-citation ones
+      const velocity = citations / Math.max(1, age);
+      const velocityScore = Math.min(Math.log10(velocity + 1) * 5, 10);
 
-      const relevanceScore = Math.round(
-        keywordScore * 40 +
-        citationScore * 20 +
-        recencyScore * 20 +
-        completeness * 10 +
-        sourceBoost * 10
+      // ── 5. Source Authority (0–5) ────────────────────────────────────────
+      const sourceBoost = (sourcePriority[paper.source?.toLowerCase() || ''] || 1) * 1;
+
+      // ── Final Composite Score ────────────────────────────────────────────
+      // Weights: Relevance 30% | Intelligence 25% | Recency 30% | Velocity 10% | Source 5%
+      const relevanceScore = Math.min(
+        Math.round(baseScore + intelligenceScore + recencyScore + velocityScore + sourceBoost),
+        100
       );
 
-      return { ...paper, relevanceScore };
+      const trendScore = velocity;
+
+      // ── Badge Signals ────────────────────────────────────────────────────
+      const isNew     = age <= 1;                           // Current or last year
+      const isRising  = velocity >= 15 && age <= 5;        // High velocity + recent
+      const isTrending = (paper.trendScore || trendScore) > 10;
+
+      return { ...paper, relevanceScore, trendScore, isNew, isRising, isTrending };
     }).sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0));
   },
 
-  // ─────────────────────────────────────────────────────────────
-  // BUILT-IN PROVIDERS (OpenAlex, Semantic Scholar, Crossref, CORE)
-  // ─────────────────────────────────────────────────────────────
-
-  async fetchOpenAlex(query: string, limit: number): Promise<UniversalPaperEnriched[]> {
+  async fetchOpenAlex(query: string, limit: number, filters?: any): Promise<UniversalPaperEnriched[]> {
     try {
+      const params: any = { 
+        search: query, 
+        per_page: Math.min(limit, 50), 
+        sort: 'relevance_score:desc' 
+      };
+
+      if (filters?.yearStart || filters?.yearEnd) {
+        let filterStr = '';
+        if (filters.yearStart === filters.yearEnd && filters.yearStart) {
+          filterStr = `publication_year:${filters.yearStart}`;
+        } else {
+          if (filters.yearStart) filterStr += `publication_year:>${filters.yearStart - 1}`;
+          if (filters.yearEnd) filterStr += (filterStr ? ',' : '') + `publication_year:<${filters.yearEnd + 1}`;
+        }
+        if (filterStr) params.filter = filterStr;
+      }
+
       const res = await axios.get('https://api.openalex.org/works', {
-        params: { search: query, per_page: Math.min(limit, 50), sort: 'relevance_score:desc' },
+        params,
         timeout: FETCH_TIMEOUT,
         headers: { 'User-Agent': 'JurnalStar/1.0 (mailto:contact@jurnalstar.id)' },
       });
@@ -261,17 +316,27 @@ export const searchAggregator = {
     }
   },
 
-  async fetchSemanticScholar(query: string, limit: number): Promise<UniversalPaperEnriched[]> {
+  async fetchSemanticScholar(query: string, limit: number, filters?: any): Promise<UniversalPaperEnriched[]> {
     try {
       const headers: Record<string, string> = {};
       const apiKey = process.env.SEMANTIC_SCHOLAR_API_KEY;
       if (apiKey && apiKey !== 'your_key_here') headers['x-api-key'] = apiKey;
 
+      const params: any = {
+        query, limit: Math.min(limit, 100),
+        fields: 'title,abstract,authors,year,citationCount,externalIds,openAccessPdf,venue,isOpenAccess',
+      };
+
+      if (filters?.yearStart || filters?.yearEnd) {
+        if (filters.yearStart === filters.yearEnd && filters.yearStart) {
+          params.year = `${filters.yearStart}`;
+        } else {
+          params.year = `${filters.yearStart || 1900}-${filters.yearEnd || new Date().getFullYear()}`;
+        }
+      }
+
       const res = await axios.get('https://api.semanticscholar.org/graph/v1/paper/search', {
-        params: {
-          query, limit: Math.min(limit, 100),
-          fields: 'title,abstract,authors,year,citationCount,externalIds,openAccessPdf,venue,isOpenAccess',
-        },
+        params,
         headers, timeout: FETCH_TIMEOUT,
       });
 
@@ -304,13 +369,22 @@ export const searchAggregator = {
     }
   },
 
-  async fetchCrossref(query: string, limit: number): Promise<UniversalPaperEnriched[]> {
+  async fetchCrossref(query: string, limit: number, filters?: any): Promise<UniversalPaperEnriched[]> {
     try {
+      const params: any = {
+        query, rows: Math.min(limit, 50),
+        select: 'DOI,title,abstract,author,published,is-referenced-by-count,link,URL,container-title,type',
+      };
+
+      if (filters?.yearStart || filters?.yearEnd) {
+        let filterStr = '';
+        if (filters.yearStart) filterStr += `from-pub-date:${filters.yearStart}-01-01`;
+        if (filters.yearEnd) filterStr += (filterStr ? ',' : '') + `until-pub-date:${filters.yearEnd}-12-31`;
+        if (filterStr) params.filter = filterStr;
+      }
+
       const res = await axios.get('https://api.crossref.org/works', {
-        params: {
-          query, rows: Math.min(limit, 50),
-          select: 'DOI,title,abstract,author,published,is-referenced-by-count,link,URL,container-title,type',
-        },
+        params,
         timeout: FETCH_TIMEOUT,
         headers: { 'User-Agent': 'JurnalStar/1.0 (mailto:contact@jurnalstar.id)' },
       });
@@ -356,13 +430,14 @@ export const searchAggregator = {
     }
   },
 
-  async fetchCORE(query: string, limit: number): Promise<UniversalPaperEnriched[]> {
+  async fetchCORE(query: string, limit: number, filters?: any): Promise<UniversalPaperEnriched[]> {
     const apiKey = process.env.CORE_API_KEY;
     if (!apiKey || apiKey === 'your_key_here') return [];
 
     try {
+      const q = filters?.yearStart ? `${query} AND yearPublished>=${filters.yearStart}` : query;
       const res = await axios.get('https://api.core.ac.uk/v3/search/works', {
-        params: { q: query, limit: Math.min(limit, 100) },
+        params: { q, limit: Math.min(limit, 100) },
         headers: { Authorization: `Bearer ${apiKey}` },
         timeout: FETCH_TIMEOUT,
       });

@@ -1,8 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { aiKeyManager } from "./AIKeyManager";
 
-// embedding-001 is the stable Google AI embedding model
-const EMBEDDING_MODEL = "embedding-001";
+// text-embedding-004 is the latest high-performance Google AI embedding model
+const EMBEDDING_MODEL = "text-embedding-004";
 
 export const embeddingService = {
   async getEmbedding(text: string): Promise<number[]> {

@@ -25,41 +25,44 @@ export default function TrendingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-20">
+    <div className="min-h-screen bg-background pt-32 md:pt-48 pb-32">
       <Navbar />
       
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
-          <div className="space-y-2">
-            <h1 className="text-5xl font-black text-foreground flex items-center tracking-tighter uppercase">
-              <Flame className="w-10 h-10 mr-4 text-foreground animate-pulse" />
-              Populer Hari Ini
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-24 gap-8">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.3em] text-foreground-muted">
+              <Flame className="w-4 h-4 text-foreground" />
+              Live Neural Trends
+            </div>
+            <h1 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter uppercase leading-[0.85]">
+              Trending <br /><span className="text-foreground-muted opacity-30">Research</span>
             </h1>
-            <p className="text-muted-foreground font-medium">
-              Temukan jurnal yang paling banyak dibaca dan didiskusikan oleh para peneliti minggu ini.
+            <p className="text-foreground-secondary font-medium text-lg md:text-xl max-w-xl leading-relaxed">
+              Discover the papers most cited and discussed by the global research community this week.
             </p>
           </div>
           
-          <div className="flex bg-muted p-1.5 rounded-2xl border border-border">
-            <button className="px-6 py-2.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg">Minggu Ini</button>
-            <button className="px-6 py-2.5 text-muted-foreground text-[10px] font-black uppercase tracking-widest hover:text-foreground transition-colors">Bulan Ini</button>
+          <div className="flex bg-muted p-1.5 rounded-2xl border border-border shadow-sm">
+            <button className="px-8 py-3 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-xl shadow-md transition-all active:scale-95">Weekly</button>
+            <button className="px-8 py-3 text-foreground-muted text-[10px] font-black uppercase tracking-widest hover:text-foreground transition-all">Monthly</button>
           </div>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <JournalCardSkeleton key={i} />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
             {papers.map((paper, i) => (
               <motion.div
                 key={paper.paperId}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: i * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               >
                 <JournalCard journal={paper} />
               </motion.div>
@@ -67,29 +70,31 @@ export default function TrendingPage() {
           </div>
         )}
 
-        {/* AI Insight Card - Monochrome Version */}
+        {/* AI Insight Card - Premium OS Version */}
         <motion.div 
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-32 p-16 md:p-24 mono-card rounded-[3rem] text-center relative overflow-hidden group"
+          className="mt-32 p-12 md:p-24 bg-foreground text-background rounded-[4rem] text-center relative overflow-hidden shadow-2xl group"
         >
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+          <div className="absolute top-0 right-0 opacity-[0.03] pointer-events-none translate-x-1/4 -translate-y-1/4">
+            <Sparkles className="w-[800px] h-[800px] text-background" />
+          </div>
           
-          <div className="relative z-10 space-y-10">
-            <div className="w-20 h-20 bg-background rounded-3xl flex items-center justify-center mx-auto border border-border shadow-2xl group-hover:rotate-12 transition-transform duration-500">
-              <Sparkles className="w-10 h-10 text-foreground" />
+          <div className="relative z-10 space-y-12">
+            <div className="w-20 h-20 bg-background text-foreground rounded-3xl flex items-center justify-center mx-auto shadow-2xl group-hover:rotate-12 transition-transform duration-500">
+              <Sparkles className="w-10 h-10" />
             </div>
             
-            <div className="space-y-4">
-              <h2 className="text-4xl md:text-5xl font-black text-background mb-4 tracking-tighter uppercase leading-[0.9]">Ingin Menemukan <br/> Topik Baru?</h2>
-              <p className="text-background/40 max-w-2xl mx-auto text-lg font-medium leading-relaxed">
-                Asisten AI kami dapat membantu Anda menemukan "Research Gap" di bidang apapun yang Anda minati.
+            <div className="space-y-6">
+              <h2 className="text-4xl md:text-6xl font-black mb-4 tracking-tighter uppercase leading-[0.9]">Explore New <br/> Frontiers?</h2>
+              <p className="text-background/40 max-w-2xl mx-auto text-lg md:text-xl font-medium leading-relaxed">
+                Our Neural Engine can identify research gaps in any field of interest.
               </p>
             </div>
 
-            <button className="bg-background text-foreground hover:scale-105 active:scale-95 px-12 py-6 rounded-2xl font-black uppercase tracking-[0.3em] text-xs transition-all shadow-2xl flex items-center mx-auto space-x-4">
-              <span>Mulai Riset dengan AI</span>
+            <button className="bg-background text-foreground hover:scale-105 active:scale-95 px-12 py-6 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] transition-all shadow-2xl flex items-center mx-auto gap-4">
+              <span>Initialize AI Discovery</span>
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>

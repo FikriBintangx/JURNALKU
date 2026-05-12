@@ -89,11 +89,11 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
           >
             {history.length > 0 ? (
               <div className="space-y-6">
-                <div className="px-4 flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">Recent Identifiers</span>
-                  <button onClick={clearHistory} className="text-[9px] font-black uppercase tracking-widest opacity-20 hover:opacity-100 transition-opacity">Clear All</button>
+                <div className="px-6 flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/40">Recent Intel History</span>
+                  <button onClick={clearHistory} className="text-[9px] font-black uppercase tracking-widest opacity-20 hover:opacity-100 transition-all hover:text-red-500">Purge Cache</button>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {history.map((h, i) => (
                     <button 
                       key={i}
@@ -101,20 +101,22 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
                         saveToHistory(h);
                         onSelect?.(h);
                       }}
-                      className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-muted transition-all group"
+                      className="w-full flex items-center gap-5 px-6 py-4 rounded-[1.5rem] hover:bg-foreground/5 transition-all group text-left"
                     >
-                      <Search className="w-3.5 h-3.5 opacity-20 group-hover:opacity-100 transition-opacity" />
-                      <span className="text-sm font-bold opacity-60 group-hover:opacity-100 transition-opacity">{h}</span>
+                      <div className="w-10 h-10 rounded-2xl bg-foreground/5 flex items-center justify-center group-hover:bg-foreground group-hover:text-background transition-all shrink-0">
+                        <Search className="w-4 h-4 opacity-40 group-hover:opacity-100" />
+                      </div>
+                      <span className="text-base font-bold text-foreground/70 group-hover:text-foreground transition-colors truncate">{h}</span>
                     </button>
                   ))}
                 </div>
               </div>
             ) : (
               <div className="py-12 text-center space-y-4">
-                <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto opacity-20">
-                  <Sparkles className="w-5 h-5" />
+                <div className="w-14 h-14 bg-foreground/5 rounded-full flex items-center justify-center mx-auto border border-foreground/5">
+                  <Sparkles className="w-6 h-6 text-foreground/20" />
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-20">Neural Cache Empty</p>
+                <p className="label-caps !opacity-20">Neural Cache Empty</p>
               </div>
             )}
           </motion.div>
@@ -129,7 +131,7 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
               <Loader2 className="w-10 h-10 animate-spin text-foreground opacity-10" />
               <Sparkles className="w-5 h-5 text-foreground absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40 animate-pulse">Neural Mapping...</span>
+            <span className="label-caps !opacity-40 animate-pulse">Neural Mapping...</span>
           </motion.div>
         ) : suggestions.length > 0 ? (
           <motion.div 
@@ -139,12 +141,12 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
           >
             <div className="px-6 py-4 flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
-                <div className="w-6 h-6 bg-foreground rounded-lg flex items-center justify-center">
-                  <Sparkles className="w-3.5 h-3.5 text-background" />
+                <div className="w-8 h-8 bg-foreground rounded-xl flex items-center justify-center shadow-xl">
+                  <Sparkles className="w-4 h-4 text-background" />
                 </div>
-                <span className="text-[10px] font-black text-foreground uppercase tracking-[0.3em]">AI Suggested Vector</span>
+                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground">AI Neural Signals</span>
               </div>
-              <span className="text-[9px] font-black opacity-20 uppercase tracking-widest">{suggestions.length} Signals</span>
+              <span className="text-[9px] font-black uppercase tracking-widest opacity-20">{suggestions.length} Vectors</span>
             </div>
 
             <div className="space-y-1">
@@ -155,18 +157,18 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
                     saveToHistory(s.title);
                     onSelect?.(s.title);
                   }}
-                  className="w-full flex items-center justify-between px-6 py-4 transition-all rounded-2xl group text-left hover:bg-muted"
+                  className="w-full flex items-center justify-between px-6 py-5 transition-all rounded-[1.75rem] group text-left hover:bg-foreground/5 hover:translate-x-1"
                 >
                   <div className="flex items-center gap-5 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-muted border border-border/50 flex items-center justify-center shrink-0 group-hover:bg-foreground group-hover:text-background transition-all">
+                    <div className="w-11 h-11 rounded-[1.25rem] bg-foreground/5 border border-foreground/5 flex items-center justify-center shrink-0 group-hover:bg-foreground group-hover:text-background transition-all">
                       {s.type === 'topic' ? <Search className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-base font-bold truncate tracking-tight mb-1">
+                      <span className="text-[15px] font-bold truncate tracking-tight mb-0.5 text-foreground/80 group-hover:text-foreground">
                         {highlightText(s.title, query)}
                       </span>
-                      <span className="text-[9px] opacity-30 uppercase font-black tracking-[0.2em]">
-                        {s.type === 'topic' ? 'Domain Focus' : 'Document Match'}
+                      <span className="text-[9px] opacity-30 uppercase font-black tracking-[0.2em] group-hover:opacity-50">
+                        {s.type === 'topic' ? 'Topical Cluster' : 'Research Document'}
                       </span>
                     </div>
                   </div>

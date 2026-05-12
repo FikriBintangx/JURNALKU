@@ -277,3 +277,75 @@ export async function getBookmarkCount(): Promise<number> {
     return 0;
   }
 }
+// ─────────────────────────────────────────────────────────────
+// ADD TO WORKSPACE COLLECTION
+// ─────────────────────────────────────────────────────────────
+
+export async function addToWorkspaceCollection(journalIds: string[], collectionName: string = "Koleksi Impor"): Promise<{ success: boolean; error?: string }> {
+  const sessionId = await getSessionUserId();
+  
+  try {
+    // 1. Find or create collection
+    const collection = await prisma.researchCollection.upsert({
+      where: { 
+        id: `col_${sessionId}_${collectionName.toLowerCase().replace(/\s+/g, '_')}` // deterministic for this example
+      },
+      update: { name: collectionName },
+      create: {
+        id: `col_${sessionId}_${collectionName.toLowerCase().replace(/\s+/g, '_')}`,
+        userId: sessionId,
+        name: collectionName,
+      }
+    });
+
+    // 2. Process each journal
+    const journals = await prisma.journal.findMany({
+      where: { id: { in: journalIds } }
+    });
+
+    for (const journal of journals) {
+      // Check if already in workspace
+      const existingDoc = await prisma.workspaceDocument.findFirst({
+        where: { userId: sessionId, title: journal.title }
+      });
+
+      if (!existingDoc) {
+        // Create as workspace document
+        await prisma.workspaceDocument.create({
+          data: {
+            userId: sessionId,
+            title: journal.title,
+            fileName: journal.id,
+            type: "online",
+            metadata: {
+              authors: journal.author,
+              year: journal.year,
+              doi: journal.doi,
+              abstract: journal.abstract
+            },
+            // Link to collection
+            collections: {
+              connect: { id: collection.id }
+            }
+          }
+        });
+      } else {
+        // Just ensure it's linked to this collection
+        await prisma.researchCollection.update({
+          where: { id: collection.id },
+          data: {
+            documents: {
+              connect: { id: existingDoc.id }
+            }
+          }
+        });
+      }
+    }
+
+    console.log(`[WORKSPACE] Successfully added ${journalIds.length} journals to collection "${collectionName}"`);
+    return { success: true };
+  } catch (error: any) {
+    console.error('[WORKSPACE] Error adding to collection:', error);
+    return { success: false, error: error.message || 'Gagal menambahkan ke Workspace' };
+  }
+}

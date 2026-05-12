@@ -121,3 +121,92 @@ model SearchCache {
   results   Json
   updatedAt DateTime @updatedAt
 }
+
+// ─────────────────────────────────────────────────────────────
+// ISAGI LEVEL 5: PERSONAL WORKSPACE & VECTOR MEMORY
+// ─────────────────────────────────────────────────────────────
+model WorkspaceDocument {
+  id        String   @id @default(cuid())
+  userId    String   // Session ID or User ID for personal isolation
+  title     String
+  fileName  String
+  content   String?  // Full extracted text
+  type      String   // "pdf", "docx", "online"
+  metadata  Json?    // Authors, year, publication, etc
+  createdAt DateTime @default(now())
+
+  chunks    DocumentChunk[]
+  collections ResearchCollection[]
+}
+
+model DocumentChunk {
+  id         String   @id @default(cuid())
+  documentId String
+  content    String   // The text chunk
+  page       Int?
+  section    String?  // e.g., "Methodology", "Conclusion"
+  embedding  Float[]  // Semantic vector embedding
+  document   WorkspaceDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────────────────────
+// ISAGI LEVEL 5: COLLECTIONS & ORGANIZATION
+// ─────────────────────────────────────────────────────────────
+model ResearchCollection {
+  id        String   @id @default(cuid())
+  userId    String   // Session ID or User ID
+  name      String
+  color     String?  @default("yellow")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // A collection can have many workspace documents
+  documents WorkspaceDocument[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// ISAGI LEVEL 5: DYNAMIC INTELLIGENCE & SESSIONS
+// ─────────────────────────────────────────────────────────────
+model AIConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  mode      String   @default("synthesis") // synthesis, review, compare
+  title     String?  // auto-generated based on first query
+  context   Json?    // Stores the memory context used
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages  AIMessage[]
+}
+
+model AIMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String   // "user", "assistant", "system"
+  content        String
+  agentState     Json?    // State of the swarm when answering (retriever, critic, graph, etc)
+  createdAt      DateTime @default(now())
+
+  conversation   AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model ResearchGraph {
+  id          String   @id @default(cuid())
+  userId      String
+  nodes       Json     // [{ id, label, type }]
+  edges       Json     // [{ source, target, label }]
+  documentIds String[] // Which documents generated this graph
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CompareSession {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String?
+  matrix    Json     // AI generated comparison matrix data
+  papers    String[] // Array of document IDs being compared
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

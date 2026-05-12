@@ -14,17 +14,20 @@ import {
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
+import SearchSuggestions from '@/components/SearchSuggestions';
 import { TrendingSection } from '@/components/TrendingSection';
 
 export default function Home() {
   const [query, setQuery] = useState('');
+  const [selectedYear, setSelectedYear] = useState<string>('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const router = useRouter();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query)}`);
+      const yearParam = selectedYear ? `&yearStart=${selectedYear}` : '';
+      router.push(`/search?q=${encodeURIComponent(query)}${yearParam}`);
     }
   };
 
@@ -61,7 +64,7 @@ export default function Home() {
               className="inline-flex items-center space-x-2 bg-muted/50 border border-border px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground"
             >
               <Sparkles className="w-3 h-3 text-primary animate-pulse" />
-              <span>The Intelligence Layer for Academic Research</span>
+              <span>Lapisan Intelijen untuk Penelitian Akademik</span>
             </motion.div>
 
             <motion.h1 
@@ -80,8 +83,8 @@ export default function Home() {
               transition={{ delay: 0.2 }}
               className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed opacity-60"
             >
-              Access 200M+ academic papers. Instantly summarize complex research, 
-              predict future trends, and unlock open access PDF globally.
+              Akses 200 Juta+ jurnal akademik. Ringkas riset kompleks secara instan, 
+              prediksi tren masa depan, dan buka akses PDF secara global.
             </motion.p>
           </div>
 
@@ -93,32 +96,82 @@ export default function Home() {
           >
             <form onSubmit={handleSearch} className="relative group z-40">
               <div className={cn(
-                "bg-muted/30 border border-border rounded-full p-2 md:p-3 flex items-center transition-all duration-700",
-                isSearchFocused ? "bg-background border-foreground/50 ring-[40px] ring-foreground/5 shadow-[0_0_100px_rgba(0,0,0,0.2)] scale-[1.08]" : "hover:bg-muted/60"
+                "glass-card !bg-white/40 border border-border rounded-full p-2.5 md:p-3.5 flex items-center transition-all duration-700 shadow-2xl",
+                isSearchFocused ? "border-foreground/40 ring-[40px] ring-foreground/5 scale-[1.05] !bg-white/70" : "hover:border-foreground/20"
               )}>
                 <div className="pl-6 pr-4">
                   <Search className={cn(
                     "w-6 h-6 transition-colors duration-500",
-                    isSearchFocused ? "text-foreground" : "text-muted-foreground/30"
+                    isSearchFocused ? "text-foreground" : "text-foreground-muted/30"
                   )} />
                 </div>
                 <input
                   type="text"
                   value={query}
                   onFocus={() => setIsSearchFocused(true)}
-                  onBlur={() => setIsSearchFocused(false)}
+                  onBlur={() => {
+                    // Small delay to allow clicking suggestions
+                    setTimeout(() => setIsSearchFocused(false), 200);
+                  }}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Ask any research question..."
-                  className="flex-grow bg-transparent border-none outline-none text-foreground text-xl md:text-2xl font-bold placeholder:text-muted-foreground/20 py-4 md:py-6"
+                  placeholder="Cari riset apa pun..."
+                  className="flex-grow bg-transparent border-none outline-none text-base md:text-2xl font-bold placeholder:text-foreground-muted/20 py-3 md:py-5 min-w-0"
                 />
+                <div className="hidden sm:flex items-center gap-2 px-4 border-l border-border h-12 my-auto">
+                  <select 
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                    className="bg-transparent text-[10px] font-black uppercase tracking-[0.2em] outline-none cursor-pointer pr-2 text-muted-foreground hover:text-foreground transition-colors appearance-none"
+                  >
+                    <option value="" className="bg-background text-foreground">Kapan pun</option>
+                    <option value="2026" className="bg-background text-foreground">2026</option>
+                    <option value="2025" className="bg-background text-foreground">2025</option>
+                    <option value="2024" className="bg-background text-foreground">2024</option>
+                    <option value="2020" className="bg-background text-foreground">5 Tahun Terakhir</option>
+                  </select>
+                </div>
                 <button 
                   type="submit"
-                  className="mono-button px-10 md:px-16 py-4 md:py-6 text-[10px] md:text-xs uppercase tracking-[0.2em] shadow-2xl active:scale-95"
+                  className="btn-primary h-10 md:h-16 px-5 md:px-16 !rounded-full text-[9px] md:text-xs shadow-2xl active:scale-95 mr-1.5 md:mr-2 shrink-0"
                 >
-                  Search
+                  Cari
                 </button>
               </div>
+
+              <AnimatePresence>
+                {isSearchFocused && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                    className="absolute top-full mt-4 left-0 right-0 glass-card p-4 shadow-2xl z-50 overflow-hidden rounded-[2.5rem] border border-white/10"
+                  >
+                    <SearchSuggestions query={query} onSelect={(val) => {
+                      setQuery(val);
+                      router.push(`/search?q=${encodeURIComponent(val)}`);
+                      setIsSearchFocused(false);
+                    }} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </form>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="flex justify-center mt-12 mb-4"
+          >
+            <Link 
+              href="/workspace"
+              className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-300 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full hover:scale-105 shadow-xl shadow-indigo-500/30 overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+              <Brain className="w-5 h-5 mr-3 relative z-10 group-hover:animate-pulse" />
+              <span className="tracking-wide relative z-10">Buka Personal Workspace (AI OS)</span>
+              <ArrowRight className="w-5 h-5 ml-3 opacity-70 group-hover:translate-x-1 transition-transform relative z-10" />
+            </Link>
           </motion.div>
 
           <motion.div 
@@ -149,9 +202,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { title: 'Semantic Index', desc: 'Query 200M+ papers with natural language.', icon: <BookOpen className="w-6 h-6 text-foreground" /> },
-              { title: 'Neural Summary', desc: 'Get core insights in seconds, not hours.', icon: <Brain className="w-6 h-6 text-foreground" /> },
-              { title: 'Open Unlock', desc: 'Legal PDF access via Unpaywall network.', icon: <Zap className="w-6 h-6 text-foreground" /> },
+              { title: 'Indeks Semantik', desc: 'Telusuri 200 Juta+ jurnal dengan bahasa alami.', icon: <BookOpen className="w-6 h-6 text-foreground" /> },
+              { title: 'Ringkasan Neural', desc: 'Dapatkan inti riset dalam hitungan detik.', icon: <Brain className="w-6 h-6 text-foreground" /> },
+              { title: 'Akses Terbuka', desc: 'Akses PDF legal melalui jaringan Unpaywall.', icon: <Zap className="w-6 h-6 text-foreground" /> },
             ].map((feature, i) => (
               <motion.div 
                 key={i}
@@ -186,11 +239,11 @@ export default function Home() {
             <span className="font-black text-xl tracking-tighter uppercase">JurnalStar</span>
           </div>
           <div className="flex items-center space-x-12 text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
-            <Link href="/privacy" className="hover:opacity-100 transition-opacity">Privacy</Link>
-            <Link href="/terms" className="hover:opacity-100 transition-opacity">Terms</Link>
-            <Link href="/docs" className="hover:opacity-100 transition-opacity">Docs</Link>
+            <Link href="/privacy" className="hover:opacity-100 transition-opacity">Privasi</Link>
+            <Link href="/terms" className="hover:opacity-100 transition-opacity">Syarat</Link>
+            <Link href="/docs" className="hover:opacity-100 transition-opacity">Dokumen</Link>
           </div>
-          <p className="text-[10px] font-bold opacity-20 uppercase tracking-widest">© 2026 JurnalStar AI. All Rights Reserved.</p>
+          <p className="text-[10px] font-bold opacity-20 uppercase tracking-widest">© 2026 JurnalStar AI. Hak Cipta Dilindungi.</p>
         </div>
       </footer>
     </main>
