@@ -10,7 +10,8 @@ import {
   Tags, 
   BarChart2, 
   BookOpen,
-  Brain
+  Brain,
+  Quote
 } from 'lucide-react';
 import { AIFeatureCard } from './AIFeatureCard';
 import { ModelSelector } from './ModelSelector';

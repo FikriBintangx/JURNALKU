@@ -4,6 +4,7 @@ import { aiKeyManager, classifyAIError } from "./AIKeyManager";
 import { callGrok } from "./grokService";
 import { callOpenRouter } from "./openRouterService";
 import { callHuggingFace } from "./huggingFaceService";
+import { callGroq, GROQ_MODELS } from "./groqService";
 
 // PRIMARY model — gemini-2.0-flash (latest stable)
 // FALLBACK model — gemini-1.5-flash-latest (if primary fails with model error)
@@ -167,37 +168,22 @@ export const geminiService = {
       return { success: false, message: "Missing required fields (paperId, type)." };
     }
 
-    // Use model in cache key to separate results from different models
-    const cacheKey = `ai:v3:${type}:${paperId}${model ? `:${model.split('/').pop()}` : ''}`;
+    const cacheKey = `ai:v4:${type}:${paperId}${model ? `:${model.split('/').pop()}` : ''}`;
 
-    // 1. Cache check
     if (redis) {
       try {
         const cached = await redis.get(cacheKey);
-        if (cached) {
-          console.log(`[AI SERVICE] Cache hit: ${cacheKey}`);
-          return { success: true, data: cached, cached: true };
-        }
-      } catch (e) {
-        console.warn("[AI SERVICE] Cache read failed (non-critical).");
-      }
+        if (cached) return { success: true, data: cached, cached: true };
+      } catch {}
     }
 
-    // 2. Queue & execute
     return new Promise((resolve) => {
       const execute = async () => {
         try {
           const result = await this.executeWithRetry({ paperId, type, prompt, abstract, title, model });
-
           if (result.success && !result.fallback && redis && result.data) {
-            try {
-              // Cache results for 7 days
-              await redis.set(cacheKey, result.data, { ex: 60 * 60 * 24 * 7 });
-            } catch {
-              // Non-critical cache write failure
-            }
+            try { await redis.set(cacheKey, result.data, { ex: 60 * 60 * 24 * 7 }); } catch {}
           }
-
           resolve(result);
         } finally {
           activeRequests--;
@@ -209,7 +195,6 @@ export const geminiService = {
         activeRequests++;
         execute();
       } else {
-        console.log(`[AI SERVICE] Queued (queue size: ${queue.length})`);
         queue.push(execute);
       }
     });
@@ -218,133 +203,82 @@ export const geminiService = {
   async tryGenerateContent(apiKey: string, modelName: string, fullPrompt: string): Promise<string> {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: modelName, generationConfig, safetySettings });
-
     const result = await Promise.race([
       model.generateContent({ contents: [{ role: "user", parts: [{ text: fullPrompt }] }] }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("AI_TIMEOUT")), AI_TIMEOUT_MS)
-      ),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("AI_TIMEOUT")), AI_TIMEOUT_MS)),
     ]) as any;
-
     const text = result?.response?.text?.();
-    if (!text || text.trim().length === 0) throw new Error("EMPTY_RESPONSE");
+    if (!text) throw new Error("EMPTY_RESPONSE");
     return text;
   },
 
   async executeWithRetry(req: AIRequest, attempt: number = 1): Promise<any> {
     const { abstract, title, prompt, type, model } = req;
-
-    // If no content to analyze, return fallback immediately
-    if (!abstract && !title) {
-      console.warn(`[AI SERVICE] [FALLBACK] No content for type "${type}" — returning fallback.`);
-      return {
-        success: true,
-        data: generateFallback(type || 'summary', title || '', abstract || ''),
-        fallback: true,
-      };
-    }
+    if (!abstract && !title) return { success: true, data: generateFallback(type || 'summary', title || '', abstract || ''), fallback: true };
 
     const fullPrompt = `Bertindaklah sebagai Senior Research Assistant profesional.
-
 Judul Paper: ${title || 'Tidak diketahui'}
 Abstrak: ${(abstract || '').slice(0, 4000)}
+TUGAS: ${prompt}
+INSTRUKSI: Bahasa Indonesia formal, langsung ke inti, format markdown.`;
 
-TUGAS:
-${prompt}
-
-INSTRUKSI PENTING:
-- Jawab dalam Bahasa Indonesia yang formal dan akademik.
-- Langsung ke inti pembahasan, tanpa intro panjang.
-- Format jawaban dengan markdown yang rapi (gunakan ##, bold, bullet points).
-- Jika data tidak lengkap, berikan analisis terbaik berdasarkan judul.`;
-
-    // ── STRATEGY: IF SPECIFIC MODEL IS REQUESTED, JUMP STRAIGHT TO OPENROUTER ──
+    // ── STRATEGY: IF SPECIFIC MODEL IS REQUESTED ──
     if (model) {
       try {
-        console.log(`[AI SERVICE] [USER REQUEST] Forcing model: ${model}`);
-        const orText = await callOpenRouter(fullPrompt, 15000, model);
-        if (orText) {
-          console.log(`[AI SERVICE] [OPENROUTER] ✓ Success via user-selected model: ${model}`);
-          return { success: true, data: orText, provider: 'openrouter', model };
+        if (GROQ_MODELS.some(m => m.id === model)) {
+          const groqText = await callGroq(fullPrompt, model);
+          if (groqText) return { success: true, data: groqText, provider: 'groq', model };
+        } else {
+          const orText = await callOpenRouter(fullPrompt, 15000, model);
+          if (orText) return { success: true, data: orText, provider: 'openrouter', model };
         }
-      } catch (orErr: any) {
-        console.warn(`[AI SERVICE] [USER REQUEST] ✗ Forced model ${model} failed: ${orErr.message}`);
-        // Fallback to default pipeline if forced model fails
+      } catch (err: any) {
+        console.warn(`[AI SERVICE] Forced model failed: ${err.message}`);
       }
     }
 
     const apiKey = aiKeyManager.getBestKey();
-    if (!apiKey) {
-      console.warn(`[AI SERVICE] [FALLBACK] No keys available — returning fallback.`);
-      return {
-        success: true,
-        data: generateFallback(type || 'summary', title || '', abstract || ''),
-        fallback: true,
-      };
-    }
+    if (!apiKey) return { success: true, data: generateFallback(type || 'summary', title || '', abstract || ''), fallback: true };
 
     try {
-      console.log(`[AI SERVICE] Attempt ${attempt} — Model: ${PRIMARY_MODEL}, Project: ${aiKeyManager.maskKey(apiKey)}`);
+      console.log(`[AI SERVICE] Attempt ${attempt} — Model: ${PRIMARY_MODEL}`);
       const text = await this.tryGenerateContent(apiKey, PRIMARY_MODEL, fullPrompt);
       aiKeyManager.markSuccess(apiKey);
-      console.log(`[AI SERVICE] Success — type: ${type}, chars: ${text.length}`);
       return { success: true, data: text };
-
     } catch (primaryError: any) {
       const errType = classifyAIError(primaryError);
-      console.warn(`[AI SERVICE] [${errType}] Attempt ${attempt} failed (${PRIMARY_MODEL}): ${primaryError.message}`);
-
-      if (errType === 'RATE_LIMIT') {
-        aiKeyManager.markFailure(apiKey, true);
-      } else if (errType === 'NETWORK_ERROR') {
-        aiKeyManager.markFailure(apiKey, false);
-      }
+      if (errType === 'RATE_LIMIT') aiKeyManager.markFailure(apiKey, true);
+      else if (errType === 'NETWORK_ERROR') aiKeyManager.markFailure(apiKey, false);
 
       if (errType === 'MODEL_ERROR') {
         try {
-          console.log(`[AI SERVICE] [MODEL ERROR] Trying fallback model: ${FALLBACK_MODEL}`);
           const text = await this.tryGenerateContent(apiKey, FALLBACK_MODEL, fullPrompt);
           aiKeyManager.markSuccess(apiKey);
-          console.log(`[AI SERVICE] Fallback model succeeded — type: ${type}`);
           return { success: true, data: text };
-        } catch (fallbackModelError: any) {
-          console.error(`[AI SERVICE] Both models failed.`);
-        }
+        } catch {}
       }
 
-      if (attempt < 3) {
-        const delay = errType === 'RATE_LIMIT' ? 1500 : 700;
-        await new Promise(r => setTimeout(r, delay));
-        return this.executeWithRetry(req, attempt + 1);
-      }
+      if (attempt < 2) return this.executeWithRetry(req, attempt + 1);
 
-      // ── Tier 3: Grok (xAI) ──────────────────────────────────
+      // ── TIER 3: GROQ (Ultra-Fast) ──
       try {
-        console.log('[AI SERVICE] [GROK] Trying Grok (tier 3)...');
-        const grokText = await callGrok(fullPrompt, 15000);
+        const groqText = await callGroq(fullPrompt);
+        if (groqText) return { success: true, data: groqText, provider: 'groq' };
+      } catch {}
+
+      // ── TIER 4: GROK ──
+      try {
+        const grokText = await callGrok(fullPrompt);
         if (grokText) return { success: true, data: grokText, provider: 'grok' };
       } catch {}
 
-      // ── Tier 4: OpenRouter ──────────────────────────────────
+      // ── TIER 5: OPENROUTER ──
       try {
-        console.log('[AI SERVICE] [OPENROUTER] Trying OpenRouter (tier 4)...');
-        const orText = await callOpenRouter(fullPrompt, 15000);
+        const orText = await callOpenRouter(fullPrompt);
         if (orText) return { success: true, data: orText, provider: 'openrouter' };
       } catch {}
 
-      // ── Tier 5: HuggingFace ─────────────────────────────────
-      try {
-        console.log('[AI SERVICE] [HUGGINGFACE] Trying HuggingFace (tier 5)...');
-        const hfText = await callHuggingFace(fullPrompt, 20000);
-        if (hfText) return { success: true, data: hfText, provider: 'huggingface' };
-      } catch {}
-
-      // ── All 5 AI tiers exhausted ────────────────────────────
-      return {
-        success: true,
-        data: generateFallback(type || 'summary', title || '', abstract || ''),
-        fallback: true,
-      };
+      return { success: true, data: generateFallback(type || 'summary', title || '', abstract || ''), fallback: true };
     }
   },
 };

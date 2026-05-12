@@ -9,6 +9,11 @@ const OPENROUTER_BASE = 'https://openrouter.ai/api/v1/chat/completions';
 
 // Models with labels for the UI
 export const AI_MODELS = [
+  // --- GROQ (Ultra Fast) ---
+  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B (Fast)', provider: 'Groq' },
+  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B (Instant)', provider: 'Groq' },
+  
+  // --- OPENROUTER (Standard) ---
   { id: 'meta-llama/llama-3.1-8b-instruct:free', name: 'Llama 3.1 8B', provider: 'Meta' },
   { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B', provider: 'Mistral' },
   { id: 'google/gemma-2-9b-it:free', name: 'Gemma 2 9B', provider: 'Google' },
