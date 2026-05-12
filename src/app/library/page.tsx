@@ -16,6 +16,7 @@ export default function LibraryPage() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successCount, setSuccessCount] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -54,7 +55,9 @@ export default function LibraryPage() {
     try {
       const result = await addToWorkspaceCollection(selectedIds);
       if (result.success) {
+        const count = selectedIds.length;
         setShowSuccess(true);
+        setSuccessCount(count); // We need this new state
         setSelectedIds([]);
         setTimeout(() => {
           setShowSuccess(false);
@@ -172,7 +175,7 @@ export default function LibraryPage() {
           >
             <div className="bg-foreground text-background px-8 py-4 rounded-full flex items-center gap-3 shadow-2xl border border-white/10 font-bold">
               <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-              <span>{selectedIds.length} Jurnal berhasil diimpor ke Workspace!</span>
+              <span>{successCount} Jurnal berhasil diimpor ke Workspace!</span>
             </div>
           </motion.div>
         )}

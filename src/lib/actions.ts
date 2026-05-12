@@ -19,21 +19,43 @@ import { revalidatePath } from 'next/cache';
 // SESSION
 // ─────────────────────────────────────────────────────────────
 
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'jurnalstar_super_secret_key_123'
+);
+
 async function getSessionUserId(): Promise<string> {
   try {
     const { cookies } = await import('next/headers');
+    const { jwtVerify } = await import('jose');
     const cookieStore = await cookies();
+    
+    // 1. Try to get authenticated user ID first
+    const authToken = cookieStore.get('jurnalstar_auth_token')?.value;
+    if (authToken) {
+      try {
+        const { payload } = await jwtVerify(authToken, JWT_SECRET);
+        if (payload.userId) {
+          console.log(`[SESSION] Authenticated user session: ${payload.userId}`);
+          return payload.userId as string;
+        }
+      } catch (jwtErr) {
+        console.warn('[SESSION] Auth token invalid, falling back to guest session');
+      }
+    }
+
+    // 2. Fallback to guest session ID
     const existing = cookieStore.get('jurnalstar_session_id')?.value;
     if (existing && existing.length > 5) {
-      console.log(`[SESSION] Existing session: ${existing.slice(0, 12)}...`);
+      console.log(`[SESSION] Existing guest session: ${existing.slice(0, 12)}...`);
       return existing;
     }
+    
     // Generate new persistent guest session ID
     const newId = `guest_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-    console.log(`[SESSION] New session created: ${newId.slice(0, 16)}...`);
+    console.log(`[SESSION] New guest session created: ${newId.slice(0, 16)}...`);
     return newId;
   } catch (e) {
-    console.warn('[SESSION] Cookie read failed — using default guest ID');
+    console.warn('[SESSION] Session identification failed — using default guest ID');
     return 'guest_default_session';
   }
 }
@@ -303,6 +325,9 @@ export async function addToWorkspaceCollection(journalIds: string[], collectionN
       where: { id: { in: journalIds } }
     });
 
+    console.log(`[WORKSPACE] Found ${journals.length} out of ${journalIds.length} journals in DB`);
+    console.log(`[WORKSPACE] Targeting Collection ID: ${collection.id} for User: ${sessionId}`);
+
     for (const journal of journals) {
       // Check if already in workspace
       const existingDoc = await prisma.workspaceDocument.findFirst({
@@ -310,6 +335,7 @@ export async function addToWorkspaceCollection(journalIds: string[], collectionN
       });
 
       if (!existingDoc) {
+        console.log(`[WORKSPACE] Creating new document for journal: ${journal.title}`);
         // Create as workspace document
         await prisma.workspaceDocument.create({
           data: {
@@ -330,6 +356,7 @@ export async function addToWorkspaceCollection(journalIds: string[], collectionN
           }
         });
       } else {
+        console.log(`[WORKSPACE] Document already exists, linking to collection: ${journal.title}`);
         // Just ensure it's linked to this collection
         await prisma.researchCollection.update({
           where: { id: collection.id },
@@ -342,7 +369,7 @@ export async function addToWorkspaceCollection(journalIds: string[], collectionN
       }
     }
 
-    console.log(`[WORKSPACE] Successfully added ${journalIds.length} journals to collection "${collectionName}"`);
+    console.log(`[WORKSPACE] Completed processing for collection "${collectionName}"`);
     return { success: true };
   } catch (error: any) {
     console.error('[WORKSPACE] Error adding to collection:', error);
