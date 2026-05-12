@@ -96,45 +96,41 @@ export default function Home() {
           >
             <form onSubmit={handleSearch} className="relative group z-40">
               <div className={cn(
-                "glass-card !bg-white/40 border border-border rounded-full p-2.5 md:p-3.5 flex items-center transition-all duration-700 shadow-2xl",
-                isSearchFocused ? "border-foreground/40 ring-[40px] ring-foreground/5 scale-[1.05] !bg-white/70" : "hover:border-foreground/20"
+                "rounded-full p-2.5 md:p-3.5 flex items-center transition-all duration-700 shadow-[0_0_80px_rgba(255,255,255,0.05)]",
+                "saturated-bar", // Custom high-contrast utility
+                isSearchFocused ? "scale-[1.05] ring-[40px] dark:ring-black/5 ring-white/5" : "hover:scale-[1.02]"
               )}>
                 <div className="pl-6 pr-4">
-                  <Search className={cn(
-                    "w-6 h-6 transition-colors duration-500",
-                    isSearchFocused ? "text-foreground" : "text-foreground-muted/30"
-                  )} />
+                  <Search className="w-7 h-7 text-foreground" />
                 </div>
                 <input
                   type="text"
                   value={query}
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => {
-                    // Small delay to allow clicking suggestions
                     setTimeout(() => setIsSearchFocused(false), 200);
                   }}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Cari riset apa pun..."
-                  className="flex-grow bg-transparent border-none outline-none text-base md:text-2xl font-bold placeholder:text-foreground-muted/20 py-3 md:py-5 min-w-0"
+                  placeholder="APA YANG INGIN ANDA TEMUKAN HARI INI?"
+                  className="flex-grow bg-transparent border-none outline-none text-base md:text-3xl font-black text-foreground placeholder:text-foreground/20 py-3 md:py-6 min-w-0 uppercase tracking-tighter"
                 />
-                <div className="hidden sm:flex items-center gap-2 px-4 border-l border-border h-12 my-auto">
+                <div className="hidden sm:flex items-center gap-2 px-6 border-l border-foreground/10 h-14 my-auto">
                   <select 
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(e.target.value)}
-                    className="bg-transparent text-[10px] font-black uppercase tracking-[0.2em] outline-none cursor-pointer pr-2 text-muted-foreground hover:text-foreground transition-colors appearance-none"
+                    className="bg-transparent text-[11px] font-black uppercase tracking-[0.25em] outline-none cursor-pointer pr-2 text-foreground appearance-none"
                   >
-                    <option value="" className="bg-background text-foreground">Kapan pun</option>
+                    <option value="" className="bg-background text-foreground">ALL TIME</option>
                     <option value="2026" className="bg-background text-foreground">2026</option>
                     <option value="2025" className="bg-background text-foreground">2025</option>
-                    <option value="2024" className="bg-background text-foreground">2024</option>
-                    <option value="2020" className="bg-background text-foreground">5 Tahun Terakhir</option>
+                    <option value="2020" className="bg-background text-foreground">LAST 5Y</option>
                   </select>
                 </div>
                 <button 
                   type="submit"
-                  className="btn-primary h-10 md:h-16 px-5 md:px-16 !rounded-full text-[9px] md:text-xs shadow-2xl active:scale-95 mr-1.5 md:mr-2 shrink-0"
+                  className="h-12 md:h-20 px-8 md:px-20 rounded-full text-xs md:text-sm font-black uppercase tracking-widest shadow-2xl active:scale-95 mr-2 shrink-0 transition-all bg-foreground text-background hover:brightness-125"
                 >
-                  Cari
+                  SEARCH
                 </button>
               </div>
 

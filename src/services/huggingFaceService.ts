@@ -1,21 +1,21 @@
 /**
- * HuggingFace Inference API Service
+ * HUGGINGFACE INFERENCE SERVICE (REBUILT)
  * 
- * Used as 5th tier AI fallback (after Gemini → Grok → OpenRouter).
- * Uses the Inference API with 2-key rotation.
- * 
- * Best models for Indonesian academic text generation:
- * - microsoft/Phi-3.5-mini-instruct (fast, good quality)
- * - mistralai/Mistral-7B-Instruct-v0.3 (reliable, good for academic)
- * - HuggingFaceH4/zephyr-7b-beta (good instruction following)
+ * Production-grade adapter for HF Inference API with dynamic model selection,
+ * proper error mapping, and Indonesian localization.
  */
+
+import { providerHealth } from "./arai/providerHealth";
+import { modelRegistry } from "./arai/modelRegistry";
 
 const HF_BASE = 'https://api-inference.huggingface.co/models';
 
-const MODELS = [
-  'microsoft/Phi-3.5-mini-instruct',
+// Active models that support Inference API as of 2024/2025
+const RECOMMENDED_MODELS = [
   'mistralai/Mistral-7B-Instruct-v0.3',
-  'HuggingFaceH4/zephyr-7b-beta',
+  'meta-llama/Llama-3.1-8B-Instruct',
+  'Qwen/Qwen2.5-7B-Instruct',
+  'TinyLlama/TinyLlama-1.1B-Chat-v1.0'
 ];
 
 let hfKeyIndex = 0;
@@ -23,40 +23,37 @@ function getHFKey(): string | null {
   const keys = [
     process.env.HUGGINGFACE_API_KEY_1,
     process.env.HUGGINGFACE_API_KEY_2,
+    process.env.HUGGINGFACE_API_KEY_3,
   ].filter(Boolean) as string[];
-
+  
   if (keys.length === 0) return null;
-  const key = keys[hfKeyIndex % keys.length];
-  hfKeyIndex++;
-  return key;
+  return keys[hfKeyIndex++ % keys.length];
 }
 
-/**
- * Formats a chat-style prompt for HF text-generation models.
- * HF models use different prompt formats depending on the model.
- * We use a simple instruct format that works across models.
- */
-function formatPrompt(systemPrompt: string, userPrompt: string): string {
-  return `<|system|>\n${systemPrompt}<|end|>\n<|user|>\n${userPrompt}<|end|>\n<|assistant|>`;
-}
+export async function callHuggingFace(prompt: string, timeoutMs: number = 30000): Promise<string> {
+  if (!providerHealth.isHealthy('huggingface')) {
+    throw new Error('HUGGINGFACE_CIRCUIT_TRIPPED');
+  }
 
-export async function callHuggingFace(prompt: string, timeoutMs: number = 20000): Promise<string> {
   const apiKey = getHFKey();
   if (!apiKey) throw new Error('HUGGINGFACE_NOT_CONFIGURED');
 
-  const systemPrompt = 'Anda adalah Senior Research Assistant akademik. Jawab dalam Bahasa Indonesia yang formal dan akademik. Gunakan format markdown yang rapi.';
-  const formattedPrompt = formatPrompt(systemPrompt, prompt);
+  // Format with generic chat template
+  const formattedPrompt = `<|system|>\nAnda adalah Senior Research Assistant akademik. JAWAB DALAM BAHASA INDONESIA FORMAL. JANGAN PERNAH MENGGUNAKAN SIMBOL # ATAU *.<|end|>\n<|user|>\n${prompt}<|end|>\n<|assistant|>`;
 
+  const modelsToTry = RECOMMENDED_MODELS;
   let lastError: Error | null = null;
 
-  for (const model of MODELS) {
+  for (const modelId of modelsToTry) {
+    const t0 = Date.now();
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      console.log(`[HUGGINGFACE] Trying model: ${model}`);
+      console.log(`[HUGGINGFACE] Inference: ${modelId}`);
+      providerHealth.trackRequest('huggingface');
 
-      const response = await fetch(`${HF_BASE}/${model}`, {
+      const response = await fetch(`${HF_BASE}/${modelId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -64,16 +61,12 @@ export async function callHuggingFace(prompt: string, timeoutMs: number = 20000)
         },
         body: JSON.stringify({
           inputs: formattedPrompt,
-          parameters: {
-            max_new_tokens: 1024,
+          parameters: { 
+            max_new_tokens: 1024, 
             temperature: 0.4,
-            do_sample: true,
-            return_full_text: false,
+            return_full_text: false
           },
-          options: {
-            wait_for_model: true, // Wait if model is loading (cold start)
-            use_cache: false,
-          },
+          options: { wait_for_model: true }
         }),
         signal: controller.signal,
       });
@@ -81,49 +74,41 @@ export async function callHuggingFace(prompt: string, timeoutMs: number = 20000)
       clearTimeout(timer);
 
       if (!response.ok) {
-        const errBody = await response.text().catch(() => '');
-        // Model loading — skip to next
-        if (response.status === 503) {
-          console.warn(`[HUGGINGFACE] Model ${model} loading — trying next.`);
-          continue;
+        const status = response.status;
+        if (status === 429) {
+          providerHealth.reportFailure('huggingface', 'rate_limit');
+        } else if (status === 404) {
+          providerHealth.reportFailure('huggingface', 'missing_model');
+          modelRegistry.markModelFailure(modelId);
+        } else {
+          providerHealth.reportFailure('huggingface', 'server_error');
         }
-        throw new Error(`HF_${response.status}: ${errBody.slice(0, 100)}`);
+        
+        if (status === 503 || status === 404) continue; // Try next model
+        throw new Error(`HF_ERROR_${status}`);
       }
 
       const data = await response.json();
+      let text = Array.isArray(data) ? data[0]?.generated_text : data?.generated_text;
+      
+      if (!text) throw new Error('HF_EMPTY_RESPONSE');
 
-      // HF Inference API returns array for text-generation
-      let text = '';
-      if (Array.isArray(data) && data[0]?.generated_text) {
-        text = data[0].generated_text;
-      } else if (typeof data === 'string') {
-        text = data;
-      } else if (data?.generated_text) {
-        text = data.generated_text;
-      }
-
-      // Clean up any residual prompt artifacts
-      text = text
-        .replace(/<\|[^|]*\|>/g, '')
-        .replace(/^\s*assistant\s*:?\s*/i, '')
-        .trim();
-
-      if (!text || text.length < 20) {
-        throw new Error('HF_RESPONSE_TOO_SHORT');
-      }
-
-      console.log(`[HUGGINGFACE] Success via ${model} — ${text.length} chars`);
+      // Clean up symbols and template markers
+      text = text.replace(/<\|[^|]*\|>/g, '').replace(/[#*]/g, '').trim();
+      
+      providerHealth.reportSuccess('huggingface', Date.now() - t0);
+      modelRegistry.markModelSuccess(modelId);
+      
       return text;
 
     } catch (err: any) {
       clearTimeout(timer);
       lastError = err;
-      console.warn(`[HUGGINGFACE] Model ${model} failed: ${err.message}`);
-
       if (err.name === 'AbortError') {
-        throw new Error('HUGGINGFACE_TIMEOUT');
+        providerHealth.reportFailure('huggingface', 'timeout');
+      } else {
+        providerHealth.reportFailure('huggingface', 'server_error');
       }
-      // Continue to next model
     }
   }
 

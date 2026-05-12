@@ -4,12 +4,22 @@
  * Core type definitions for the ISAGI intelligence layer.
  * All ISAGI modules share these contracts.
  */
+import { UniversalPaperEnriched } from "@/types/search";
+export type { UniversalPaperEnriched };
 
 // ── Core Reasoning ─────────────────────────────────────────────────────────
 
-export type ReasoningDepth = 'shallow' | 'standard' | 'deep' | 'exhaustive';
-export type ConfidenceLevel = 'low' | 'medium' | 'high' | 'verified';
-export type AgentRole = 'planner' | 'research' | 'validator' | 'synthesizer' | 'memory' | 'reflection';
+export type ReasoningDepth = 'shallow' | 'standard' | 'deep' | 'exhaustive' | 'autonomous';
+export type ConfidenceLevel = 'low' | 'medium' | 'high' | 'verified' | 'absolute';
+export type AgentRole = 
+  | 'planner' 
+  | 'research_retriever' 
+  | 'critic_agent' 
+  | 'fact_checker' 
+  | 'synthesizer' 
+  | 'citation_validator' 
+  | 'gap_detector' 
+  | 'reflection_engine';
 
 export interface ReasoningStep {
   step: number;
@@ -43,6 +53,7 @@ export type QueryIntent =
   | 'trend_analysis'
   | 'citation_analysis'
   | 'research_gap_detection'
+  | 'conversational'
   | 'generic';
 
 export interface IntentClassification {
@@ -103,7 +114,7 @@ export interface EpisodicMemoryEntry {
 export interface SemanticMemoryEdge {
   from: string;   // concept
   to: string;     // concept
-  relation: 'related_to' | 'method_of' | 'contrasts_with' | 'builds_on' | 'cites';
+  relation: 'related_to' | 'method_of' | 'contrasts_with' | 'builds_on' | 'cites' | 'uses_variable' | 'analyzes' | 'uses_methodology';
   weight: number; // 0–1
 }
 
@@ -118,9 +129,8 @@ export interface KnowledgeNode {
 }
 
 export interface KnowledgeGraph {
-  nodes: Map<string, KnowledgeNode>;
-  edges: SemanticMemoryEdge[];
-  lastUpdated: number;
+  nodes: any[];
+  links: any[];
 }
 
 // ── Source Validation ──────────────────────────────────────────────────────
@@ -180,6 +190,13 @@ export interface ISAGIResponse {
   model: string;
   provider: string;
   suggestions: string[];        // Follow-up research suggestions
+  knowledgeGraph?: KnowledgeGraph;
+  confidenceMetrics: {
+    evidenceDensity: number;    // 0–1
+    sourceReliability: number;  // 0–1
+    retrievalQuality: number;   // 0–1
+    hallucinationRisk: number;  // 0–1
+  };
 }
 
 // ── Self-Reflection ────────────────────────────────────────────────────────

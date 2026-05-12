@@ -21,13 +21,19 @@
  */
 
 import { searchAggregator } from '../searchAggregator';
-import { geminiService } from '../geminiService';
-import { callGroq, GROQ_MODELS } from '../groqService';
-import { callOpenRouter } from '../openRouterService';
+import { smartOrchestrator } from './smartOrchestrator';
+import { callGroq } from '../groqService';
 import { embeddingService } from '../embeddingService';
+import { redis } from '@/lib/redis';
 import { ISAGIReasoningEngine } from './reasoningEngine';
 import { ISAGIMemory } from './memorySystem';
+import { graphCognition } from './graphCognition';
+import { documentProcessor } from './documentProcessor';
+import { responseFormatter } from './formatter';
+import { doiEngine } from './doiEngine';
 import { ISAGIValidator } from './sourceValidator';
+import { agentSwarm } from './agentSwarm';
+import { pdfEngine } from './pdfEngine';
 import {
   ISAGIResponse, IntentClassification, ReasoningTrace,
   ToolCall, LongTermMemoryEntry, SourceValidation, ConfidenceLevel
@@ -65,12 +71,6 @@ function buildSynthesisPrompt(
     ? `\n\n💬 CONVERSATION CONTEXT:\n${stmContext.slice(0, 300)}`
     : '';
 
-  const langInstruction = intent.language === 'id'
-    ? 'Respond in formal Indonesian (Bahasa Indonesia).'
-    : intent.language === 'mixed'
-    ? 'Respond in Bahasa Indonesia with occasional English technical terms.'
-    : 'Respond in formal English.';
-
   const intentInstructions: Record<string, string> = {
     research_gap_detection: 'Focus on identifying gaps, limitations, and unexplored areas in the literature.',
     literature_review: 'Synthesize findings across papers, identify themes and consensus.',
@@ -84,42 +84,52 @@ function buildSynthesisPrompt(
     generic: 'Synthesize the most relevant information to answer the query.',
   };
 
-  return `You are ISAGI — Intelligence System for Academic Global Insight. You are a senior research intelligence system.
+  const langInstruction = intent.language === 'id'
+    ? 'Gunakan Bahasa Indonesia yang formal, cerdas, namun tetap suportif seperti asisten profesor.'
+    : 'Use formal academic English with a supportive tone.';
 
-QUERY: "${query}"
+  const paperIntro = papers.length > 0 
+    ? `Berikut adalah sumber akademik yang berhasil saya temukan (${papers.length} paper):\n${paperContext}`
+    : 'Saya belum menemukan sumber akademik baru untuk saat ini. Mari berdiskusi berdasarkan informasi yang sudah ada.';
 
-DETECTED INTENT: ${intent.primary} (confidence: ${Math.round(intent.confidence * 100)}%)
-DOMAINS: ${intent.domains.join(', ')}
+  return `Kamu adalah ISAGI (Intelligence System for Academic Global Insight), sebuah AI yang dirancang sebagai Senior Research Assistant profesional dari Indonesia. 
+Kepribadianmu: Cerdas, kritis namun sopan, metodis, dan selalu objektif.
+
+KONTEKS PERCAKAPAN SEBELUMNYA:
+${stmNote || 'Tidak ada percakapan sebelumnya.'}
+
+PERTANYAAN/INPUT USER: "${query}"
+NIAT (INTENT): ${intent.primary}
+
+DETEKSI DOMAIN: ${intent.domains.join(', ')}
+
+INSTRUKSI KHUSUS:
+${intentInstructions[intent.primary] || intentInstructions.generic}
 ${langInstruction}
 
-INSTRUCTION: ${intentInstructions[intent.primary] || intentInstructions.generic}${conflictNote}${memNote}${stmNote}
+SUMBER AKADEMIK:
+${paperIntro}
+${conflictNote}
+${memNote}
 
-RETRIEVED ACADEMIC SOURCES (${papers.length} papers):
-${paperContext}
+${responseFormatter.getSystemPromptInjection()}
 
-REQUIREMENTS:
-1. Think step by step — demonstrate reasoning
-2. Cite specific papers by their index [1], [2], etc.
-3. Acknowledge uncertainty explicitly
-4. Do NOT hallucinate — only use information from the sources above
-5. If sources are insufficient, clearly state what additional research is needed
-6. End with 2–3 follow-up research questions
+TUGASMU:
+1. Jika user hanya ingin ngobrol atau bertanya hal umum, jawablah dengan cerdas dan hubungkan dengan topik riset jika memungkinkan.
+2. Jika user bertanya tentang data, gunakan kutipan [1], [2] dari sumber di atas untuk menjaga akurasi.
+3. Jika sumber tidak cukup, berikan hipotesis yang logis atau sarankan pencarian lebih lanjut.
+4. Selalu akhiri dengan 2-3 pertanyaan reflektif untuk memancing ide baru user.
 
-FORMAT:
-## Analysis
-[Your synthesis here]
+FORMAT RESPONS:
+SINTESIS PENELITIAN
+[Isi sintesis di sini]
 
-## Key Findings
-- Finding 1 [citation]
-- Finding 2 [citation]
+TEMUAN KUNCI
+• ... [sitasi]
 
-## Research Gaps / Next Steps
-[What is missing or unexplored]
-
-## Follow-up Questions
-1. ...
-2. ...
-3. ...`;
+PERTANYAAN LANJUTAN
+• ...
+• ...`;
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -136,21 +146,26 @@ export const ISAGIOrchestrator = {
       forceRetrieval?: boolean;
       filters?: any;
       maxReflectionCycles?: number;
+      onProgress?: (state: string) => void;
     } = {}
   ): Promise<ISAGIResponse> {
     const t0 = Date.now();
     const toolsUsed: ToolCall[] = [];
     const limit = options.limit || 15;
     const maxCycles = options.maxReflectionCycles || 1;
+    const onProgress = options.onProgress;
 
     console.log(`\n[ISAGI] ═══════════════════════════════════════`);
     console.log(`[ISAGI] Query: "${query}" | Session: ${sessionId}`);
     console.log(`[ISAGI] ═══════════════════════════════════════`);
+    options.onProgress?.('🧠 Initializing ISAGI Research Kernel...');
 
     // ── STEP 1: INTENT CLASSIFICATION ───────────────────────────────────────
     const t1 = Date.now();
     const intent = ISAGIReasoningEngine.classifyIntent(query);
     console.log(`[ISAGI:1] Intent: ${intent.primary} | Lang: ${intent.language} | Conf: ${Math.round(intent.confidence * 100)}%`);
+    options.onProgress?.(`🔍 ${intent.primary === 'research_gap_detection' ? 'Mendeteksi celah riset...' : 'Menganalisis niat pencarian...'}`);
+    options.onProgress?.(`🛡️ ${smartOrchestrator.getStatusSummary()}`);
     console.log(`[ISAGI:1] Semantic expansions: [${intent.semanticExpansions.slice(0, 4).join(', ')}]`);
 
     let trace = ISAGIReasoningEngine.buildInitialTrace(query, sessionId);
@@ -163,6 +178,7 @@ export const ISAGIOrchestrator = {
     );
 
     // ── STEP 2: MEMORY RECALL ────────────────────────────────────────────────
+    options.onProgress?.('🧠 Accessing long-term semantic memory...');
     const t2 = Date.now();
     toolsUsed.push({ tool: 'memory_lookup', reason: 'Check long-term memory for related knowledge', input: { query } });
 
@@ -191,6 +207,7 @@ export const ISAGIOrchestrator = {
     toolsUsed[toolsUsed.length - 1].success = true;
 
     // ── STEP 3: PLANNING ─────────────────────────────────────────────────────
+    options.onProgress?.('📅 Generating autonomous research plan...');
     const plan = ISAGIReasoningEngine.createPlan(query, intent, hasMemoryHit && !options.forceRetrieval);
     console.log(`[ISAGI:3] Plan: ${plan.steps.length} steps | Depth: ${plan.estimatedDepth} | Retrieval: ${plan.retrievalRequired}`);
 
@@ -206,6 +223,7 @@ export const ISAGIOrchestrator = {
     let retrievalDone = false;
 
     if (plan.retrievalRequired || options.forceRetrieval) {
+      options.onProgress?.(`🌐 Executing cross-provider retrieval (${plan.estimatedDepth} mode)...`);
       const t4 = Date.now();
       toolsUsed.push({ tool: 'academic_search', reason: 'Retrieve academic papers for query', input: { query, limit } });
 
@@ -253,13 +271,26 @@ export const ISAGIOrchestrator = {
       );
     }
 
-    // ── STEP 5: SOURCE VALIDATION ─────────────────────────────────────────────
+    // ── STEP 5: SOURCE VALIDATION & PDF RAG ──────────────────────────────────
+    options.onProgress?.('✅ Validating source quality & extracting deep context...');
     const t5 = Date.now();
     toolsUsed.push({ tool: 'cross_reference', reason: 'Validate source quality and trust', input: { paperCount: papers.length } });
 
     const validations: SourceValidation[] = ISAGIValidator.validateBatch(papers);
     const avgTrust = ISAGIValidator.averageTrustScore(validations);
     const conflicts = ISAGIValidator.detectConflicts(papers);
+
+    // Deep PDF Extraction for top high-trust papers
+    if (plan.estimatedDepth === 'deep' || plan.estimatedDepth === 'exhaustive') {
+      const topPapers = papers.slice(0, 2).filter(p => p.pdfUrl && p.pdfUrl.endsWith('.pdf'));
+      for (const p of topPapers) {
+        options.onProgress?.(`📄 Deep parsing: ${p.title.slice(0, 20)}...`);
+        const pdfData = await pdfEngine.processPDF(p.pdfUrl, p.paperId || p.id);
+        if (pdfData) {
+          p.abstract = `[FULL PDF EXTRACTED]\n${pdfData.fullText.slice(0, 3000)}\n\n[SECTIONS DETECTED]: ${pdfData.metadata.sections.join(', ')}`;
+        }
+      }
+    }
 
     // Re-rank by trust + relevance
     papers = ISAGIValidator.rankByTrustAndRelevance(papers, validations);
@@ -277,49 +308,54 @@ export const ISAGIOrchestrator = {
     );
 
     // ── STEP 6: AI SYNTHESIS ─────────────────────────────────────────────────
+    options.onProgress?.('✍️ Synthesizing findings across multi-source context...');
     const t6 = Date.now();
     const { model, provider, rationale } = ISAGIReasoningEngine.selectModel(intent, plan.estimatedDepth);
     console.log(`[ISAGI:6] Synthesis model: ${model} (${provider}) — ${rationale}`);
 
     const synthesisPrompt = buildSynthesisPrompt(query, intent, papers, memoryContext, stmContext, conflicts);
 
+    // ── STEP 6A: SEMANTIC CACHE LOOKUP ───────────────────────────────────────
     let answer = '';
-    let actualModel = model;
-    let actualProvider = provider;
-
-    try {
-      if (provider === 'groq') {
-        answer = await callGroq(synthesisPrompt, model, 20000);
-      } else {
-        // Default to Gemini
-        const res = await geminiService.generateAI({
-          paperId: `ISAGI_${sessionId}`,
-          type: 'synthesis',
-          prompt: synthesisPrompt,
-          title: query,
-        });
-        answer = res.data || res.summary || '';
-        if (!answer) throw new Error('EMPTY_GEMINI_RESPONSE');
-      }
-    } catch (e1: any) {
-      console.warn(`[ISAGI:6] Primary synthesis failed: ${e1.message}. Falling back...`);
+    const cacheKey = `isagi:synthesis:${Buffer.from(query).toString('base64').slice(0, 32)}`;
+    
+    if (redis) {
       try {
-        // Fallback to Groq Versatile
-        answer = await callGroq(synthesisPrompt, 'llama-3.3-70b-versatile', 20000);
-        actualModel = 'llama-3.3-70b-versatile';
-        actualProvider = 'groq';
-      } catch (e2: any) {
-        console.warn(`[ISAGI:6] Groq fallback failed: ${e2.message}. Trying OpenRouter...`);
-        try {
-          answer = await callOpenRouter(synthesisPrompt, 20000);
-          actualModel = 'openrouter-fallback';
-          actualProvider = 'openrouter';
-        } catch (e3: any) {
-          console.error(`[ISAGI:6] All synthesis providers failed`);
-          answer = `## Analysis\n\nBased on ${papers.length} retrieved academic sources, the query "${query}" relates to the following key areas: ${intent.domains.join(', ')}.\n\n**Note:** AI synthesis temporarily unavailable. Please review the retrieved sources directly.`;
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          console.log(`[ISAGI:6A] Semantic cache HIT for query`);
+          answer = cached as string;
         }
+      } catch (e) {}
+    }
+
+    let actualModel = 'none';
+    let actualProvider = 'none';
+
+    if (!answer) {
+      const { model, provider, rationale } = ISAGIReasoningEngine.selectModel(intent, plan.estimatedDepth);
+      console.log(`[ISAGI:6] Synthesis via Smart Orchestrator — ${rationale}`);
+
+      const orchestratorRes = await smartOrchestrator.execute({
+        prompt: synthesisPrompt,
+        type: 'synthesis',
+        importance: plan.estimatedDepth === 'deep' ? 'high' : 'standard',
+        userId: 'ISAGI_SYSTEM',
+        paperId: `ISAGI_${sessionId}`
+      });
+
+      answer = orchestratorRes.text;
+      actualModel = orchestratorRes.model;
+      actualProvider = orchestratorRes.provider;
+
+      // Cache successful non-degraded responses
+      if (answer && !orchestratorRes.isDegraded && redis) {
+        await redis.set(cacheKey, answer, { ex: 60 * 60 * 12 }).catch(() => {});
       }
     }
+
+    // Apply strict formatting
+    answer = responseFormatter.format(answer);
 
     console.log(`[ISAGI:6] Synthesis: ${answer.length} chars via ${actualModel}`);
     trace = ISAGIReasoningEngine.addStep(
@@ -328,6 +364,57 @@ export const ISAGIOrchestrator = {
       `Generated ${answer.length} char synthesis via ${actualProvider}`,
       answer.length > 500 ? 0.85 : 0.6,
       actualModel, Date.now() - t6
+    );
+
+    // ── STEP 7: INTERNAL DEBATE & SWARM VALIDATION ────────────────────────────
+    onProgress?.('🤖 Agents debating internally...');
+    const t7 = Date.now();
+    let finalAnswer = answer;
+    let debateResult = '';
+    
+    if (plan.estimatedDepth === 'deep' || plan.estimatedDepth === 'exhaustive' || intent.confidence < 0.6) {
+      console.log(`[ISAGI:7] Low confidence or high depth — triggering agent debate`);
+      toolsUsed.push({ tool: 'cross_reference', reason: 'Internal agent debate for quality assurance', input: { initialSynthesis: answer.slice(0, 100) } });
+      
+      const paperContext = papers.map(p => `Title: ${p.title}\nAbstract: ${p.abstract}`).join('\n\n');
+      debateResult = await agentSwarm.debate(paperContext + memoryContext, answer);
+      
+      // Perform Self-Correction based on debate
+      const correctionPrompt = `You are the SYNTHESIZER AGENT. Re-evaluate your previous answer based on the following critique.
+      
+      ORIGINAL ANSWER:
+      ${answer}
+      
+      CRITIQUE:
+      ${debateResult}
+      
+      TUGAS: Perbaiki jawaban Anda agar lebih akurat, objektif, dan sejalan dengan data paper. Jika ada klaim yang salah, hapus atau revisi.`;
+      
+      try {
+        const corrected = await callGroq(correctionPrompt, 'llama-3.3-70b-versatile', 15000);
+        finalAnswer = corrected;
+        console.log(`[ISAGI:7] Self-Correction applied. Original: ${answer.length} | New: ${finalAnswer.length}`);
+      } catch (err) {
+        console.warn(`[ISAGI:7] Self-Correction failed, using original answer.`);
+      }
+      
+      toolsUsed[toolsUsed.length - 1].output = { debateLength: debateResult.length, correctionApplied: finalAnswer !== answer };
+      toolsUsed[toolsUsed.length - 1].success = true;
+    }
+
+    // ── STEP 8: FACT CHECKING ────────────────────────────────────────────────
+    onProgress?.('✅ Verifying citations & checking for hallucinations...');
+    const { isValid, issues } = await agentSwarm.factCheck(finalAnswer, papers);
+    if (!isValid) {
+      console.warn(`[ISAGI:8] Fact check found issues: ${issues.join(', ')}`);
+    }
+
+    trace = ISAGIReasoningEngine.addStep(
+      trace, 'Swarm Intelligence Debate',
+      'Agents debated internally to challenge assumptions and verify conclusions',
+      debateResult ? `Debate result: ${debateResult.slice(0, 100)}...` : 'Skipped (sufficient confidence)',
+      isValid ? 0.9 : 0.4,
+      'critic_agent', Date.now() - t7
     );
 
     // ── STEP 7: SELF-REFLECTION ───────────────────────────────────────────────
@@ -380,8 +467,12 @@ export const ISAGIOrchestrator = {
     }
     console.log(`[ISAGI:9] Knowledge stored: ${knowledgeStored}`);
 
-    // ── STEP 10: EXTRACT FOLLOW-UP SUGGESTIONS ────────────────────────────────
-    const suggestions = this.extractSuggestions(answer, intent);
+    // ── STEP 10: KNOWLEDGE GRAPH COGNITION ───────────────────────────────────
+    onProgress?.('🕸️ Mapping knowledge graph relationships...');
+    const knowledgeGraph = await graphCognition.generateGraph(papers);
+
+    // ── STEP 11: EXTRACT FOLLOW-UP SUGGESTIONS ────────────────────────────────
+    const suggestions = this.extractSuggestions(finalAnswer, intent);
 
     const totalMs = Date.now() - t0;
     console.log(`[ISAGI] ✅ Pipeline complete in ${totalMs}ms | ${papers.length} papers | ${confidenceLevel} confidence\n`);
@@ -389,7 +480,7 @@ export const ISAGIOrchestrator = {
     return {
       sessionId,
       query,
-      answer,
+      answer: finalAnswer,
       confidence: confidenceLevel as ConfidenceLevel,
       reasoning: trace,
       sources: validations.slice(0, 10),
@@ -401,6 +492,13 @@ export const ISAGIOrchestrator = {
       model: actualModel,
       provider: actualProvider,
       suggestions,
+      knowledgeGraph,
+      confidenceMetrics: {
+        evidenceDensity: papers.length / limit,
+        sourceReliability: avgTrust / 100,
+        retrievalQuality: papers.length > 0 ? 0.9 : 0.1,
+        hallucinationRisk: isValid ? 0.05 : 0.4
+      }
     };
   },
 

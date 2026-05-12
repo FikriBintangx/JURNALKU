@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ArrowUp, Sparkles, BookMarked } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export const FloatingActionButtons = () => {
+  const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -38,9 +40,19 @@ export const FloatingActionButtons = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.5, y: 20 }}
               onClick={scrollToTop}
-              className="w-12 h-12 bg-card/80 backdrop-blur-xl border border-border text-foreground rounded-full flex items-center justify-center shadow-2xl active:scale-90"
+              className="w-12 h-12 bg-card/40 backdrop-blur-2xl border border-border/50 text-foreground rounded-full flex items-center justify-center shadow-2xl active:scale-90"
             >
               <ArrowUp className="w-5 h-5" />
+            </motion.button>
+
+            <motion.button
+              initial={{ opacity: 0, scale: 0.5, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.5, y: 20 }}
+              onClick={() => router.push('/workspace')}
+              className="w-12 h-12 bg-card/40 backdrop-blur-2xl border border-border/50 text-foreground rounded-full flex items-center justify-center shadow-2xl active:scale-90"
+            >
+              <Sparkles className="w-5 h-5 text-indigo-500" />
             </motion.button>
 
             <Link href="/library">
@@ -48,7 +60,7 @@ export const FloatingActionButtons = () => {
                 initial={{ opacity: 0, scale: 0.5, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.5, y: 20 }}
-                className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl shadow-primary/30 active:scale-90"
+                className="w-12 h-12 bg-card/40 backdrop-blur-2xl border border-border/50 text-foreground rounded-full flex items-center justify-center shadow-2xl active:scale-90"
               >
                 <BookMarked className="w-5 h-5" />
               </motion.div>
@@ -65,7 +77,7 @@ export const FloatingActionButtons = () => {
                   setTimeout(() => searchInput.focus(), 300);
                 }
               }}
-              className="w-14 h-14 bg-foreground text-background rounded-2xl flex items-center justify-center shadow-2xl active:scale-90"
+              className="w-14 h-14 bg-foreground/10 backdrop-blur-3xl border border-foreground/20 text-foreground rounded-2xl flex items-center justify-center shadow-2xl active:scale-90"
             >
               <Search className="w-6 h-6" />
             </motion.button>

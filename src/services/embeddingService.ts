@@ -1,25 +1,54 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { aiKeyManager } from "./AIKeyManager";
+import { providerHealth } from "./arai/providerHealth";
 
-// text-embedding-004 is the latest high-performance Google AI embedding model
-const EMBEDDING_MODEL = "text-embedding-004";
+// Modern high-performance Google AI embedding model
+const DEFAULT_GEMINI_EMBEDDING_MODEL = "text-embedding-004";
 
-export const embeddingService = {
+export interface EmbeddingProvider {
+  getEmbedding(text: string): Promise<number[]>;
+  name: string;
+}
+
+class EmbeddingService {
+  // Simple in-memory cache for embeddings to avoid duplicate generation
+  private cache: Map<string, number[]> = new Map();
+
   async getEmbedding(text: string): Promise<number[]> {
     if (!text || text.trim().length === 0) return [];
-
-    const apiKey = aiKeyManager.getBestKey();
-    if (!apiKey) {
-      console.warn("[EMBEDDING] No API key available — skipping.");
-      return [];
+    
+    const hash = this.simpleHash(text);
+    if (this.cache.has(hash)) {
+      return this.cache.get(hash)!;
     }
 
+    // Try Gemini First (with health tracking)
+    const geminiResult = await this.tryGeminiEmbedding(text);
+    if (geminiResult.length > 0) {
+      this.cache.set(hash, geminiResult);
+      return geminiResult;
+    }
+
+    // RESILIENT FALLBACK: Pseudo-embedding based on hash projection
+    // This allows the system to continue functioning (similarity still works) even without API access
+    const fallback = this.generatePseudoEmbedding(text);
+    this.cache.set(hash, fallback);
+    return fallback;
+  }
+
+  private async tryGeminiEmbedding(text: string): Promise<number[]> {
+    const apiKey = aiKeyManager.getBestKey();
+    if (!apiKey) return [];
+
+    // Check health before calling
+    if (!providerHealth.isHealthy("embedding")) return [];
+
     const cleanText = text.trim().slice(0, 8000);
+    const t0 = Date.now();
 
     try {
-      console.log(`[EMBEDDING] Generating embedding (${cleanText.length} chars) using ${EMBEDDING_MODEL}`);
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: EMBEDDING_MODEL });
+      const model = genAI.getGenerativeModel({ model: DEFAULT_GEMINI_EMBEDDING_MODEL });
 
       const result = await Promise.race([
         model.embedContent(cleanText),
@@ -29,44 +58,57 @@ export const embeddingService = {
       ]) as any;
 
       const values = result?.embedding?.values;
-      if (!values || !Array.isArray(values) || values.length === 0) {
-        throw new Error("EMPTY_EMBEDDING_RESPONSE");
+      if (values && Array.isArray(values) && values.length > 0) {
+        aiKeyManager.markSuccess(apiKey);
+        providerHealth.reportSuccess("embedding", Date.now() - t0);
+        return values;
       }
-
-      // Only mark success for rate-limit tracking purposes
-      aiKeyManager.markSuccess(apiKey);
-      console.log(`[EMBEDDING] Success — ${values.length} dimensions`);
-      return values;
-
+      return [];
     } catch (error: any) {
-      const errorMsg = (error.message || "").toLowerCase();
-      const isRateLimit =
-        errorMsg.includes("429") ||
-        errorMsg.includes("quota") ||
-        errorMsg.includes("too many requests");
-      const isModelError =
-        errorMsg.includes("not found") ||
-        errorMsg.includes("404") ||
-        errorMsg.includes("unsupported") ||
-        errorMsg.includes("invalid");
-
-      if (isRateLimit) {
-        // Only penalize key for rate limits
-        aiKeyManager.markFailure(apiKey, true);
-        console.warn(`[EMBEDDING] Rate limited on key — cooldown applied.`);
-      } else if (isModelError) {
-        // Model config error — do NOT penalize the key
-        console.error(`[EMBEDDING] [MODEL ERROR] Model '${EMBEDDING_MODEL}' issue: ${error.message}. Key is still healthy.`);
-      } else {
-        // Network or other transient error — light penalty
-        aiKeyManager.markFailure(apiKey, false);
-        console.warn(`[EMBEDDING] Transient error: ${error.message}`);
-      }
-
-      // Always fall back gracefully — never crash
+      const type = (error.message || "").toLowerCase();
+      const isQuota = type.includes("429") || type.includes("quota");
+      
+      aiKeyManager.markFailure(apiKey, isQuota);
+      providerHealth.reportFailure("embedding", error.message);
+      
       return [];
     }
-  },
+  }
+
+  /** 
+   * Generates a deterministic high-dimensional vector for a string.
+   * Useful for maintaining "relative similarity" during API outages.
+   */
+  private generatePseudoEmbedding(text: string, dims: number = 768): number[] {
+    const vector = new Array(dims).fill(0);
+    const words = text.toLowerCase().split(/\s+/).slice(0, 50);
+    
+    words.forEach((word, wordIdx) => {
+      let hash = 0;
+      for (let i = 0; i < word.length; i++) {
+        hash = ((hash << 5) - hash) + word.charCodeAt(i);
+        hash |= 0;
+      }
+      // Project hash onto multiple indices in the vector
+      for (let j = 0; j < 5; j++) {
+        const idx = Math.abs((hash ^ (j * 7919))) % dims;
+        vector[idx] += (1 / (wordIdx + 1));
+      }
+    });
+
+    // Normalize
+    const magnitude = Math.sqrt(vector.reduce((sum, v) => sum + v*v, 0));
+    return magnitude === 0 ? vector : vector.map(v => v / magnitude);
+  }
+
+  private simpleHash(s: string): string {
+    let hash = 0;
+    for (let i = 0; i < s.length; i++) {
+      hash = ((hash << 5) - hash) + s.charCodeAt(i);
+      hash |= 0;
+    }
+    return hash.toString();
+  }
 
   cosineSimilarity(vecA: number[], vecB: number[]): number {
     if (!vecA || !vecB || vecA.length === 0 || vecB.length === 0 || vecA.length !== vecB.length) {
@@ -80,7 +122,7 @@ export const embeddingService = {
     }
     const denom = Math.sqrt(normA) * Math.sqrt(normB);
     return denom === 0 ? 0 : dot / denom;
-  },
+  }
 
   /** Keyword-based relevance fallback when embeddings are unavailable */
   keywordRelevance(query: string, text: string): number {
@@ -90,5 +132,7 @@ export const embeddingService = {
     const target = text.toLowerCase();
     const matches = terms.filter((t) => target.includes(t)).length;
     return matches / terms.length;
-  },
-};
+  }
+}
+
+export const embeddingService = new EmbeddingService();

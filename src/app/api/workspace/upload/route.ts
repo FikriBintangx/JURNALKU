@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { vectorMemory } from '@/services/workspace/vectorMemory';
+import { documentProcessor } from '@/services/arai/documentProcessor';
 
 // Required for handling file uploads in Next.js App Router
 export const runtime = 'nodejs';
@@ -20,13 +20,19 @@ export async function POST(req: NextRequest) {
 
     console.log(`[API_WORKSPACE] Received file: ${file.name} (${buffer.length} bytes)`);
 
-    // Ingest into Vector Memory (PDF Parse -> Chunk -> Embed -> Save)
-    const documentId = await vectorMemory.ingestDocument(userId, file.name, buffer, 'pdf');
+    // Use the new REAL autonomous ingestion pipeline
+    const processed = await documentProcessor.process(buffer, file.name, userId);
 
     return NextResponse.json({ 
       success: true, 
-      documentId, 
-      message: 'PDF successfully ingested into Vector Memory' 
+      document: {
+        id: processed.doi || file.name,
+        title: processed.title,
+        methodology: processed.methodology,
+        variables: processed.variables,
+        gap: processed.researchGap
+      },
+      message: 'Dokumen berhasil diserap dan dianalisis secara otonom.' 
     });
 
   } catch (error: any) {

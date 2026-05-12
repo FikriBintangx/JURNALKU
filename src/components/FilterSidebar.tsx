@@ -404,7 +404,7 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-border bg-card/90 backdrop-blur-md">
+            <div className="p-4 border-t border-border glass-dropdown !rounded-none !border-x-0 !border-b-0">
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => {

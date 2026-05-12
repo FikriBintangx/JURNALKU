@@ -116,7 +116,7 @@ function NavbarContent() {
                 initial={{ opacity: 0, y: 15, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                className="absolute top-full mt-4 left-0 right-0 bg-card p-3 shadow-md z-[110] overflow-hidden rounded-[2rem] border border-border-strong"
+                className="absolute top-full mt-4 left-0 right-0 glass-dropdown p-3 shadow-2xl z-[110] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300"
               >
                 <SearchSuggestions query={query} onSelect={(val) => {
                   setQuery(val);

@@ -34,6 +34,7 @@ const INTENT_PATTERNS: Record<QueryIntent, { patterns: RegExp[]; weight: number 
   trend_analysis:         { patterns: [/tren|trend|emerging|perkembangan|recent|terbaru/i], weight: 0.85 },
   citation_analysis:      { patterns: [/citasi|citation|dikutip|cited|reference/i], weight: 0.9 },
   research_gap_detection: { patterns: [/gap|celah|kekurangan|limitation|missing|belum diteliti/i], weight: 0.95 },
+  conversational:         { patterns: [/halo|hai|hey|kamu siapa|tanya dong|jelaskan lagi|maksudnya|bisa bantu|oke|siap/i], weight: 0.7 },
   generic:                { patterns: [/.*/], weight: 0.1 },
 };
 
@@ -166,18 +167,18 @@ export const ISAGIReasoningEngine = {
     steps.push({
       id: id++,
       description: 'Check long-term memory for cached knowledge about this query',
-      agentRole: 'memory',
+      agentRole: 'research_retriever',
       tool: 'memory_lookup',
       priority: 'critical',
     });
     tools.push('memory_lookup');
 
-    if (!hasCachedMemory) {
+    if (!hasCachedMemory && intent.primary !== 'conversational') {
       // Academic retrieval
       steps.push({
         id: id++,
         description: `Search academic databases for: "${query}" with semantic expansion`,
-        agentRole: 'research',
+        agentRole: 'research_retriever',
         tool: 'academic_search',
         dependsOn: [1],
         priority: 'critical',
@@ -189,13 +190,21 @@ export const ISAGIReasoningEngine = {
         steps.push({
           id: id++,
           description: 'Expand query semantically and run secondary retrieval',
-          agentRole: 'research',
+          agentRole: 'research_retriever',
           tool: 'semantic_expansion',
           dependsOn: [2],
           priority: 'important',
         });
         tools.push('semantic_expansion');
       }
+    } else if (intent.primary === 'conversational') {
+      requiresRetrieval = false;
+      steps.push({
+        id: id++,
+        description: 'Analyze conversation history and context to provide a helpful response',
+        agentRole: 'synthesizer',
+        priority: 'critical',
+      });
     } else {
       requiresRetrieval = false;
     }
@@ -204,7 +213,7 @@ export const ISAGIReasoningEngine = {
     steps.push({
       id: id++,
       description: 'Validate retrieved sources — check DOI, citations, peer-review status',
-      agentRole: 'validator',
+      agentRole: 'citation_validator',
       tool: 'cross_reference',
       dependsOn: [2],
       priority: 'important',
@@ -215,7 +224,7 @@ export const ISAGIReasoningEngine = {
       steps.push({
         id: id++,
         description: 'Detect research gaps in retrieved literature',
-        agentRole: 'research',
+        agentRole: 'gap_detector',
         tool: 'gap_detection',
         priority: 'critical',
       });
@@ -226,7 +235,7 @@ export const ISAGIReasoningEngine = {
       steps.push({
         id: id++,
         description: 'Analyze citation velocity and publication trends',
-        agentRole: 'research',
+        agentRole: 'research_retriever',
         tool: 'trend_analysis',
         priority: 'important',
       });
@@ -237,7 +246,7 @@ export const ISAGIReasoningEngine = {
       steps.push({
         id: id++,
         description: 'Deep citation network analysis',
-        agentRole: 'research',
+        agentRole: 'research_retriever',
         tool: 'citation_analysis',
         priority: 'critical',
       });
@@ -256,7 +265,7 @@ export const ISAGIReasoningEngine = {
     steps.push({
       id: id++,
       description: 'Self-reflect: Is the answer complete? Does it need more retrieval?',
-      agentRole: 'reflection',
+      agentRole: 'reflection_engine',
       priority: 'important',
     });
 
@@ -264,7 +273,7 @@ export const ISAGIReasoningEngine = {
     steps.push({
       id: id++,
       description: 'Store important concepts to long-term memory for future queries',
-      agentRole: 'memory',
+      agentRole: 'research_retriever',
       tool: 'memory_lookup',
       priority: 'optional',
     });

@@ -52,6 +52,7 @@ interface KeyState {
   totalRequests: number;
   totalFailures: number;
   totalSuccess: number;
+  totalTokens: number;
   rateLimitCount: number;
   networkFailCount: number;
   lastUsed?: number;
@@ -90,6 +91,7 @@ class AIKeyManager {
       totalRequests: 0,
       totalFailures: 0,
       totalSuccess: 0,
+      totalTokens: 0,
       rateLimitCount: 0,
       networkFailCount: 0,
     }));
@@ -178,10 +180,11 @@ class AIKeyManager {
     }
   }
 
-  public markSuccess(key: string) {
+  public markSuccess(key: string, tokens: number = 0) {
     const keyState = this.keys.find((k) => k.key === key);
     if (!keyState) return;
     keyState.totalSuccess++;
+    keyState.totalTokens += tokens;
     keyState.healthy = true;
     keyState.cooldownUntil = undefined;
     keyState.networkFailCount = 0;
@@ -200,6 +203,7 @@ class AIKeyManager {
       cooldownRemainMs: k.cooldownUntil ? Math.max(0, k.cooldownUntil - Date.now()) : 0,
       usage: k.totalRequests,
       success: k.totalSuccess,
+      tokens: k.totalTokens,
       failures: k.totalFailures,
       rateLimits: k.rateLimitCount,
     }));

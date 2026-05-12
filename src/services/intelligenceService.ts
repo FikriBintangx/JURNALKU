@@ -7,6 +7,15 @@ export interface ResearchIntelligence {
   keywords: string[];
   questions: string[];
   summary?: string;
+  conflicts?: ResearchConflict[];
+}
+
+export interface ResearchConflict {
+  paperA: string;
+  paperB: string;
+  topic: string;
+  type: 'contradictory' | 'supporting' | 'divergent';
+  description: string;
 }
 
 /**
@@ -20,12 +29,16 @@ export const intelligenceService = {
     try {
       // In a real high-perf system, we'd use a lightweight local model or embeddings
       // Here we leverage Gemini for high-quality semantic understanding
-      const prompt = `Analyze this academic research query: "${query}"
+      const prompt = `Analyze this research query: "${query}"
+      
+      Your goal is to provide SEMANTIC EXPANSION for academic search.
+      If the query is in Indonesian, provide the most precise Academic English equivalent terms.
+      Example: "dampak tiktok shop terhadap umkm" -> "social commerce impact on small medium enterprises digital transformation".
       
       Return a JSON object with:
       - intent: (exploratory/methodological/review/comparative/generic)
       - domains: (up to 3 academic fields)
-      - keywords: (5-8 related academic keywords in English and Indonesian)
+      - keywords: (8-12 hyper-relevant academic keywords, prioritize precise English academic terms)
       - questions: (3 research questions this query implies)
       
       Strict JSON format only.`;
@@ -146,5 +159,90 @@ export const intelligenceService = {
         return { ...p, trendScore: velocity };
       })
       .sort((a, b) => (b.trendScore || 0) - (a.trendScore || 0));
+  },
+
+  /**
+   * Detects detailed methodology tools and approaches
+   */
+  detectDetailedMethodology(text: string): string[] {
+    const methods: string[] = [];
+    const t = text.toLowerCase();
+    if (/sem-pls|smartpls|structural equation/i.test(t)) methods.push('SEM-PLS');
+    if (/content analysis|analisis isi/i.test(t)) methods.push('Content Analysis');
+    if (/r&d|research and development|pengembangan/i.test(t)) methods.push('R&D');
+    if (/case study|studi kasus/i.test(t)) methods.push('Case Study');
+    if (/phenomenology|fenomenologi/i.test(t)) methods.push('Phenomenology');
+    if (/grounded theory/i.test(t)) methods.push('Grounded Theory');
+    if (/literature review|tinjauan pustaka/i.test(t)) methods.push('Literature Review');
+    return methods;
+  },
+
+  /**
+   * Calculates Novelty Score (0-100) based on title/abstract uniqueness and recency
+   */
+  calculateNovelty(paper: UniversalPaperEnriched, allPapers: UniversalPaperEnriched[]): number {
+    const title = (paper.title || '').toLowerCase();
+    
+    // Low score if many papers share the same key terms
+    let overlapCount = 0;
+    const keyTerms = title.split(' ').filter(w => w.length > 5);
+    
+    allPapers.forEach(p => {
+      if (p.id === paper.id) return;
+      const otherTitle = (p.title || '').toLowerCase();
+      if (keyTerms.some(k => otherTitle.includes(k))) overlapCount++;
+    });
+
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - (paper.year || currentYear);
+    
+    let score = 70; // Base novelty
+    if (age <= 1) score += 20;
+    if (overlapCount < 2) score += 10;
+    if (overlapCount > 5) score -= 20;
+
+    return Math.min(Math.round(score), 100);
+  },
+
+  /**
+   * Detects contradictory or supporting findings between a set of papers
+   */
+  async detectConflicts(papers: UniversalPaperEnriched[]): Promise<ResearchConflict[]> {
+    if (papers.length < 2) return [];
+
+    try {
+      // Pick top 4 relevant papers to avoid token bloat
+      const topPapers = papers.slice(0, 4);
+      const papersMeta = topPapers.map((p, i) => 
+        `[P${i+1}] Title: ${p.title}\nAbstract: ${(p.abstract || '').slice(0, 500)}`
+      ).join('\n\n');
+
+      const prompt = `Compare these research papers findings:
+      ${papersMeta}
+      
+      Identify if there are any CONTRADICTORY or SUPPORTING findings between them.
+      Return a JSON array of objects:
+      [{ "paperA": "Title A", "paperB": "Title B", "topic": "Focus topic", "type": "contradictory" | "supporting" | "divergent", "description": "Brief explanation in Indonesian" }]
+      
+      Strict JSON only.`;
+
+      const response = await geminiService.generateAI({
+        paperId: 'conflict-analysis',
+        type: 'intelligence',
+        prompt,
+        title: 'Batch Conflict Detection'
+      });
+
+      if (response && response.data) {
+        let jsonStr = response.data.trim();
+        const jsonMatch = jsonStr.match(/\[\s*\{[\s\S]*\}\s*\]/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+      }
+    } catch (e) {
+      console.warn("[INTELLIGENCE] Conflict detection failed:", (e as Error).message);
+    }
+    return [];
   }
 };

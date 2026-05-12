@@ -86,15 +86,24 @@ async function callGemini(apiKey: string, model: string, prompt: string): Promis
 
 function parseEnrichmentJSON(raw: string): AIEnrichment | null {
   try {
-    // Strip markdown code fences if present
-    const cleaned = raw.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
-    // Find JSON object
-    const match = cleaned.match(/\{[\s\S]*\}/);
-    if (!match) return null;
+    // 1. Pre-cleaning: Remove markdown artifacts and conversational noise
+    let cleaned = raw.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
+    
+    // 2. Extract JSON object using balanced braces or regex
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace === -1) return null;
+    cleaned = cleaned.substring(firstBrace, lastBrace + 1);
 
-    const parsed = JSON.parse(match[0]);
+    // 3. Heuristic fixing for common LLM mistakes (Self-Correction)
+    // - Fix missing quotes on keys (e.g. { relevanceScore: 100 } -> { "relevanceScore": 100 })
+    cleaned = cleaned.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+    // - Remove trailing commas before closing braces/brackets
+    cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
 
-    // Validate and sanitize
+    const parsed = JSON.parse(cleaned);
+
+    // 4. Schema validation and type enforcement
     return {
       relevanceScore: Math.min(100, Math.max(0, parseInt(parsed.relevanceScore) || 50)),
       researchMethod: (parsed.researchMethod as ResearchMethod) || 'unknown',
@@ -106,7 +115,8 @@ function parseEnrichmentJSON(raw: string): AIEnrichment | null {
         : [],
       enrichedAt: Date.now(),
     };
-  } catch {
+  } catch (err) {
+    console.warn("[ENRICHMENT] JSON Parse/Fix failed:", (err as Error).message);
     return null;
   }
 }

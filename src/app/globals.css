@@ -1,82 +1,80 @@
 @import "tailwindcss";
 
-:root {
-  /* STRICT MONOCHROME LIGHT */
-  --background: #FFFFFF;
-  --background-secondary: #FAFAFA;
-  --foreground: #050505;
-  --foreground-secondary: rgba(0, 0, 0, 0.72);
-  --foreground-muted: rgba(0, 0, 0, 0.45);
-  
-  --primary: #050505;
-  --primary-foreground: #FFFFFF;
-  
-  --card: #FFFFFF;
-  --card-foreground: #050505;
-  
-  --border: rgba(0, 0, 0, 0.08);
-  --border-strong: rgba(0, 0, 0, 0.12);
-  
-  --muted: #F5F5F5;
-  --muted-foreground: rgba(0, 0, 0, 0.45);
-  
-  --radius: 0.75rem;
-  --radius-xl: 1.25rem;
-  --radius-2xl: 2rem;
-  --radius-full: 9999px;
-
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 12px 40px -10px rgba(0, 0, 0, 0.08);
-}
-
-.dark {
-  /* STRICT DEEP BLACK DARK MODE */
-  --background: #050505;
-  --background-secondary: #0A0A0A;
-  
-  --foreground: #FFFFFF;
-  --foreground-secondary: rgba(255, 255, 255, 0.72);
-  --foreground-muted: rgba(255, 255, 255, 0.45);
-  
-  --primary: #FFFFFF;
-  --primary-foreground: #000000;
-  
-  --card: #0A0A0A;
-  --card-foreground: #FFFFFF;
-  
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.12);
-  
-  --muted: #111111;
-  --muted-foreground: rgba(255, 255, 255, 0.45);
-
-  --shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
-  --shadow-md: 0 20px 50px -12px rgba(0, 0, 0, 0.8);
-}
-
-@theme {
-  --color-background: var(--background);
-  --color-background-secondary: var(--background-secondary);
-  --color-foreground: var(--foreground);
-  --color-foreground-secondary: var(--foreground-secondary);
-  --color-foreground-muted: var(--foreground-muted);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-border: var(--border);
-  --color-border-strong: var(--border-strong);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --font-sans: var(--font-jakarta), var(--font-geist-sans), 'Inter', system-ui, sans-serif;
-}
-
 @layer base {
+  :root {
+    /* INVERTED: LIGHT MODE = DEEP BLACK BACKGROUND */
+    --background: #000000;
+    --background-secondary: #0A0A0A;
+    --foreground: #FFFFFF;
+    --foreground-secondary: rgba(255, 255, 255, 0.85);
+    --foreground-muted: rgba(255, 255, 255, 0.5);
+    
+    --primary: #FFFFFF;
+    --primary-foreground: #000000;
+    
+    --card: #0A0A0A;
+    --card-foreground: #FFFFFF;
+    
+    --border: rgba(255, 255, 255, 0.15);
+    --border-strong: rgba(255, 255, 255, 0.25);
+    
+    --muted: #111111;
+    --muted-foreground: rgba(255, 255, 255, 0.5);
+    
+    --radius: 0.75rem;
+    --radius-xl: 1.25rem;
+    --radius-2xl: 2rem;
+    --radius-full: 9999px;
+
+    --shadow: 0 4px 30px rgba(255, 255, 255, 0.05);
+    --shadow-md: 0 12px 40px -10px rgba(255, 255, 255, 0.1);
+
+    /* Tailwind v4 Theme Variables (Standardized for IDE) */
+    --color-background: var(--background);
+    --color-background-secondary: var(--background-secondary);
+    --color-foreground: var(--foreground);
+    --color-foreground-secondary: var(--foreground-secondary);
+    --color-foreground-muted: var(--foreground-muted);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-border: var(--border);
+    --color-border-strong: var(--border-strong);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+  }
+
+  .dark {
+    /* INVERTED: DARK MODE = PURE WHITE BACKGROUND */
+    --background: #FFFFFF;
+    --background-secondary: #F8F8F8;
+    
+    --foreground: #000000;
+    --foreground-secondary: rgba(0, 0, 0, 0.85);
+    --foreground-muted: rgba(0, 0, 0, 0.5);
+    
+    --primary: #000000;
+    --primary-foreground: #FFFFFF;
+    
+    --card: #FFFFFF;
+    --card-foreground: #000000;
+    
+    --border: rgba(0, 0, 0, 0.1);
+    --border-strong: rgba(0, 0, 0, 0.2);
+    
+    --muted: #F0F0F0;
+    --muted-foreground: rgba(0, 0, 0, 0.5);
+
+    --shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 20px 50px -12px rgba(0, 0, 0, 0.1);
+  }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-sans);
-    transition: background-color 0.2s ease, color 0.2s ease;
+    font-family: var(--font-jakarta), var(--font-geist-sans), 'Inter', system-ui, sans-serif;
+    transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     -webkit-font-smoothing: antialiased;
     line-height: 1.5;
   }
@@ -94,80 +92,86 @@
   }
 }
 
-/* SOLID COMPONENT SYSTEM */
+/* COMPONENT CLASSES (Replaces @utility to fix IDE warnings) */
 
-@utility mono-card {
+.saturated-bar {
+  background-color: var(--background);
+  border: 2px solid var(--foreground);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.mono-card {
   background-color: var(--card);
   color: var(--card-foreground);
   border: 1px solid var(--border);
   border-radius: var(--radius-2xl);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: var(--shadow);
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--border-strong);
-  }
 }
 
-@utility glass-nav {
+.mono-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+  border-width: 1.5px;
+}
+
+.glass-nav {
   background-color: color-mix(in srgb, var(--background) 90%, transparent);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--border);
 }
 
-@utility glass-card {
-  background-color: color-mix(in srgb, var(--card) 85%, transparent);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-}
-
-@utility btn-primary {
+.btn-primary {
   background-color: var(--foreground);
   color: var(--background);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 0.85rem 1.75rem;
+  letter-spacing: 0.15em;
+  padding: 1rem 2rem;
   border-radius: var(--radius-full);
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-
-  &:hover {
-    opacity: 0.95;
-    transform: translateY(-1px);
-    background-color: #111111;
-    .dark & { background-color: #FAFAFA; }
-  }
+  gap: 0.6rem;
 }
 
-@utility label-caps {
-  font-size: 0.65rem;
-  font-weight: 800;
+.btn-primary:hover {
+  transform: scale(1.02) translateY(-2px);
+  box-shadow: 0 10px 20px -5px color-mix(in srgb, var(--foreground) 20%, transparent);
+}
+
+.label-caps {
+  font-size: 0.7rem;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.25em;
   color: var(--foreground-muted);
+}
+
+.glass-dropdown {
+  background-color: color-mix(in srgb, var(--background) 85%, transparent);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+  border-radius: var(--radius-xl);
 }
 
 /* Custom Scrollbar */
 @layer base {
   ::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
   }
   ::-webkit-scrollbar-track {
     background: var(--background);
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--muted-foreground);
+    background: var(--foreground);
     border-radius: 10px;
-    opacity: 0.3;
+    border: 2px solid var(--background);
   }
 }
