@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Scale, X, ArrowRight, Loader2 } from 'lucide-react';
+import { Scale, X, ArrowRight, Loader2, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
