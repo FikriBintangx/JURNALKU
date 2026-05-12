@@ -1,37 +1,3 @@
-@import "tailwindcss";
-
-@theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-border: var(--border);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-}
-
-:root {
-  /* DARK MODE (Default - Premium Slate/Zinc) */
-  --background: #020617; /* Slate 950 */
-  --foreground: #f8fafc; /* Slate 50 */
-  --primary: #3b82f6; /* Blue 500 */
-  --accent: #8b5cf6; /* Violet 500 */
-  
-  /* Card: Glassmorphism base */
-  --card: rgba(255, 255, 255, 0.03);
-  --card-foreground: #f8fafc;
-  
-  --border: rgba(255, 255, 255, 0.08);
-  --muted: rgba(255, 255, 255, 0.05);
-  --muted-foreground: #94a3b8; /* Slate 400 */
-  --radius: 1rem;
-}
-
-.light {
-  /* LIGHT MODE (Clean & Academic) */
-  --background: #f8fafc; /* Slate 50 */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -86,7 +52,6 @@
 @layer base {
   * {
     @apply border-border;
-    cursor: default;
   }
   
   body {
@@ -98,13 +63,11 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight font-black;
-    line-height: 0.95;
+    @apply tracking-tighter font-black;
   }
 
   p {
     @apply leading-relaxed font-medium;
-    letter-spacing: -0.01em;
   }
 
   /* OLED Black Support */
@@ -134,14 +97,6 @@
     overflow: hidden;
   }
 
-  .glass-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
-    pointer-events: none;
-  }
-
   /* High-Fidelity Grainy Texture */
   .grainy {
     position: relative;
@@ -160,7 +115,6 @@
     animation: noise 8s steps(10) infinite;
   }
 
-  /* Animations */
   @keyframes noise {
     0% { transform: translate(0,0) }
     10% { transform: translate(-5%,-5%) }
@@ -191,15 +145,20 @@
     100% { background-position: 200% 0; }
   }
 
-  /* Interactive Elements */
   .btn-premium {
     @apply relative overflow-hidden transition-all duration-500 active:scale-95 disabled:opacity-50 disabled:active:scale-100;
   }
 
   .text-gradient {
-}
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/60;
+  }
 
-/* Typography Overrides */
-h1, h2, h3, h4, h5, h6 {
-  letter-spacing: -0.02em;
+  .animate-spin-slow {
+    animation: spin 3s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
 }
