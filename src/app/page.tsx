@@ -121,10 +121,10 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-5xl md:text-8xl font-black tracking-tight text-foreground leading-tight lg:leading-[1.1]"
+              className="text-5xl md:text-8xl font-black tracking-tight text-foreground leading-none lg:leading-[0.95]"
             >
               Cari riset <br className="hidden md:block" /> 
-              dengan <span className="ml-2 inline-block"><TypewriterTitle /></span>
+              dengan <TypewriterTitle />
             </motion.h1>
 
             <motion.p 
