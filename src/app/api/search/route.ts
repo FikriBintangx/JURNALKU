@@ -6,7 +6,7 @@ import { aiEnrichmentService } from '@/services/aiEnrichmentService';
 import type { SearchFilters, UniversalPaperEnriched } from '@/types/search';
 
 /**
- * JurnalStar Smart Search API
+ * JurnalStar Smart Search API - V2 FIXED
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

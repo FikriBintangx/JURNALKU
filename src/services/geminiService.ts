@@ -180,17 +180,18 @@ export const geminiService = {
   },
 
   async executeWithRetry(req: AIRequest, attempt: number = 1): Promise<any> {
-    const { abstract, title, prompt, type, model } = req;
-    
-    // Normalize abstract for the prompt
-    const cleanedAbstract = (abstract || '').replace(/abstrak tidak dapat dimuat saat ini/gi, '').trim();
+    try {
+      const { abstract, title, prompt, type, model } = req;
+      
+      // Normalize abstract for the prompt
+      const cleanedAbstract = (abstract || '').replace(/abstrak tidak dapat dimuat saat ini/gi, '').trim();
 
-    if (!cleanedAbstract && !title) {
-      return { success: true, data: generateFallback(type || 'summary', title || '', abstract || ''), fallback: true };
-    }
+      if (!cleanedAbstract && !title) {
+        return { success: true, data: generateFallback(type || 'summary', title || '', abstract || ''), fallback: true };
+      }
 
-    const fullPrompt = `Persona: Senior Research Architect & Academic Consultant.
-    
+      const fullPrompt = `Persona: Senior Research Architect & Academic Consultant.
+      
 Context:
 - Paper Title: ${title || 'N/A'}
 - Abstract: ${cleanedAbstract.slice(0, 5000) || 'N/A'}
@@ -204,67 +205,68 @@ Standard:
 - Gunakan Markdown yang rapi dengan sub-heading.
 - Berikan opini ahli jika relevan.`;
 
-    // ── STRATEGY: IF SPECIFIC MODEL IS REQUESTED ──
-    if (model) {
-      try {
-        if (GROQ_MODELS.some(m => m.id === model)) {
-          const groqText = await callGroq(fullPrompt, model);
-          if (groqText) return { success: true, data: groqText, provider: 'groq', model };
-        } else {
-          const orText = await callOpenRouter(fullPrompt, 15000, model);
-          if (orText) return { success: true, data: orText, provider: 'openrouter', model };
+      // ── STRATEGY: IF SPECIFIC MODEL IS REQUESTED ──
+      if (model) {
+        try {
+          if (GROQ_MODELS.some(m => m.id === model)) {
+            const groqText = await callGroq(fullPrompt, model);
+            if (groqText) return { success: true, data: groqText, provider: 'groq', model };
+          } else {
+            const orText = await callOpenRouter(fullPrompt, 15000, model);
+            if (orText) return { success: true, data: orText, provider: 'openrouter', model };
+          }
+        } catch (err: any) {
+          console.warn(`[AI SERVICE] Model bypass failed: ${err.message}`);
         }
-      } catch (err: any) {
-        console.warn(`[AI SERVICE] Model bypass failed: ${err.message}`);
       }
-    }
 
-    const apiKey = aiKeyManager.getBestKey();
-    if (!apiKey) return { success: true, data: generateFallback(type || 'summary', title || '', abstract || ''), fallback: true };
+      const apiKey = aiKeyManager.getBestKey();
+      if (!apiKey) return { success: true, data: generateFallback(type || 'summary', title || '', abstract || ''), fallback: true };
 
-    try {
       // Try PRIMARY (Fast Flash)
-      console.log(`[AI SERVICE] [T1] Model: ${PRIMARY_MODEL} (Attempt ${attempt})`);
-      const text = await this.tryGenerateContent(apiKey, PRIMARY_MODEL, fullPrompt);
-      aiKeyManager.markSuccess(apiKey);
-      return { success: true, data: text };
-    } catch (primaryError: any) {
-      const errType = classifyAIError(primaryError);
-      console.warn(`[AI SERVICE] T1 Error: ${errType}`);
-
-      if (errType === 'RATE_LIMIT') aiKeyManager.markFailure(apiKey, true);
-      else if (errType === 'NETWORK_ERROR') aiKeyManager.markFailure(apiKey, false);
-
-      // Try SECONDARY (Pro - higher quality if Flash fails or 404s)
       try {
-        console.log(`[AI SERVICE] [T2] Model: ${SECONDARY_MODEL}`);
-        const textPro = await this.tryGenerateContent(apiKey, SECONDARY_MODEL, fullPrompt);
+        console.log(`[AI SERVICE] [T1] Model: ${PRIMARY_MODEL} (Attempt ${attempt})`);
+        const text = await this.tryGenerateContent(apiKey, PRIMARY_MODEL, fullPrompt);
         aiKeyManager.markSuccess(apiKey);
-        return { success: true, data: textPro };
-      } catch {}
+        return { success: true, data: text };
+      } catch (primaryError: any) {
+        const errType = classifyAIError(primaryError);
+        console.warn(`[AI SERVICE] T1 Error: ${errType}`);
 
-      if (attempt < 2) return this.executeWithRetry(req, attempt + 1);
+        if (errType === 'RATE_LIMIT') aiKeyManager.markFailure(apiKey, true);
+        else if (errType === 'NETWORK_ERROR') aiKeyManager.markFailure(apiKey, false);
 
-      // ── TIER 3: GROQ ──
-      try {
-        const groqText = await callGroq(fullPrompt);
-        if (groqText) return { success: true, data: groqText, provider: 'groq' };
-      } catch {}
+        // Try SECONDARY (Pro - higher quality if Flash fails or 404s)
+        try {
+          console.log(`[AI SERVICE] [T2] Model: ${SECONDARY_MODEL}`);
+          const textPro = await this.tryGenerateContent(apiKey, SECONDARY_MODEL, fullPrompt);
+          aiKeyManager.markSuccess(apiKey);
+          return { success: true, data: textPro };
+        } catch {}
 
-      // ── TIER 4: OPENROUTER ──
-      try {
-        const orText = await callOpenRouter(fullPrompt);
-        if (orText) return { success: true, data: orText, provider: 'openrouter' };
-      } catch {}
+        if (attempt < 2) return this.executeWithRetry(req, attempt + 1);
 
-      // ── FINAL FALLBACK: LOCAL NEURAL APPROXIMATION ──
-      console.warn(`[AI SERVICE] All AI tiers failed. Using local approximation for ${type}`);
-      return { 
-        success: true, 
-        data: generateFallback(type || 'summary', title || '', abstract || ''), 
-        fallback: true,
-        message: "Menggunakan optimasi lokal (API sedang sibuk)"
-      };
+        // ── TIER 3: GROQ ──
+        try {
+          const groqText = await callGroq(fullPrompt);
+          if (groqText) return { success: true, data: groqText, provider: 'groq' };
+        } catch {}
+
+        // ── TIER 4: OPENROUTER ──
+        try {
+          const orText = await callOpenRouter(fullPrompt);
+          if (orText) return { success: true, data: orText, provider: 'openrouter' };
+        } catch {}
+
+        // ── FINAL FALLBACK: LOCAL NEURAL APPROXIMATION ──
+        console.warn(`[AI SERVICE] All AI tiers failed. Using local approximation for ${type}`);
+        return { 
+          success: true, 
+          data: generateFallback(type || 'summary', title || '', abstract || ''), 
+          fallback: true,
+          message: "Menggunakan optimasi lokal (API sedang sibuk)"
+        };
+      }
     } catch (err: any) {
       console.error(`[AI SERVICE] Fatal error in executeWithRetry:`, err);
       return { 
