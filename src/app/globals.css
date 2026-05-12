@@ -4,14 +4,14 @@
 
 @layer base {
   :root {
-    --background: 222 47% 11%; /* Slate 950 base */
+    --background: 222 47% 11.2%;
     --foreground: 210 40% 98%;
-    --card: 222 47% 13%;
+    --card: 222 47% 11.2%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
+    --popover: 222 47% 11.2%;
     --popover-foreground: 210 40% 98%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
@@ -27,7 +27,7 @@
   }
 
   .light {
-    --background: 210 40% 98%;
+    --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -51,7 +51,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   
   body {
@@ -70,13 +70,11 @@
     @apply leading-relaxed font-medium;
   }
 
-  /* OLED Black Support */
   .oled {
     --background: 0 0% 0%;
     --card: 0 0% 3%;
   }
 
-  /* Custom Scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -90,14 +88,12 @@
 }
 
 @layer components {
-  /* Premium Glassmorphism */
   .glass-card {
-    @apply bg-card/40 backdrop-blur-xl border border-border/40 shadow-2xl;
+    @apply bg-card/40 backdrop-blur-xl border border-white/10 shadow-2xl;
     position: relative;
     overflow: hidden;
   }
 
-  /* High-Fidelity Grainy Texture */
   .grainy {
     position: relative;
   }
