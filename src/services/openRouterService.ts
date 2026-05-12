@@ -13,12 +13,12 @@ export const AI_MODELS = [
   { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B (Fast)', provider: 'Groq' },
   { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B (Instant)', provider: 'Groq' },
   
-  // --- OPENROUTER (Standard) ---
-  { id: 'meta-llama/llama-3.1-8b-instruct:free', name: 'Llama 3.1 8B', provider: 'Meta' },
-  { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B', provider: 'Mistral' },
-  { id: 'google/gemma-2-9b-it:free', name: 'Gemma 2 9B', provider: 'Google' },
+  // --- OPENROUTER (Standard/Stable) ---
+  { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash (Exp)', provider: 'Google' },
+  { id: 'meta-llama/llama-3.1-8b-instruct', name: 'Llama 3.1 8B (Stable)', provider: 'Meta' },
+  { id: 'mistralai/mistral-7b-instruct', name: 'Mistral 7B', provider: 'Mistral' },
+  { id: 'google/gemma-2-9b-it:free', name: 'Gemma 2 9B (Free)', provider: 'Google' },
   { id: 'qwen/qwen-2-7b-instruct:free', name: 'Qwen 2 7B', provider: 'Alibaba' },
-  { id: 'microsoft/phi-3-mini-128k-instruct:free', name: 'Phi-3 Mini', provider: 'Microsoft' },
 ];
 
 // Round-robin key selector

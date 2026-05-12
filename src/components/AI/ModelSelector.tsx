@@ -63,7 +63,7 @@ export const ModelSelector = () => {
                   <div className="flex items-center gap-3">
                     <div className={cn(
                       "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
-                      selectedModel === model.id ? "bg-primary text-white" : "bg-muted group-hover:bg-border"
+                      selectedModel === model.id ? "bg-foreground text-background" : "bg-muted group-hover:bg-border"
                     )}>
                       <Zap size={14} />
                     </div>

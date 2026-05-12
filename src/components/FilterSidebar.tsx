@@ -104,8 +104,8 @@ function PillSelector<T extends string>({
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-bold transition-all border",
               isSelected
-                ? "bg-primary text-white border-primary shadow-md shadow-primary/25"
-                : "bg-muted border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                ? "bg-foreground text-background border-foreground shadow-md shadow-foreground/25"
+                : "bg-muted border-border text-muted-foreground hover:border-foreground/50 hover:text-foreground"
             )}
           >
             {opt.label}
@@ -141,7 +141,7 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
     local.minRelevanceScore && local.minRelevanceScore > 0,
   ].filter(Boolean).length;
 
-  const selectClass = "w-full rounded-xl px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-primary outline-none transition-all border border-border appearance-none cursor-pointer bg-black text-white dark:bg-white dark:text-black";
+  const selectClass = "w-full rounded-xl px-3 py-2 text-sm font-black focus:ring-2 focus:ring-primary outline-none transition-all border border-border appearance-none cursor-pointer bg-foreground text-background";
 
   return (
     <AnimatePresence>
@@ -170,7 +170,7 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-black text-foreground">Filter Cerdas</h2>
                   {activeCount > 0 && (
-                    <span className="bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                    <span className="bg-foreground text-background text-[10px] font-black px-2 py-0.5 rounded-full">
                       {activeCount} aktif
                     </span>
                   )}
@@ -395,10 +395,10 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
                 </button>
                 <button
                   onClick={() => { onApply(local); onClose(); }}
-                  className="px-4 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-primary/20 relative overflow-hidden"
+                  className="px-4 py-3 bg-foreground text-background hover:opacity-90 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-foreground/20 relative overflow-hidden"
                 >
                   {activeCount > 0 && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-white/80 rounded-full animate-pulse" />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-background/80 rounded-full animate-pulse" />
                   )}
                   Terapkan{activeCount > 0 ? ` (${activeCount})` : ''}
                 </button>

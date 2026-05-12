@@ -148,10 +148,10 @@ export const geminiService = {
       const execute = async () => {
         try {
           const result = await this.executeWithRetry({ paperId, type, prompt, abstract, title, model });
-          if (result.success && !result.fallback && redis && result.data) {
+          if (result && result.success && !result.fallback && redis && result.data) {
             try { await redis.set(cacheKey, result.data, { ex: 60 * 60 * 24 * 7 }); } catch {}
           }
-          resolve(result);
+          resolve(result || { success: false, message: "AI process failed to return a result." });
         } finally {
           activeRequests--;
           processQueue();
@@ -257,6 +257,22 @@ Standard:
         if (orText) return { success: true, data: orText, provider: 'openrouter' };
       } catch {}
 
+      // ── FINAL FALLBACK: LOCAL NEURAL APPROXIMATION ──
+      console.warn(`[AI SERVICE] All AI tiers failed. Using local approximation for ${type}`);
+      return { 
+        success: true, 
+        data: generateFallback(type || 'summary', title || '', abstract || ''), 
+        fallback: true,
+        message: "Menggunakan optimasi lokal (API sedang sibuk)"
+      };
+    } catch (err: any) {
+      console.error(`[AI SERVICE] Fatal error in executeWithRetry:`, err);
+      return { 
+        success: true, 
+        data: generateFallback(req.type || 'summary', req.title || '', req.abstract || ''), 
+        fallback: true,
+        error: true
+      };
     }
   },
 };
