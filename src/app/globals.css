@@ -32,78 +32,171 @@
 .light {
   /* LIGHT MODE (Clean & Academic) */
   --background: #f8fafc; /* Slate 50 */
-  --foreground: #0f172a; /* Slate 900 */
-  --primary: #2563eb; /* Blue 600 */
-  --accent: #4f46e5; /* Indigo 600 */
-  
-  /* Card: Clean White with soft border */
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  
-  --border: rgba(0, 0, 0, 0.06);
-  --muted: #f1f5f9; /* Slate 100 */
-  --muted-foreground: #64748b; /* Slate 500 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 11%; /* Slate 950 base */
+    --foreground: 210 40% 98%;
+    --card: 222 47% 13%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+    --radius: 1rem;
+  }
+
+  .light {
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+  }
 }
 
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), 'Inter', system-ui, sans-serif;
-  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s ease;
-  font-feature-settings: "cv02", "cv05", "cv11", "ss01";
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  * {
+    @apply border-border;
+    cursor: default;
+  }
+  
+  body {
+    @apply bg-background text-foreground selection:bg-primary/20 selection:text-primary;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-black;
+    line-height: 0.95;
+  }
+
+  p {
+    @apply leading-relaxed font-medium;
+    letter-spacing: -0.01em;
+  }
+
+  /* OLED Black Support */
+  .oled {
+    --background: 0 0% 0%;
+    --card: 0 0% 3%;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40 transition-colors;
+  }
 }
 
-@layer utilities {
+@layer components {
+  /* Premium Glassmorphism */
   .glass-card {
-    background-color: var(--card);
-    backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid var(--border);
-    color: var(--card-foreground);
-    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.1);
+    @apply bg-card/40 backdrop-blur-xl border border-border/40 shadow-2xl;
+    position: relative;
+    overflow: hidden;
   }
 
-  .glass-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
-    border-color: rgba(var(--primary), 0.3);
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-  
-  .dark .glass-card:hover {
-     background-color: rgba(255, 255, 255, 0.06);
-     border-color: rgba(255, 255, 255, 0.15);
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+    pointer-events: none;
   }
 
-  .premium-gradient {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  /* High-Fidelity Grainy Texture */
+  .grainy {
+    position: relative;
+  }
+  .grainy::after {
+    content: "";
+    position: fixed;
+    top: -150%;
+    left: -150%;
+    width: 300%;
+    height: 300%;
+    background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 9999;
+    animation: noise 8s steps(10) infinite;
+  }
+
+  /* Animations */
+  @keyframes noise {
+    0% { transform: translate(0,0) }
+    10% { transform: translate(-5%,-5%) }
+    20% { transform: translate(-10%,5%) }
+    30% { transform: translate(5%,-10%) }
+    40% { transform: translate(-5%,15%) }
+    50% { transform: translate(-10%,5%) }
+    60% { transform: translate(15%,0) }
+    70% { transform: translate(0,10%) }
+    80% { transform: translate(-15%,0) }
+    90% { transform: translate(10%,5%) }
+    100% { transform: translate(5%,0) }
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* Interactive Elements */
+  .btn-premium {
+    @apply relative overflow-hidden transition-all duration-500 active:scale-95 disabled:opacity-50 disabled:active:scale-100;
   }
 
   .text-gradient {
-    background: linear-gradient(to right, #ffffff, #94a3b8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-}
-
-/* Custom Scrollbar for Premium Feel */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 10px;
-  border: 3px solid var(--background);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
 }
 
 /* Typography Overrides */

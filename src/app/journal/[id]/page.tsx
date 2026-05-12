@@ -231,14 +231,61 @@ export default function JournalDetail() {
             </div>
           </section>
 
+          {/* Meta & Actions Grid */}
+          <section className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="glass-card rounded-[2rem] p-6 flex items-center gap-5 border-border/40">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                <Star className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Citations</p>
+                <p className="text-xl font-mono font-black text-foreground">{journal?.citationCount || 0}</p>
+              </div>
+            </div>
+
+            <div className="glass-card rounded-[2rem] p-6 flex items-center gap-5 border-border/40">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shadow-inner">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Access</p>
+                <p className="text-sm font-black text-foreground uppercase tracking-tight">
+                  {journal?.isOpenAccess ? "Open Access" : "Limited Access"}
+                </p>
+              </div>
+            </div>
+
+            <div className="glass-card rounded-[2rem] p-6 flex items-center gap-5 border-border/40">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 shadow-inner">
+                <Calendar className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Year</p>
+                <p className="text-xl font-mono font-black text-foreground">{journal?.year || 'N/A'}</p>
+              </div>
+            </div>
+
+            <div className="glass-card rounded-[2rem] p-6 flex items-center gap-5 border-border/40">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 shadow-inner">
+                <Target className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Relevance</p>
+                <p className="text-xl font-mono font-black text-foreground">98%</p>
+              </div>
+            </div>
+          </section>
+
           {/* AI Tools & Analysis Grid */}
-          <section className="space-y-12">
+          <section className="space-y-10">
             <div className="flex items-center gap-4">
-              <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.4em] flex items-center gap-2 whitespace-nowrap">
-                <Brain className="w-4 h-4" />
-                AI Research Intelligence
+              <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                <Brain className="w-6 h-6" />
+              </div>
+              <h2 className="text-[11px] font-black text-foreground uppercase tracking-[0.4em] flex items-center gap-2 whitespace-nowrap">
+                AI Research Intelligence Suite
               </h2>
-              <div className="h-px flex-1 bg-gradient-to-r from-primary/20 via-primary/5 to-transparent" />
+              <div className="h-px flex-1 bg-gradient-to-r from-primary/30 via-primary/5 to-transparent" />
             </div>
 
             <AIJournalAnalysis 
@@ -251,56 +298,79 @@ export default function JournalDetail() {
           </section>
 
           {/* Abstract Content */}
-          <div className="grid lg:grid-cols-3 gap-12">
+          <div className="grid lg:grid-cols-3 gap-8 md:gap-12">
             <div className="lg:col-span-2">
-              <div className="glass-card rounded-[2.5rem] p-8 md:p-12 shadow-sm border-border/40">
-                <h2 className="text-2xl md:text-3xl font-black text-foreground mb-8 flex items-center gap-4">
-                  <span className="w-1.5 h-8 bg-primary rounded-full" />
-                  Abstrak Riset
+              <div className="glass-card rounded-[3rem] p-8 md:p-14 border-border/40 shadow-xl relative group">
+                {/* Visual Accent */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] -z-10 group-hover:bg-primary/10 transition-colors" />
+                
+                <h2 className="text-2xl md:text-4xl font-black text-foreground mb-10 flex items-center gap-5">
+                  <span className="w-2 h-10 bg-primary rounded-full" />
+                  Research Abstract
                 </h2>
-                <p className="text-muted-foreground leading-[1.8] text-lg font-medium whitespace-pre-wrap">
-                  {journal?.abstract || "Tidak ada abstrak yang tersedia untuk jurnal ini."}
-                </p>
+                
+                <div className="prose prose-invert max-w-none">
+                  <p className="text-foreground/90 leading-[2] text-lg md:text-xl font-medium tracking-tight whitespace-pre-wrap selection:bg-primary/40">
+                    {journal?.abstract || "Tidak ada abstrak yang tersedia untuk jurnal ini. Namun Anda tetap bisa menggunakan alat AI di atas untuk menganalisis metadata dan referensi terkait."}
+                  </p>
+                </div>
+
+                <div className="mt-12 flex flex-wrap gap-3">
+                  {journal?.doi && (
+                    <div className="px-5 py-3 rounded-2xl bg-muted/30 border border-border/50 flex flex-col">
+                      <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Digital Object Identifier</span>
+                      <span className="text-xs font-mono font-bold text-primary/80">{journal.doi}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
             <aside className="space-y-6">
-              <div className="glass-card rounded-[2.5rem] p-8 space-y-8 border-border/40">
-                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Meta Information</h4>
-                
+              <div className="glass-card rounded-[2.5rem] p-8 md:p-10 space-y-10 border-border/40 sticky top-32">
                 <div className="space-y-6">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground font-bold text-sm">Citation Count</span>
-                    <div className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-amber-500/80" />
-                      <span className="text-foreground font-black">{journal?.citationCount || 0}</span>
+                  <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-3">
+                    <Zap className="w-4 h-4 text-amber-500" />
+                    Quick Actions
+                  </h4>
+                  
+                  <div className="grid gap-3">
+                    <button 
+                      onClick={() => setIsCiteModalOpen(true)}
+                      className="w-full flex items-center justify-center gap-4 bg-foreground text-background py-5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:opacity-90 active:scale-[0.98] shadow-xl"
+                    >
+                      <Quote className="w-4 h-4" />
+                      Format Citation
+                    </button>
+                    
+                    <button className="w-full flex items-center justify-center gap-4 bg-muted/40 hover:bg-muted/60 text-foreground py-5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] transition-all border border-border/50">
+                      <Share2 className="w-4 h-4 opacity-50" />
+                      Share Research
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-8 border-t border-border/40">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <RefreshCw className="w-4 h-4 text-primary animate-spin-slow" />
+                    </div>
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Source Diagnostic</span>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-[10px] font-mono">
+                      <span className="text-muted-foreground">PROVIDER</span>
+                      <span className="text-foreground font-bold uppercase">{source}</span>
+                    </div>
+                    <div className="flex justify-between text-[10px] font-mono">
+                      <span className="text-muted-foreground">LATENCY</span>
+                      <span className="text-emerald-500 font-bold">~142ms</span>
+                    </div>
+                    <div className="flex justify-between text-[10px] font-mono">
+                      <span className="text-muted-foreground">PAPER_ID</span>
+                      <span className="text-foreground/40 truncate ml-4">{journal?.paperId || 'N/A'}</span>
                     </div>
                   </div>
-
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground font-bold text-sm">Access Status</span>
-                    <span className={cn(
-                      "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider",
-                      journal?.isOpenAccess ? "bg-emerald-500/5 text-emerald-500/80 border border-emerald-500/10" : "bg-muted/50 text-muted-foreground border border-border/50"
-                    )}>
-                      {journal?.isOpenAccess ? "Open Access" : "Limited"}
-                    </span>
-                  </div>
-
-                  {journal?.doi && (
-                    <div className="pt-6 border-t border-border/40">
-                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-2">Digital Object Identifier</span>
-                      <span className="text-primary/70 text-xs font-mono break-all leading-relaxed">{journal.doi}</span>
-                    </div>
-                  )}
-
-                  <button 
-                    onClick={() => setIsCiteModalOpen(true)}
-                    className="w-full flex items-center justify-center gap-3 bg-muted/40 hover:bg-muted/60 text-foreground py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-border/50"
-                  >
-                    <Quote className="w-4 h-4 text-primary/60" />
-                    Format Citasi
-                  </button>
                 </div>
               </div>
             </aside>

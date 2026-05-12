@@ -37,14 +37,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="min-h-screen bg-background text-foreground antialiased selection:bg-primary/30">
+      <body className={`${geistSans.className} min-h-screen bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary grainy`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="relative flex min-h-screen flex-col">
+          <div className="relative flex min-h-screen flex-col selection:bg-primary/20 selection:text-primary">
             {children}
             <CompareBar />
             <FloatingActionButtons />
