@@ -107,7 +107,7 @@ function NavbarContent() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-[100] transition-all duration-300">
-      <div className="max-w-[1440px] mx-auto px-4 py-3 md:py-4">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-3 md:py-4">
         <div className="glass-card rounded-[2rem] px-4 md:px-8 h-16 md:h-20 flex items-center justify-between gap-4 shadow-sm border-border/40">
           <Link href="/" className="flex items-center space-x-3 group shrink-0">
             <div className="w-10 h-10 md:w-11 md:h-11 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/10 group-hover:scale-105 transition-all duration-500 overflow-hidden">
@@ -125,7 +125,7 @@ function NavbarContent() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-background/40 backdrop-blur-md z-[90]"
+                className="fixed inset-0 bg-background/80 backdrop-blur-2xl z-[90]"
                 onClick={() => setShowDropdown(false)}
               />
             )}

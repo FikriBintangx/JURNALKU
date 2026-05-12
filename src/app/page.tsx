@@ -45,6 +45,7 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizedData, setOptimizedData] = useState<{keywords: string[], explanation: string} | null>(null);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const router = useRouter();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -105,8 +106,8 @@ export default function Home() {
         />
       </div>
 
-      <section className="relative pt-32 md:pt-48 pb-20 px-4">
-        <div className="max-w-6xl mx-auto text-center space-y-10 md:space-y-16">
+      <section className="relative pt-32 md:pt-48 pb-20 px-4 md:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center space-y-10 md:space-y-16">
           <div className="space-y-6 md:space-y-8">
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
@@ -121,7 +122,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-5xl md:text-8xl font-black tracking-tight text-foreground leading-none lg:leading-[0.95]"
+              className="text-3xl md:text-5xl lg:text-7xl font-black tracking-tight text-foreground leading-[0.9] lg:leading-[1.05]"
             >
               Cari riset <br className="hidden md:block" /> 
               dengan <TypewriterTitle />
@@ -131,7 +132,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed"
+              className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed"
             >
               Akses jutaan jurnal akademik global. Dapatkan ringkasan AI instan, 
               temukan research gap, dan buka PDF gratis secara legal dalam satu platform.
@@ -142,19 +143,39 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="relative max-w-3xl mx-auto"
+            className="relative max-w-3xl mx-auto z-40"
           >
-            <form onSubmit={handleSearch} className="relative group">
-              <div className="glass-card rounded-[2.5rem] p-1.5 md:p-2 flex items-center border-border/60 shadow-xl focus-within:border-primary/40 focus-within:ring-8 focus-within:ring-primary/5 transition-all">
+            {/* Hero Backdrop Overlay */}
+            <AnimatePresence>
+              {isSearchFocused && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-background/80 backdrop-blur-2xl z-[30] pointer-events-auto"
+                  onClick={() => setIsSearchFocused(false)}
+                />
+              )}
+            </AnimatePresence>
+
+            <form onSubmit={handleSearch} className="relative group z-40">
+              <div className={cn(
+                "glass-card rounded-[2.5rem] p-1.5 md:p-2 flex items-center border-border/60 shadow-xl transition-all relative overflow-hidden",
+                isSearchFocused ? "border-primary/40 ring-8 ring-primary/5 bg-card shadow-2xl scale-[1.02]" : "hover:border-primary/20"
+              )}>
                 <div className="pl-6 md:pl-8 pr-4">
-                  <Search className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+                  <Search className={cn(
+                    "w-5 h-5 md:w-6 md:h-6 transition-colors",
+                    isSearchFocused ? "text-primary" : "text-muted-foreground/50"
+                  )} />
                 </div>
                 <input
                   type="text"
                   value={query}
+                  onFocus={() => setIsSearchFocused(true)}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Ketik topik penelitian atau pertanyaan..."
-                  className="flex-grow bg-transparent border-none outline-none text-foreground text-lg md:text-xl font-medium placeholder:text-muted-foreground/40 py-4 md:py-6"
+                  className="flex-grow bg-transparent border-none outline-none text-foreground text-lg md:text-xl font-medium placeholder:text-muted-foreground/40 py-4 md:py-6 focus:ring-0"
                 />
                 <button 
                   type="submit"
@@ -264,8 +285,8 @@ export default function Home() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-32 relative">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-24 md:py-32 relative">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               { title: 'Global Index', desc: '200 juta+ paper dari OpenAlex dan Semantic Scholar.', icon: <BookOpen className="w-5 h-5" /> },
@@ -274,7 +295,7 @@ export default function Home() {
             ].map((feature, i) => (
               <motion.div 
                 key={i}
-                className="p-8 rounded-[2.5rem] glass-card space-y-4 group"
+                className="p-8 rounded-[2.5rem] glass-card glass-card-hover space-y-4 group"
               >
                 <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                   {feature.icon}
