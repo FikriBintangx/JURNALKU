@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import APIStatusCard from '@/components/APIStatusCard';
 import { TrendingSection } from '@/components/TrendingSection';
+import { cn } from '@/lib/utils';
 
 const TypewriterTitle = () => {
   const words = ['Jurnal Dunia', 'Paper Akademik', 'Riset Global', 'Karya Ilmiah'];
