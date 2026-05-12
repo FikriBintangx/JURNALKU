@@ -9,9 +9,10 @@ import { cn } from '@/lib/utils';
 interface Props {
   journal: Journal;
   variant?: 'icon' | 'full';
+  className?: string;
 }
 
-export default function BookmarkButton({ journal, variant = 'icon' }: Props) {
+export default function BookmarkButton({ journal, variant = 'icon', className }: Props) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -37,7 +38,7 @@ export default function BookmarkButton({ journal, variant = 'icon' }: Props) {
     } catch (error) {
       // Revert if error
       setIsBookmarked(isBookmarked);
-      alert("Gagal menyimpan bookmark. Pastikan database Anda sudah terhubung.");
+      alert("Gagal menyimpan bookmark.");
     }
   };
 
@@ -48,8 +49,9 @@ export default function BookmarkButton({ journal, variant = 'icon' }: Props) {
         className={cn(
           "w-full py-3 rounded-xl text-sm font-medium border flex items-center justify-center space-x-2 transition-all active:scale-95",
           isBookmarked 
-            ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/30" 
-            : "bg-white/5 hover:bg-white/10 text-slate-300 border-white/5"
+            ? "bg-primary/20 text-primary border-primary/30" 
+            : "bg-muted text-foreground border-border/50",
+          className
         )}
       >
         <Bookmark className={cn("w-4 h-4", isBookmarked && "fill-current")} />
@@ -62,10 +64,11 @@ export default function BookmarkButton({ journal, variant = 'icon' }: Props) {
     <button 
       onClick={handleToggle}
       className={cn(
-        "p-2 rounded-lg transition-all border group",
+        "p-2.5 rounded-xl transition-all border group",
         isBookmarked 
-          ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/30" 
-          : "bg-white/5 hover:bg-white/10 text-slate-400 border-white/5 hover:text-white"
+          ? "bg-primary/10 text-primary border-primary/30" 
+          : "bg-muted/50 text-muted-foreground border-border/50 hover:text-foreground",
+        className
       )}
       title={isBookmarked ? "Hapus dari Koleksi" : "Simpan ke Koleksi"}
     >
