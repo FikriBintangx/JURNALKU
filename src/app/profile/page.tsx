@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
-import { User, Mail, Shield, Bell, Settings, LogOut, Camera, Save } from 'lucide-react';
+import { User, Mail, Shield, Bell, Settings, LogOut, Camera, Save, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function ProfilePage() {
