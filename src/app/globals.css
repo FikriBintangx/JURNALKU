@@ -4,6 +4,29 @@
 
 @layer base {
   :root {
+    --background: 255 255 255;
+    --foreground: 15 23 42;
+    --card: 255 255 255;
+    --card-foreground: 15 23 42;
+    --popover: 255 255 255;
+    --popover-foreground: 15 23 42;
+    --primary: 37 99 235;
+    --primary-foreground: 255 255 255;
+    --secondary: 241 245 249;
+    --secondary-foreground: 15 23 42;
+    --muted: 241 245 249;
+    --muted-foreground: 100 116 139;
+    --accent: 241 245 249;
+    --accent-foreground: 15 23 42;
+    --destructive: 239 68 68;
+    --destructive-foreground: 255 255 255;
+    --border: 203 213 225;
+    --input: 226 232 240;
+    --ring: 37 99 235;
+    --radius: 1rem;
+  }
+
+  .dark {
     --background: 2 6 23;
     --foreground: 248 250 252;
     --card: 2 6 23;
@@ -23,35 +46,12 @@
     --border: 30 41 59;
     --input: 30 41 59;
     --ring: 37 99 235;
-    --radius: 1rem;
-  }
-
-  .light {
-    --background: 255 255 255;
-    --foreground: 15 23 42;
-    --card: 255 255 255;
-    --card-foreground: 15 23 42;
-    --popover: 255 255 255;
-    --popover-foreground: 15 23 42;
-    --primary: 37 99 235;
-    --primary-foreground: 255 255 255;
-    --secondary: 241 245 249;
-    --secondary-foreground: 15 23 42;
-    --muted: 241 245 249;
-    --muted-foreground: 100 116 139;
-    --accent: 241 245 249;
-    --accent-foreground: 15 23 42;
-    --destructive: 239 68 68;
-    --destructive-foreground: 255 255 255;
-    --border: 226 232 240;
-    --input: 226 232 240;
-    --ring: 37 99 235;
   }
 }
 
 @layer base {
   * {
-    border-color: rgb(var(--border));
+    border-color: rgb(var(--border) / 0.2);
   }
   
   body {
@@ -64,8 +64,9 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    letter-spacing: -0.05em;
     font-weight: 900;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
   }
 
   p {
@@ -73,10 +74,20 @@
     font-weight: 500;
   }
 
-  .oled {
-    --background: 0 0 0;
-    --card: 8 8 8;
-  }
+  /* Optimized Tracking Utilities for v4 Compatibility */
+  .tracking-tighter { letter-spacing: -0.05em !important; }
+  .tracking-tight { letter-spacing: -0.025em !important; }
+  .tracking-normal { letter-spacing: 0em !important; }
+  .tracking-wide { letter-spacing: 0.025em !important; }
+  .tracking-wider { letter-spacing: 0.05em !important; }
+  .tracking-widest { letter-spacing: 0.1em !important; }
+
+  /* Optimized Background/Text Utilities */
+  .bg-background { background-color: rgb(var(--background)) !important; }
+  .bg-card { background-color: rgb(var(--card)) !important; }
+  .text-foreground { color: rgb(var(--foreground)) !important; }
+  .text-muted-foreground { color: rgb(var(--muted-foreground)) !important; }
+  .border-border { border-color: rgb(var(--border)) !important; }
 
   ::-webkit-scrollbar {
     width: 6px;
@@ -86,22 +97,26 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background-color: rgba(var(--muted-foreground), 0.2);
+    background-color: rgb(var(--muted-foreground) / 0.2);
     border-radius: 9999px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(var(--muted-foreground), 0.4);
   }
 }
 
 @layer components {
   .glass-card {
-    background-color: rgba(var(--card), 0.4);
+    background-color: rgb(var(--card) / 0.6);
     backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgb(var(--border) / 0.3);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
     position: relative;
     overflow: hidden;
+    transition: all 300ms ease;
+  }
+
+  .dark .glass-card {
+    background-color: rgb(var(--card) / 0.4);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   }
 
   .grainy {
@@ -135,28 +150,10 @@
     100% { transform: translate(5%,0) }
   }
 
-  .shimmer {
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.05) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite linear;
-  }
-
-  @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-  }
-
   .btn-premium {
     position: relative;
     overflow: hidden;
-    transition-property: all;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 500ms;
+    transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .btn-premium:active {
@@ -167,15 +164,6 @@
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
-    background-image: linear-gradient(to bottom right, rgb(var(--foreground)), rgba(var(--foreground), 0.6));
-  }
-
-  .animate-spin-slow {
-    animation: spin 3s linear infinite;
-  }
-  
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    background-image: linear-gradient(to bottom right, rgb(var(--foreground)), rgb(var(--foreground) / 0.6));
   }
 }
