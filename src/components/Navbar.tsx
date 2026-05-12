@@ -6,6 +6,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 import SearchSuggestions from './SearchSuggestions';
 
 function NavbarContent() {
