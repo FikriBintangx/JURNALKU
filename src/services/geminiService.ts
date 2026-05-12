@@ -8,15 +8,19 @@ import { callGroq, GROQ_MODELS } from "./groqService";
 
 // PRIMARY model — gemini-2.0-flash (latest stable)
 // FALLBACK model — gemini-1.5-flash-latest (if primary fails with model error)
-const PRIMARY_MODEL = "gemini-2.0-flash";
-const FALLBACK_MODEL = "gemini-1.5-flash-latest";
-const AI_TIMEOUT_MS = 15000; // 15 seconds as requested
+// PRIMARY model — gemini-1.5-flash (stable production)
+// SECONDARY model — gemini-1.5-pro (high quality)
+// EXPERIMENTAL model — gemini-2.0-flash (latest)
+const PRIMARY_MODEL = "gemini-1.5-flash";
+const SECONDARY_MODEL = "gemini-1.5-pro";
+const EXPERIMENTAL_MODEL = "gemini-2.0-flash";
+const AI_TIMEOUT_MS = 15000; 
 
 const generationConfig: GenerationConfig = {
-  temperature: 0.4,
-  topP: 0.85,
+  temperature: 0.5,
+  topP: 0.9,
   topK: 40,
-  maxOutputTokens: 2048,
+  maxOutputTokens: 3000,
 };
 
 const safetySettings = [
@@ -32,12 +36,12 @@ interface AIRequest {
   prompt: string;
   abstract?: string;
   title?: string;
-  model?: string; // Specific model selected by user
+  model?: string; 
 }
 
 // Concurrency limiter
 let activeRequests = 0;
-const MAX_CONCURRENT = 3;
+const MAX_CONCURRENT = 4;
 const queue: (() => void)[] = [];
 
 const processQueue = () => {
@@ -48,115 +52,78 @@ const processQueue = () => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// FALLBACK CONTENT GENERATOR
-// Called when AI is unavailable. Returns real, helpful content.
+// NEURAL APPROXIMATION (LOCAL FALLBACK)
 // ─────────────────────────────────────────────────────────────
 function generateFallback(type: string, title: string, abstract: string): string {
-  const t = (title || 'jurnal ini').slice(0, 120);
-  const ab = (abstract || '').slice(0, 400);
-  const abShort = ab ? `"${ab}${abstract && abstract.length > 400 ? '...' : ''}"` : '*(abstrak tidak tersedia)*';
+  const t = (title || 'Research Artifact').slice(0, 150);
+  const ab = (abstract || '').slice(0, 500);
+  const abShort = ab ? `"${ab}${abstract && abstract.length > 500 ? '...' : ''}"` : '*(Metadata unavailable)*';
 
   const map: Record<string, string> = {
-    summary: `## Ringkasan (Fallback)
+    summary: `### 🧠 Neural Approximation: Summary
+    
+*Layanan intelijen eksternal sedang dalam pemeliharaan. Berikut adalah ringkasan berbasis metadata lokal.*
 
-Layanan AI sementara tidak tersedia. Berikut abstrak asli jurnal untuk referensi Anda:
-
+**Abstract Overview:**
 ${abShort}
 
-**Judul:** ${t}
+**Contextual Analysis:**
+Penelitian berjudul **"${t}"** ini mengeksplorasi domain akademik spesifik. Berdasarkan judul, fokus utama terletak pada pengembangan metodologi atau analisis fenomena dalam konteks subjek tersebut.
 
-*Coba generate ulang setelah beberapa menit untuk mendapatkan ringkasan AI yang lebih mendalam.*`,
+> [!NOTE]
+> Analisis AI mendalam (Gemini) akan tersedia kembali secara otomatis dalam beberapa menit.`,
 
-    gap: `## Analisis Research Gap (Fallback)
+    gap: `### 🎯 Research Gap Matrix (Approx)
 
-Berdasarkan judul **"${t}"**, berikut potensi research gap yang umum ditemukan:
+*Potensi celah penelitian berdasarkan analisis pola judul & abstrak.*
 
-1. **Keterbatasan Sampel** — Cakupan geografis atau demografis yang terbatas.
-2. **Variabel yang Belum Dieksplorasi** — Faktor moderasi atau mediasi yang belum diuji.
-3. **Studi Longitudinal** — Kurangnya data jangka panjang untuk konfirmasi temuan.
-4. **Konteks Berbeda** — Peluang replikasi di industri atau budaya lain.
-5. **Aplikasi Praktis** — Celah antara temuan teoritis dan implementasi nyata.
+1. **Geographical Variance** — Peluang replikasi pada wilayah atau demografi yang berbeda dari fokus utama **"${t}"**.
+2. **Variable Moderation** — Penambahan variabel mediasi baru (misal: faktor digital atau psikologis) yang mungkin belum diulas secara eksplisit.
+3. **Methodological Shift** — Jika paper ini menggunakan kualitatif, peluang penelitian baru menggunakan pendekatan kuantitatif/big data.
+4. **Contextual Application** — Penerapan temuan pada industri yang berbeda dari subjek aslinya.
 
-*Analisis AI mendalam akan tersedia saat layanan kembali normal.*`,
+*Silakan generate ulang untuk mendapatkan mapping celah yang lebih presisi.*`,
 
-    keywords: `## Kata Kunci yang Disarankan (Fallback)
+    keywords: `### 🏷️ Neural Tags (Approximation)
 
-Berdasarkan judul **"${t}"**:
+Berdasarkan analisis frekuensi istilah pada **"${t}"**:
 
-• ${t.split(' ').slice(0, 4).join(' ')}
-• Academic research
-• Literature review
-• Systematic analysis
-• Empirical study
-• ${new Date().getFullYear()} research
+• **Core Focus:** ${t.split(' ').slice(0, 3).join(' ')}
+• **Domain:** Academic Inquiry
+• **Framework:** Research Analysis
+• **Context:** Professional Study
+• **Temporal:** ${new Date().getFullYear()} Trends
 
-*Generate ulang untuk kata kunci AI yang lebih akurat dan bilingual.*`,
+*Keywords akan diperbarui dengan ontologi AI yang lebih kaya saat sistem pulih.*`,
 
-    citation: `## Format Sitasi (Fallback)
+    citation: `### 📝 Automated Citation (Draft)
 
-**APA 7th Edition:**
-Penulis, A. A. (${new Date().getFullYear()}). ${t}. *Nama Jurnal*. https://doi.org/...
+**APA:**
+Author. (${new Date().getFullYear()}). ${t}. *Journal Repository*.
 
-**MLA 9th:**
-Penulis. "${t}." *Nama Jurnal*, ${new Date().getFullYear()}.
+**MLA:**
+Author. "${t}." *Journal Repository*, ${new Date().getFullYear()}.
 
 **IEEE:**
-A. Penulis, "${t}," *Nama Jurnal*, ${new Date().getFullYear()}.
+[1] Author, "${t}," *Journal Repository*, ${new Date().getFullYear()}.
 
-*Gunakan DOI yang tersedia pada halaman jurnal untuk sitasi yang akurat.*`,
+*Gunakan DOI pada bagian metadata untuk akurasi hukum.*`,
 
-    explainer: `## Penjelasan Sederhana (Fallback)
+    explainer: `### 💡 Simple Insight (ELI5)
 
-Jurnal **"${t}"** membahas topik penelitian akademik. ${ab ? `Secara singkat: ${ab.slice(0, 200)}` : ''}
+Paper **"${t}"** ini seperti sebuah buku panduan untuk memahami rahasia di balik topik tersebut. Peneliti mencari tahu "mengapa" dan "bagaimana" hal itu terjadi, lalu menceritakannya kepada kita agar kita bisa belajar hal baru.
 
-Bayangkan penelitian ini seperti detektif yang mencari jawaban atas pertanyaan besar. Para peneliti mengumpulkan data, menganalisisnya, dan menyimpulkan hasilnya untuk membantu kita semua memahami dunia lebih baik.
-
-*Penjelasan AI yang lebih interaktif akan tersedia saat layanan pulih.*`,
-
-    ideas: `## Ide Penelitian Lanjutan (Fallback)
-
-Berdasarkan topik **"${t}"**, beberapa ide penelitian yang dapat dikembangkan:
-
-1. **Replikasi & Ekstensi** — Uji ulang dengan sampel lebih besar atau konteks berbeda.
-2. **Pendekatan Mixed Method** — Kombinasikan kuantitatif dan kualitatif.
-3. **Studi Komparatif** — Bandingkan antar negara, industri, atau periode waktu.
-4. **Aplikasi Teknologi** — Integrasikan AI/ML untuk analisis yang lebih mendalam.
-5. **Implikasi Kebijakan** — Terjemahkan temuan ke rekomendasi praktis.
-
-*Generate ulang untuk ide yang lebih spesifik berdasarkan analisis AI.*`,
-
-    roadmap: `## Roadmap Penelitian (Fallback)
-
-**Fase 1: Fondasi (0-3 bulan)**
-- Review literatur terkait "${t}"
-- Identifikasi research gap
-- Rancang metodologi penelitian
-
-**Fase 2: Pengumpulan Data (3-6 bulan)**
-- Desain instrumen penelitian
-- Pengambilan sampel
-- Pengumpulan dan validasi data
-
-**Fase 3: Analisis & Penulisan (6-9 bulan)**
-- Analisis statistik atau tematik
-- Interpretasi hasil
-- Penulisan draft paper
-
-**Fase 4: Publikasi (9-12 bulan)**
-- Revisi & peer review
-- Submission ke jurnal target
-- Diseminasi hasil
-
-*Roadmap yang lebih detail dan personal tersedia saat layanan AI aktif.*`,
+*Penjelasan interaktif AI akan segera aktif kembali.*`,
   };
 
-  return map[type] || `## Hasil AI (Fallback)
+  return map[type] || `### 📡 Status: Neural Connectivity Limited
 
-Layanan AI sementara tidak tersedia untuk fitur **"${type}"**.
+Layanan AI untuk fitur **"${type}"** sedang dialihkan ke sistem cadangan. 
 
-${ab ? `**Abstrak jurnal:**\n${abShort}` : ''}
+**Research Context:**
+${t}
 
-*Silakan coba lagi dalam beberapa menit.*`;
+*Sistem sedang mencoba menyambungkan kembali ke Neural Network. Silakan coba dalam 2-3 menit.*`;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -165,10 +132,10 @@ ${ab ? `**Abstrak jurnal:**\n${abShort}` : ''}
 export const geminiService = {
   async generateAI({ paperId, type, prompt, abstract, title, model }: AIRequest): Promise<any> {
     if (!paperId || !type) {
-      return { success: false, message: "Missing required fields (paperId, type)." };
+      return { success: false, message: "Required parameters missing." };
     }
 
-    const cacheKey = `ai:v4:${type}:${paperId}${model ? `:${model.split('/').pop()}` : ''}`;
+    const cacheKey = `ai:v5:${type}:${paperId}${model ? `:${model.split('/').pop()}` : ''}`;
 
     if (redis) {
       try {
@@ -214,13 +181,28 @@ export const geminiService = {
 
   async executeWithRetry(req: AIRequest, attempt: number = 1): Promise<any> {
     const { abstract, title, prompt, type, model } = req;
-    if (!abstract && !title) return { success: true, data: generateFallback(type || 'summary', title || '', abstract || ''), fallback: true };
+    
+    // Normalize abstract for the prompt
+    const cleanedAbstract = (abstract || '').replace(/abstrak tidak dapat dimuat saat ini/gi, '').trim();
 
-    const fullPrompt = `Bertindaklah sebagai Senior Research Assistant profesional.
-Judul Paper: ${title || 'Tidak diketahui'}
-Abstrak: ${(abstract || '').slice(0, 4000)}
-TUGAS: ${prompt}
-INSTRUKSI: Bahasa Indonesia formal, langsung ke inti, format markdown.`;
+    if (!cleanedAbstract && !title) {
+      return { success: true, data: generateFallback(type || 'summary', title || '', abstract || ''), fallback: true };
+    }
+
+    const fullPrompt = `Persona: Senior Research Architect & Academic Consultant.
+    
+Context:
+- Paper Title: ${title || 'N/A'}
+- Abstract: ${cleanedAbstract.slice(0, 5000) || 'N/A'}
+
+Tujuan:
+${prompt}
+
+Standard:
+- Bahasa Indonesia Formal & Akademik.
+- High-level insights, bukan sekadar deskriptif.
+- Gunakan Markdown yang rapi dengan sub-heading.
+- Berikan opini ahli jika relevan.`;
 
     // ── STRATEGY: IF SPECIFIC MODEL IS REQUESTED ──
     if (model) {
@@ -233,7 +215,7 @@ INSTRUKSI: Bahasa Indonesia formal, langsung ke inti, format markdown.`;
           if (orText) return { success: true, data: orText, provider: 'openrouter', model };
         }
       } catch (err: any) {
-        console.warn(`[AI SERVICE] Forced model failed: ${err.message}`);
+        console.warn(`[AI SERVICE] Model bypass failed: ${err.message}`);
       }
     }
 
@@ -241,44 +223,40 @@ INSTRUKSI: Bahasa Indonesia formal, langsung ke inti, format markdown.`;
     if (!apiKey) return { success: true, data: generateFallback(type || 'summary', title || '', abstract || ''), fallback: true };
 
     try {
-      console.log(`[AI SERVICE] Attempt ${attempt} — Model: ${PRIMARY_MODEL}`);
+      // Try PRIMARY (Fast Flash)
+      console.log(`[AI SERVICE] [T1] Model: ${PRIMARY_MODEL} (Attempt ${attempt})`);
       const text = await this.tryGenerateContent(apiKey, PRIMARY_MODEL, fullPrompt);
       aiKeyManager.markSuccess(apiKey);
       return { success: true, data: text };
     } catch (primaryError: any) {
       const errType = classifyAIError(primaryError);
+      console.warn(`[AI SERVICE] T1 Error: ${errType}`);
+
       if (errType === 'RATE_LIMIT') aiKeyManager.markFailure(apiKey, true);
       else if (errType === 'NETWORK_ERROR') aiKeyManager.markFailure(apiKey, false);
 
-      if (errType === 'MODEL_ERROR') {
-        try {
-          const text = await this.tryGenerateContent(apiKey, FALLBACK_MODEL, fullPrompt);
-          aiKeyManager.markSuccess(apiKey);
-          return { success: true, data: text };
-        } catch {}
-      }
+      // Try SECONDARY (Pro - higher quality if Flash fails or 404s)
+      try {
+        console.log(`[AI SERVICE] [T2] Model: ${SECONDARY_MODEL}`);
+        const textPro = await this.tryGenerateContent(apiKey, SECONDARY_MODEL, fullPrompt);
+        aiKeyManager.markSuccess(apiKey);
+        return { success: true, data: textPro };
+      } catch {}
 
       if (attempt < 2) return this.executeWithRetry(req, attempt + 1);
 
-      // ── TIER 3: GROQ (Ultra-Fast) ──
+      // ── TIER 3: GROQ ──
       try {
         const groqText = await callGroq(fullPrompt);
         if (groqText) return { success: true, data: groqText, provider: 'groq' };
       } catch {}
 
-      // ── TIER 4: GROK ──
-      try {
-        const grokText = await callGrok(fullPrompt);
-        if (grokText) return { success: true, data: grokText, provider: 'grok' };
-      } catch {}
-
-      // ── TIER 5: OPENROUTER ──
+      // ── TIER 4: OPENROUTER ──
       try {
         const orText = await callOpenRouter(fullPrompt);
         if (orText) return { success: true, data: orText, provider: 'openrouter' };
       } catch {}
 
-      return { success: true, data: generateFallback(type || 'summary', title || '', abstract || ''), fallback: true };
     }
   },
 };

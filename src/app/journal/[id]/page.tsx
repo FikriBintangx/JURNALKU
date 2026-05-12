@@ -56,15 +56,15 @@ export default function JournalDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#020617] pt-28 px-4">
+      <div className="min-h-screen bg-background pt-28 px-4">
         <div className="max-w-4xl mx-auto space-y-8 animate-pulse">
-          <div className="h-10 bg-white/10 rounded-lg w-3/4"></div>
-          <div className="h-4 bg-white/5 rounded w-1/4"></div>
+          <div className="h-10 bg-muted rounded-lg w-3/4"></div>
+          <div className="h-4 bg-muted/50 rounded w-1/4"></div>
           <div className="space-y-6">
-            <div className="h-64 bg-white/5 rounded-3xl"></div>
-            <div className="grid grid-cols-3 gap-6">
-              <div className="h-40 bg-white/5 rounded-3xl col-span-2"></div>
-              <div className="h-40 bg-white/5 rounded-3xl"></div>
+            <div className="h-64 bg-muted/50 rounded-[2.5rem]"></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="h-40 bg-muted/50 rounded-[2.5rem] md:col-span-2"></div>
+              <div className="h-40 bg-muted/50 rounded-[2.5rem]"></div>
             </div>
           </div>
         </div>
@@ -74,37 +74,37 @@ export default function JournalDetail() {
 
   if (error || !journal) {
     return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-white/5 border border-white/10 p-10 rounded-[2.5rem] backdrop-blur-3xl text-center space-y-8 shadow-2xl"
+          className="max-w-md w-full bg-muted/30 border border-border/50 p-10 rounded-[2.5rem] backdrop-blur-3xl text-center space-y-8 shadow-2xl"
         >
-          <div className="w-24 h-24 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto shadow-inner">
-            <AlertCircle className="w-12 h-12 text-red-500" />
+          <div className="w-24 h-24 bg-foreground/5 border border-foreground/10 rounded-full flex items-center justify-center mx-auto shadow-inner">
+            <AlertCircle className="w-12 h-12 text-foreground/40" />
           </div>
           
           <div className="space-y-3">
-            <h1 className="text-3xl font-black text-white tracking-tight">Data Tidak Ditemukan</h1>
-            <p className="text-slate-400 text-sm leading-relaxed font-medium">
-              {error || "Jurnal dengan ID ini tidak tersedia di database kami."}
+            <h1 className="text-3xl font-black text-foreground tracking-tight uppercase">Data Not Found</h1>
+            <p className="text-muted-foreground text-sm leading-relaxed font-medium">
+              {error || "The requested journal identifier is not available in our neural mapping."}
             </p>
           </div>
 
           <div className="flex flex-col gap-3">
             <button
               onClick={() => window.location.reload()}
-              className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-indigo-500/20 active:scale-95"
+              className="flex items-center justify-center gap-2 bg-foreground text-background px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95"
             >
-              <RefreshCw className="w-5 h-5" />
-              Coba Lagi
+              <RotateCcw className="w-4 h-4" />
+              Try Again
             </button>
             <Link
               href="/search"
-              className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white px-6 py-4 rounded-2xl font-bold border border-white/10 transition-all active:scale-95"
+              className="flex items-center justify-center gap-2 bg-muted/50 hover:bg-muted text-foreground px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-border transition-all active:scale-95"
             >
-              <ArrowLeft className="w-5 h-5" />
-              Kembali ke Pencarian
+              <ArrowLeft className="w-4 h-4" />
+              Back to Terminal
             </Link>
           </div>
 

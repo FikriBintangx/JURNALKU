@@ -1,7 +1,7 @@
+import { Geist, Plus_Jakarta_Sans } from "next/font/google";
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 import CompareBar from "@/components/CompareBar";
 import { FloatingActionButtons } from "@/components/FloatingActionButtons";
 
@@ -10,13 +10,13 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const viewport: Viewport = {
-  themeColor: "#020617",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -36,9 +36,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="id" suppressHydrationWarning className={`${jakarta.variable} ${geistSans.variable}`}>
       <body className="min-h-screen bg-background text-foreground antialiased selection:bg-primary/30">
-        <ThemeProvider
+        <NextThemesProvider
           attribute="class"
           defaultTheme="dark"
           enableSystem
@@ -49,7 +49,7 @@ export default function RootLayout({
             <CompareBar />
             <FloatingActionButtons />
           </div>
-        </ThemeProvider>
+        </NextThemesProvider>
       </body>
     </html>
   );

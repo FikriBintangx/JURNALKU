@@ -15,10 +15,10 @@ export const QueueStatus = ({ isVisible }: QueueStatusProps) => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
-      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] font-black uppercase tracking-widest mt-2"
+      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-foreground text-background text-[10px] font-black uppercase tracking-[0.2em] mt-3 shadow-xl"
     >
       <Clock size={12} className="animate-pulse" />
-      <span>Antrian: AI sedang melayani permintaan lain...</span>
+      <span>Neural Queue: Processing Intelligence...</span>
     </motion.div>
   );
 };

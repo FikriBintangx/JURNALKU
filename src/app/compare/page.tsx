@@ -42,11 +42,11 @@ function RadarChart({ data, headers }: { data: any[], headers: string[] }) {
   };
 
   const colors = [
-    'stroke-indigo-500 fill-indigo-500/20',
-    'stroke-emerald-500 fill-emerald-500/20',
-    'stroke-amber-500 fill-amber-500/20',
-    'stroke-rose-500 fill-rose-500/20',
-    'stroke-cyan-500 fill-cyan-500/20',
+    'stroke-foreground fill-foreground/20',
+    'stroke-muted-foreground fill-muted-foreground/10',
+    'stroke-foreground/60 fill-foreground/5',
+    'stroke-foreground/40 fill-foreground/5',
+    'stroke-foreground/20 fill-foreground/5',
   ];
 
   return (
@@ -172,10 +172,10 @@ function CompareContent() {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
-        <p className="text-slate-500 font-mono text-xs animate-pulse tracking-widest">LOADING RESEARCH METADATA...</p>
+        <Loader2 className="w-12 h-12 text-foreground animate-spin" />
+        <p className="text-muted-foreground font-black text-[10px] animate-pulse tracking-[0.4em] uppercase">Initializing Neural Synthesis...</p>
       </div>
     </div>
   );
@@ -416,8 +416,8 @@ function CompareContent() {
 export default function ComparePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
-        <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-foreground animate-spin" />
       </div>
     }>
       <CompareContent />

@@ -114,29 +114,29 @@ function SearchResults() {
       
       <div className="max-w-7xl mx-auto px-4">
         {/* Search Info Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-black text-foreground flex flex-wrap items-center gap-3">
-              <Search className="w-6 h-6 text-primary" />
+            <h1 className="text-3xl md:text-4xl font-black text-foreground flex flex-wrap items-center gap-4 tracking-tighter uppercase">
+              <Search className="w-8 h-8 text-foreground" />
               {recommend ? (
                 <>Jurnal Serupa</>
               ) : (
-                <>Hasil untuk "<span className="text-primary">{query}</span>"</>
+                <>Hasil untuk "<span className="opacity-40">{query}</span>"</>
               )}
             </h1>
-            <p className="text-muted-foreground text-sm mt-2 font-medium">
-              {recommend ? 'Menampilkan karya ilmiah terkait' : `Menemukan sekitar ${total.toLocaleString()} karya ilmiah`}
+            <p className="text-muted-foreground text-xs mt-3 font-black uppercase tracking-[0.2em]">
+              {recommend ? 'Neural Recommendation Engine' : `Signals Detected: ${total.toLocaleString()}`}
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-            {/* Provider Toggle */}
-            <div className="bg-muted p-1 rounded-xl border border-border flex">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-6">
+            {/* Provider Toggle - Monochrome */}
+            <div className="bg-muted p-1.5 rounded-2xl border border-border flex">
               <button 
                 onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&provider=default`)}
                 className={cn(
-                  "flex-1 px-4 py-2 rounded-lg text-xs font-bold transition-all",
-                  provider === 'default' ? "bg-primary text-white shadow-lg" : "text-muted-foreground hover:text-foreground"
+                  "flex-1 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                  provider === 'default' ? "bg-foreground text-background shadow-2xl" : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 Standard
@@ -144,8 +144,8 @@ function SearchResults() {
               <button 
                 onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&provider=googlescholar`)}
                 className={cn(
-                  "flex-1 px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2",
-                  provider === 'googlescholar' ? "bg-amber-600 text-white shadow-lg" : "text-muted-foreground hover:text-foreground"
+                  "flex-1 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2",
+                  provider === 'googlescholar' ? "bg-foreground text-background shadow-2xl" : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Sparkles className="w-3 h-3" />
@@ -156,35 +156,35 @@ function SearchResults() {
             <button 
               onClick={() => setIsFilterOpen(true)}
               className={cn(
-                "flex items-center justify-center space-x-2 border px-4 py-2.5 rounded-xl text-sm font-bold transition-all relative",
+                "flex items-center justify-center space-x-3 border-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all relative",
                 isFilterOpen || Object.values(filters).some(v => v === true || (typeof v === 'number' && v > 0)) 
-                  ? "bg-primary/10 border-primary/50 text-primary" 
-                  : "bg-muted border-border text-muted-foreground hover:bg-muted/80"
+                  ? "bg-foreground text-background border-foreground shadow-2xl" 
+                  : "bg-background border-border text-foreground hover:bg-muted"
               )}
             >
               <Filter className="w-4 h-4" />
-              <span>Filter</span>
+              <span>Filter Intelligence</span>
               {Object.values(filters).some(v => v === true || (typeof v === 'number' && v > 0)) && (
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background" />
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-foreground rounded-full border-2 border-background" />
               )}
             </button>
           </div>
         </div>
 
-        {/* Scraper Warning Alert */}
+        {/* Scraper Warning Alert - Monochrome */}
         <AnimatePresence>
           {provider === 'googlescholar' && (
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mb-8 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3 backdrop-blur-md"
+              className="mb-12 p-6 bg-muted border-2 border-foreground/10 rounded-3xl flex items-start gap-4"
             >
-              <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+              <AlertCircle className="w-6 h-6 text-foreground mt-0.5 shrink-0" />
               <div>
-                <h4 className="text-amber-500 font-bold text-sm">Eksperimental: Web Scraping Mode</h4>
-                <p className="text-amber-500/70 text-xs mt-1 leading-relaxed">
-                  Pencarian Google Scholar menggunakan teknik scraping langsung. Google mungkin memblokir pencarian jika dilakukan terlalu cepat.
+                <h4 className="text-foreground font-black text-xs uppercase tracking-widest">EXPERIMENTAL: DIRECT SCRAPE MODE</h4>
+                <p className="text-muted-foreground text-[10px] mt-2 leading-relaxed font-bold uppercase tracking-wider opacity-60">
+                  Direct connection established with Google Scholar. Data integrity verified. Please maintain search velocity within safety parameters.
                 </p>
               </div>
             </motion.div>
@@ -192,37 +192,37 @@ function SearchResults() {
         </AnimatePresence>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <JournalCardSkeleton key={i} />
             ))}
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center py-40 space-y-6 text-center">
-            <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center border border-red-500/20 shadow-[0_0_50px_rgba(239,68,68,0.1)]">
-               <BookX className="w-12 h-12 text-red-500" />
+          <div className="flex flex-col items-center justify-center py-48 space-y-8 text-center">
+            <div className="w-24 h-24 bg-muted rounded-3xl flex items-center justify-center border border-border shadow-inner">
+               <BookX className="w-12 h-12 opacity-20" />
             </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-black text-foreground">Oops! Pencarian Terhambat</h2>
-              <p className="text-muted-foreground max-w-md mx-auto text-sm leading-relaxed">
-                {error}. {provider === 'googlescholar' && "Google Scholar mungkin sedang memblokir akses sementara."}
+            <div className="space-y-3">
+              <h2 className="text-3xl font-black text-foreground tracking-tighter uppercase">Search Sequence Interrupted</h2>
+              <p className="text-muted-foreground max-w-md mx-auto text-sm font-medium opacity-60">
+                {error}. {provider === 'googlescholar' && "External signals are currently being throttled by the provider."}
               </p>
             </div>
             
-            <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
               {provider === 'googlescholar' && (
                 <button 
                   onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&provider=default`)}
-                  className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all shadow-xl active:scale-95"
+                  className="bg-foreground text-background px-12 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-2xl active:scale-95"
                 >
-                  Ganti ke Mode Standard
+                  Switch to Standard Index
                 </button>
               )}
               <button 
                 onClick={() => window.location.reload()}
-                className="bg-muted hover:bg-muted/80 text-foreground px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all border border-border active:scale-95"
+                className="bg-background text-foreground px-12 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border-2 border-foreground active:scale-95"
               >
-                Coba Lagi
+                Reconnect Signal
               </button>
             </div>
           </div>
@@ -288,9 +288,9 @@ function SearchResults() {
                   minCitations: 0,
                   sortBy: 'relevance'
                 })}
-                className="text-indigo-400 font-bold text-sm hover:underline mt-2"
+                className="text-foreground font-black text-[10px] uppercase tracking-widest hover:underline mt-4"
               >
-                Reset Filter
+                Reset Filter Parameters
               </button>
             )}
           </div>

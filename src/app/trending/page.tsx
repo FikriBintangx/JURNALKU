@@ -31,29 +31,29 @@ export default function TrendingPage() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold text-white flex items-center">
-              <Flame className="w-8 h-8 mr-4 text-orange-500 fill-orange-500" />
+            <h1 className="text-5xl font-black text-foreground flex items-center tracking-tighter uppercase">
+              <Flame className="w-10 h-10 mr-4 text-foreground animate-pulse" />
               Populer Hari Ini
             </h1>
-            <p className="text-slate-400">
+            <p className="text-muted-foreground font-medium">
               Temukan jurnal yang paling banyak dibaca dan didiskusikan oleh para peneliti minggu ini.
             </p>
           </div>
           
-          <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
-            <button className="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg shadow-lg">Minggu Ini</button>
-            <button className="px-4 py-2 text-slate-400 text-xs font-bold hover:text-white transition-colors">Bulan Ini</button>
+          <div className="flex bg-muted p-1.5 rounded-2xl border border-border">
+            <button className="px-6 py-2.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg">Minggu Ini</button>
+            <button className="px-6 py-2.5 text-muted-foreground text-[10px] font-black uppercase tracking-widest hover:text-foreground transition-colors">Bulan Ini</button>
           </div>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <JournalCardSkeleton key={i} />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {papers.map((paper, i) => (
               <motion.div
                 key={paper.paperId}
@@ -67,25 +67,32 @@ export default function TrendingPage() {
           </div>
         )}
 
-        {/* AI Insight Card */}
+        {/* AI Insight Card - Monochrome Version */}
         <motion.div 
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-20 glass-card p-12 rounded-[40px] border border-indigo-500/20 text-center relative overflow-hidden"
+          className="mt-32 p-16 md:p-24 mono-card rounded-[3rem] text-center relative overflow-hidden group"
         >
-          <div className="absolute top-0 left-0 w-full h-full bg-indigo-600/5 -z-10" />
-          <div className="absolute -top-24 -left-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-[100px]" />
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
           
-          <Sparkles className="w-12 h-12 text-indigo-400 mx-auto mb-6" />
-          <h2 className="text-3xl font-bold text-white mb-4">Ingin Menemukan Topik Baru?</h2>
-          <p className="text-slate-400 max-w-2xl mx-auto mb-8 text-lg">
-            Asisten AI kami dapat membantu Anda menemukan "Research Gap" di bidang apapun yang Anda minati.
-          </p>
-          <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-xl shadow-indigo-500/20 hover:scale-105 active:scale-95 flex items-center mx-auto space-x-3">
-            <span>Mulai Riset dengan AI</span>
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          <div className="relative z-10 space-y-10">
+            <div className="w-20 h-20 bg-background rounded-3xl flex items-center justify-center mx-auto border border-border shadow-2xl group-hover:rotate-12 transition-transform duration-500">
+              <Sparkles className="w-10 h-10 text-foreground" />
+            </div>
+            
+            <div className="space-y-4">
+              <h2 className="text-4xl md:text-5xl font-black text-background mb-4 tracking-tighter uppercase leading-[0.9]">Ingin Menemukan <br/> Topik Baru?</h2>
+              <p className="text-background/40 max-w-2xl mx-auto text-lg font-medium leading-relaxed">
+                Asisten AI kami dapat membantu Anda menemukan "Research Gap" di bidang apapun yang Anda minati.
+              </p>
+            </div>
+
+            <button className="bg-background text-foreground hover:scale-105 active:scale-95 px-12 py-6 rounded-2xl font-black uppercase tracking-[0.3em] text-xs transition-all shadow-2xl flex items-center mx-auto space-x-4">
+              <span>Mulai Riset dengan AI</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
         </motion.div>
       </div>
     </div>

@@ -1,19 +1,20 @@
 'use client';
 
 import { Journal } from '@/types/journal';
-import { Calendar, Users, Star, FileText, Sparkles, ExternalLink, Scale, Target, BookX, Search } from 'lucide-react';
+import { Calendar, Users, Star, Sparkles, Scale, BookX, Search, ArrowRight, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import BookmarkButton from './BookmarkButton';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { RelevanceScore } from './AI/RelevanceScore';
 import UnpaywallButton from './UnpaywallButton';
+import { motion } from 'framer-motion';
 
 interface Props {
   journal: Journal;
+  index?: number;
 }
 
-export default function JournalCard({ journal }: Props) {
+export default function JournalCard({ journal, index = 0 }: Props) {
   const [isComparing, setIsComparing] = useState(false);
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export default function JournalCard({ journal }: Props) {
       newList = list.filter((id: string) => id !== journal.paperId);
     } else {
       if (list.length >= 3) {
-        alert("Maksimal 3 jurnal untuk perbandingan.");
+        alert("Maximum 3 journals for comparison.");
         return;
       }
       newList = [...list, journal.paperId];
@@ -46,94 +47,101 @@ export default function JournalCard({ journal }: Props) {
   };
 
   return (
-    <div className={cn(
-      "glass-card rounded-[2rem] p-6 flex flex-col h-full relative group/card",
-      isComparing ? "border-primary/40 bg-primary/5 shadow-primary/5" : "border-border/40"
-    )}>
-      {/* Compare Selector - Simplified */}
-      <button 
-        onClick={toggleCompare}
-        className={cn(
-          "absolute -top-2 -right-2 p-2.5 rounded-xl transition-all shadow-xl z-10 border",
-          isComparing 
-            ? "bg-primary text-white border-primary/50" 
-            : "bg-card text-muted-foreground border-border/50 hover:text-foreground opacity-0 group-hover/card:opacity-100"
-        )}
-        title="Bandingkan"
-      >
-        <Scale className="w-4 h-4" />
-      </button>
-
-      {/* Badges Row - Clean & Professional */}
-      <div className="flex flex-wrap gap-2 mb-5">
-        {journal.source && (
-          <div className={cn(
-            "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 border shadow-sm",
-            journal.source === 'openalex' ? "bg-amber-500/5 text-amber-500/80 border-amber-500/10" : 
-            journal.source === 'googlescholar' ? "bg-emerald-500/5 text-emerald-500/80 border-emerald-500/10" :
-            "bg-primary/5 text-primary/80 border-primary/10"
-          )}>
-            {journal.source === 'openalex' ? <BookX className="w-3 h-3" /> : 
-             journal.source === 'googlescholar' ? <Search className="w-3 h-3" /> : 
-             <Sparkles className="w-3 h-3" />}
-            {journal.source === 'googlescholar' ? 'Scholar' : journal.source}
-          </div>
-        )}
-        {journal.isOpenAccess && (
-          <div className="bg-emerald-500/5 text-emerald-500/80 border border-emerald-500/10 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider">
-            Open Access
-          </div>
-        )}
-        {/* Unpaywall PDF Finder */}
-        {journal.doi && <UnpaywallButton doi={journal.doi} className="!py-1" />}
-      </div>
-
-      <Link href={`/journal/${journal.id || journal.paperId}?source=${journal.source || 'semantic'}`} className="group/title">
-        <h3 className="text-xl font-bold text-foreground line-clamp-2 group-hover/title:text-primary transition-colors mb-3 leading-snug">
-          {journal.title}
-        </h3>
-      </Link>
-
-      <p className="text-sm text-muted-foreground line-clamp-3 mb-6 font-medium leading-relaxed">
-        {journal.abstract || 'Abstrak tidak tersedia. Klik untuk analisis AI mendalam.'}
-      </p>
-
-      {/* Metadata Section - Clean Layout */}
-      <div className="mt-auto space-y-4 pt-5 border-t border-border/40">
-        <div className="flex items-center text-[11px] font-bold text-muted-foreground">
-          <Users className="w-3.5 h-3.5 mr-2 text-primary/50 shrink-0" />
-          <span className="truncate italic">
-            {journal.authors && journal.authors.length > 0 
-              ? journal.authors.slice(0, 3).map(a => a.name).join(', ') + (journal.authors.length > 3 ? ' et al.' : '')
-              : 'Penulis Anonim'}
-          </span>
-        </div>
-        
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center text-[10px] font-black text-muted-foreground uppercase bg-muted/30 px-2 py-1 rounded-lg border border-border/30">
-              <Calendar className="w-3 h-3 mr-1.5 opacity-50" />
-              {journal.year || 'N/A'}
-            </div>
-            <div className="flex items-center text-[10px] font-black text-amber-500/80 bg-amber-500/5 px-2 py-1 rounded-lg border border-amber-500/10">
-              <Star className="w-3 h-3 mr-1.5" />
-              {(journal.citationCount || journal.citations || 0).toLocaleString()}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="group"
+    >
+      <div className={cn(
+        "mono-card mono-card-hover p-8 flex flex-col h-full relative transition-all duration-500",
+        isComparing && "ring-4 ring-foreground/10 translate-y-[-8px]"
+      )}>
+        {/* Floating Actions */}
+        <div className="absolute top-6 right-6 flex items-center gap-2 z-10">
+          <button 
+            onClick={toggleCompare}
+            className={cn(
+              "w-9 h-9 rounded-xl flex items-center justify-center transition-all border",
+              isComparing 
+                ? "bg-foreground text-background border-foreground" 
+                : "bg-muted/50 text-muted-foreground border-border/50 hover:bg-foreground hover:text-background opacity-0 group-hover:opacity-100"
+            )}
+          >
+            <Scale className="w-4 h-4" />
+          </button>
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
             <BookmarkButton journal={journal} />
-            <Link 
-              href={`/journal/${journal.paperId}?source=${journal.source || 'semantic'}`}
-              className="bg-foreground text-background px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 flex items-center gap-2"
-            >
-              <span>AI</span>
-              <Sparkles className="w-3 h-3" />
-            </Link>
           </div>
         </div>
-      </div>
-    </div>
 
+        {/* Badges */}
+        <div className="flex flex-wrap gap-2 mb-6 pr-20">
+          <div className="bg-foreground text-background px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5">
+            {journal.source === 'googlescholar' ? 'Scholar' : (journal.source || 'Semantic')}
+          </div>
+          {journal.isOpenAccess && (
+            <div className="bg-background text-foreground border border-border px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
+              Open Access
+            </div>
+          )}
+          {journal.doi && <UnpaywallButton doi={journal.doi} className="!py-1 !px-3 !text-[9px]" />}
+        </div>
+
+        {/* Title & Abstract */}
+        <Link 
+          href={`/journal/${journal.id || journal.paperId}?source=${journal.source || 'semantic'}`}
+          className="space-y-4 flex-grow mb-8"
+        >
+          <h3 className="text-xl md:text-2xl font-black leading-[1.1] tracking-tight transition-colors">
+            {journal.title}
+          </h3>
+          <p className="opacity-40 text-xs md:text-sm font-medium line-clamp-3 leading-relaxed">
+            {journal.abstract || 'Deep neural research analysis required. Click to initialize AI summary and insight generation for this academic paper.'}
+          </p>
+        </Link>
+
+        {/* Footer Metadata */}
+        <div className="pt-6 border-t border-border/50 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3 overflow-hidden">
+              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 border border-border/50">
+                <Users className="w-4 h-4 opacity-40" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] font-black uppercase tracking-tighter opacity-30">Contributors</span>
+                <span className="text-[11px] font-bold truncate italic max-w-[140px]">
+                  {journal.authors && journal.authors.length > 0 
+                    ? journal.authors.slice(0, 2).map(a => a.name).join(', ') + (journal.authors.length > 2 ? ' et al.' : '')
+                    : 'Anonymous'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <div className="text-right">
+                <span className="text-[10px] font-black uppercase tracking-tighter opacity-30 block">Year</span>
+                <span className="text-[11px] font-bold">{journal.year || 'N/A'}</span>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] font-black uppercase tracking-tighter opacity-30 block">Citations</span>
+                <div className="flex items-center justify-end">
+                  <Star className="w-3 h-3 mr-1 opacity-50" />
+                  <span className="text-[11px] font-black">{(journal.citationCount || journal.citations || 0).toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Link 
+            href={`/journal/${journal.paperId}?source=${journal.source || 'semantic'}`}
+            className="w-full mono-button py-3 text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 group/btn"
+          >
+            <span>Analyze Intelligence</span>
+            <Sparkles className="w-3.5 h-3.5 group-hover/btn:rotate-12 transition-transform" />
+          </Link>
+        </div>
+      </div>
+    </motion.div>
   );
 }

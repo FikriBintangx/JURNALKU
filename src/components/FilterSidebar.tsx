@@ -319,9 +319,9 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
                   <span>Semua</span>
                   <span className={cn(
                     "px-2 py-0.5 rounded-full font-black",
-                    (local.minRelevanceScore || 0) >= 70 ? "text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30" :
-                    (local.minRelevanceScore || 0) >= 40 ? "text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30" :
-                    "text-primary bg-primary/10"
+                    (local.minRelevanceScore || 0) >= 70 ? "text-background bg-foreground" :
+                    (local.minRelevanceScore || 0) >= 40 ? "text-foreground bg-muted" :
+                    "text-foreground bg-muted/50"
                   )}>
                     {local.minRelevanceScore || 0}%+ relevan
                   </span>

@@ -27,13 +27,13 @@ export default function CitationModal({ journal, isOpen, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
-        <div className="p-6 border-b border-white/10 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white flex items-center">
-            <Quote className="w-5 h-5 mr-3 text-indigo-400" />
-            Buat Sitasi
+      <div className="bg-card border border-border rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+        <div className="p-6 border-b border-border flex items-center justify-between">
+          <h2 className="text-xl font-black text-foreground flex items-center uppercase tracking-tighter">
+            <Quote className="w-5 h-5 mr-3 text-foreground" />
+            Format Sitasi
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full text-slate-400">
+          <button onClick={onClose} className="p-2 hover:bg-muted rounded-full text-muted-foreground transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -44,15 +44,15 @@ export default function CitationModal({ journal, isOpen, onClose }: Props) {
             return (
               <div key={format} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">{format}</span>
+                  <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">{format}</span>
                   <button 
                     onClick={() => handleCopy(format)}
-                    className="flex items-center space-x-2 text-xs text-slate-400 hover:text-white transition-colors"
+                    className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {copiedFormat === format ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="text-emerald-400">Tersalin!</span>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Tersalin!</span>
                       </>
                     ) : (
                       <>
