@@ -77,7 +77,26 @@ class AIKeyManager {
     return AIKeyManager.instance;
   }
 
-  // ... (initKeys remains same)
+  private initKeys() {
+    this.keys = [];
+    for (let i = 1; i <= 5; i++) {
+      const key = process.env[`GEMINI_API_KEY_${i}`];
+      if (key && key.trim()) {
+        this.keys.push({
+          key: key.trim(),
+          projectId: i,
+          active: true,
+          healthy: true,
+          totalRequests: 0,
+          totalFailures: 0,
+          totalSuccess: 0,
+          rateLimitCount: 0,
+          networkFailCount: 0,
+        });
+      }
+    }
+    console.log(`[KEY MANAGER] Initialized with ${this.keys.length} keys.`);
+  }
 
   public getBestKey(): string | null {
     const now = Date.now();
