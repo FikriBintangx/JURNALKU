@@ -7,7 +7,7 @@ import BookmarkButton from './BookmarkButton';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { RelevanceScore } from './AI/RelevanceScore';
-
+import UnpaywallButton from './UnpaywallButton';
 
 interface Props {
   journal: Journal;
@@ -84,6 +84,9 @@ export default function JournalCard({ journal }: Props) {
             Akses Terbuka
           </div>
         )}
+        {/* Unpaywall PDF Finder */}
+        {journal.doi && <UnpaywallButton doi={journal.doi} />}
+        
         <div className="bg-muted text-muted-foreground px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border border-border shadow-sm truncate max-w-[120px]">
           {journal.venue || 'Journal'}
         </div>

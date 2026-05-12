@@ -19,6 +19,7 @@ import CitationModal from '@/components/CitationModal';
 import { cn } from '@/lib/utils';
 import { AIJournalAnalysis } from '@/components/AI/AIJournalAnalysis';
 import { AIAnalyticsPanel } from '@/components/AI/AIAnalyticsPanel';
+import UnpaywallButton from '@/components/UnpaywallButton';
 
 
 
@@ -189,18 +190,26 @@ export default function JournalDetail() {
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              {journal?.url && (
-                <a 
-                  href={journal.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-3 bg-foreground text-background px-8 py-4 rounded-2xl font-black hover:opacity-90 transition-all shadow-xl active:scale-95"
-                >
-                  <ExternalLink className="w-5 h-5" />
-                  SUMBER ASLI
-                </a>
-              )}
+              <div className="flex flex-wrap gap-4 pt-4 items-center">
+                {journal?.url && (
+                  <a 
+                    href={journal.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-3 bg-foreground text-background px-8 py-4 rounded-2xl font-black hover:opacity-90 transition-all shadow-xl active:scale-95"
+                  >
+                    <ExternalLink className="w-5 h-5" />
+                    SUMBER ASLI
+                  </a>
+                )}
+                
+                {/* Unpaywall PDF Finder - High Visibility */}
+                {journal?.doi && (
+                  <UnpaywallButton 
+                    doi={journal.doi} 
+                    className="px-8 py-4 rounded-2xl text-sm h-full"
+                  />
+                )}
               <div className="flex gap-2">
                 <BookmarkButton journal={journal} />
                 <Link 
