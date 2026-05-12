@@ -11,7 +11,8 @@ import {
   BarChart2, 
   BookOpen,
   Brain,
-  Quote
+  Quote,
+  Globe
 } from 'lucide-react';
 import { AIFeatureCard } from './AIFeatureCard';
 import { ModelSelector } from './ModelSelector';
@@ -77,6 +78,12 @@ export const AIJournalAnalysis = ({ paperId, abstract, title }: AIJournalAnalysi
       description: "Rekomendasi topik dan jurnal terkait untuk dipelajari.",
       icon: BookOpen,
       endpoint: "/api/recommendations",
+    },
+    {
+      title: "Real-time Web Research",
+      description: "Hubungkan topik jurnal dengan tren & berita dunia nyata terbaru.",
+      icon: Globe,
+      endpoint: "/api/web-research",
     }
   ];
 
