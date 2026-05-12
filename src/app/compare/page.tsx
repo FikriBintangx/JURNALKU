@@ -181,139 +181,141 @@ function CompareContent() {
   );
 
   return (
-    <div className="min-h-screen bg-[#020617] pb-32">
+    <div className="min-h-screen bg-background pb-32 text-foreground">
       <Navbar />
       
       {/* Background Decor */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/5 blur-[120px] rounded-full" />
+      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-50">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/5 blur-[120px] rounded-full" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 pt-32 relative">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
-          <div className="space-y-4">
+      <div className="max-w-7xl mx-auto px-4 pt-32 md:pt-40 relative">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-10 mb-20">
+          <div className="space-y-6">
             <div className="flex items-center gap-4">
               <button 
                 onClick={() => window.history.back()}
-                className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all group backdrop-blur-md"
+                className="p-3 glass-card rounded-2xl hover:bg-muted transition-all group"
               >
                 <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               </button>
-              <div className="px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[10px] font-black text-indigo-400 uppercase tracking-widest">
-                AI Comparison Suite v2.0
+              <div className="px-4 py-1.5 glass-card rounded-full text-[10px] font-black text-primary uppercase tracking-[0.2em] border-primary/20">
+                AI Synthesis Suite v2.0
               </div>
             </div>
-            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter">
-              Bandingkan <span className="text-indigo-500">Riset</span>
+            <h1 className="text-5xl md:text-7xl font-black text-foreground tracking-tight leading-[0.9]">
+              Compare <br /><span className="text-primary">Research</span>
             </h1>
-            <p className="text-slate-500 max-w-xl font-medium leading-relaxed">
-              Analisis mendalam terhadap metodologi, temuan kunci, dan kebaruan riset menggunakan AI Generative.
+            <p className="text-muted-foreground max-w-xl font-medium leading-relaxed text-lg">
+              Analisis mendalam terhadap metodologi, temuan kunci, dan kebaruan riset menggunakan AI Intelijen.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button className="p-4 bg-white/5 border border-white/10 rounded-2xl text-slate-400 hover:text-white transition-all">
-              <Share2 className="w-5 h-5" />
+          <div className="flex items-center gap-4">
+            <button className="p-5 glass-card rounded-[2rem] text-muted-foreground hover:text-foreground transition-all">
+              <Share2 className="w-6 h-6" />
             </button>
             <button 
               onClick={handleCompare}
               disabled={comparing || papers.length < 2}
-              className="flex-1 md:flex-none bg-white text-black px-8 py-4 rounded-2xl font-black flex items-center justify-center space-x-3 shadow-xl shadow-white/5 hover:bg-slate-200 transition-all active:scale-95 disabled:opacity-50"
+              className="flex-1 md:flex-none bg-foreground text-background px-10 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest flex items-center justify-center space-x-3 shadow-2xl hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
             >
               {comparing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 fill-current" />}
-              <span>{comparing ? 'MENGANALISIS...' : `MULAI ANALISIS AI${papers.length > 0 ? ` (${papers.length})` : ''}`}</span>
+              <span>{comparing ? 'ANALYZING...' : `START AI ANALYSIS${papers.length > 0 ? ` (${papers.length})` : ''}`}</span>
             </button>
           </div>
         </div>
 
         {/* Paper Cards Preview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
           {papers.map((paper, index) => (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               key={`${paper.source || 'journal'}-${paper.paperId || index}`} 
-              className="bg-white/5 p-8 rounded-[2.5rem] border border-white/10 relative overflow-hidden backdrop-blur-md group"
+              className="glass-card p-8 rounded-[2.5rem] relative overflow-hidden group border-border/40"
             >
-               <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                  <FileText className="w-20 h-20" />
+               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                  <FileText className="w-24 h-24" />
                </div>
-               <div className="flex justify-between items-start mb-6">
+               <div className="flex justify-between items-start mb-8">
                  <span className={cn(
-                   "px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] border",
-                   paper.source === 'openalex' ? "bg-amber-500/10 border-amber-500/20 text-amber-500" :
-                   paper.source === 'googlescholar' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" :
-                   "bg-indigo-500/10 border-indigo-500/20 text-indigo-500"
+                   "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] border",
+                   paper.source === 'openalex' ? "bg-amber-500/5 border-amber-500/10 text-amber-500/80" :
+                   paper.source === 'googlescholar' ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-500/80" :
+                   "bg-primary/5 border-primary/10 text-primary/80"
                  )}>
-                   {paper.source || 'Aggregator'}
+                   {paper.source || 'Research'}
                  </span>
-                 <div className="flex items-center gap-1.5 text-slate-500">
-                    <TrendingUp className="w-3 h-3" />
-                    <span className="text-[10px] font-bold">{paper.citationCount || 0} Sitasi</span>
+                 <div className="flex items-center gap-2 text-muted-foreground/60">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">{paper.citationCount || 0} Citations</span>
                  </div>
                </div>
-               <h3 className="text-sm font-black text-white leading-relaxed mb-4 line-clamp-3">{paper.title}</h3>
-               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{paper.year || 'Tahun N/A'} • {paper.venue || 'Venue N/A'}</p>
+               <h3 className="text-base font-bold text-foreground leading-snug mb-6 line-clamp-3 group-hover:text-primary transition-colors">{paper.title}</h3>
+               <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-muted/30 px-3 py-2 rounded-xl border border-border/30 w-fit">
+                 {paper.year || 'N/A'} <span className="opacity-30">•</span> {paper.venue || 'Research Venue'}
+               </div>
             </motion.div>
           ))}
         </div>
 
         {/* Compare Error State */}
         {compareError && (
-          <div className="mb-8 p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4">
-            <div className="p-3 bg-red-500/20 rounded-xl flex-shrink-0">
-              <X className="w-5 h-5 text-red-400" />
+          <div className="mb-12 p-8 bg-red-500/5 border border-red-500/10 rounded-[2rem] flex items-center gap-6">
+            <div className="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <X className="w-6 h-6 text-red-500/70" />
             </div>
             <div>
-              <p className="text-red-400 font-bold text-sm">{compareError}</p>
+              <p className="text-red-500/80 font-bold text-sm tracking-tight">{compareError}</p>
               <button
                 onClick={() => setCompareError(null)}
-                className="text-xs text-red-400/70 hover:text-red-400 mt-1 underline"
-              >Tutup</button>
+                className="text-[10px] font-black uppercase tracking-widest text-red-500/50 hover:text-red-500 mt-2 underline transition-all"
+              >Dismiss</button>
             </div>
           </div>
         )}
 
         {/* Comparison Results */}
         {comparison && comparison.headers ? (
-          <div className="space-y-12">
+          <div className="space-y-20">
             
             {/* AI Critical Insights Grid */}
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid lg:grid-cols-3 gap-10">
               {/* Radar Chart Card */}
-              <div className="md:col-span-1 bg-white/5 border border-white/10 p-8 rounded-[3rem] backdrop-blur-xl">
-                <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2">
-                  <Target className="w-5 h-5 text-indigo-400" />
+              <div className="lg:col-span-1 glass-card p-10 rounded-[3rem] border-border/40 shadow-sm">
+                <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-10 flex items-center gap-3">
+                  <Target className="w-4 h-4" />
                   Score Matrix
                 </h3>
                 <RadarChart data={comparison.radarData} headers={comparison.headers} />
               </div>
 
               {/* Critical Verdict Card */}
-              <div className="md:col-span-2 bg-gradient-to-br from-indigo-600/20 to-purple-600/10 border border-indigo-500/20 p-10 rounded-[3rem] backdrop-blur-xl relative overflow-hidden">
+              <div className="lg:col-span-2 bg-muted/20 border border-border/40 p-12 rounded-[3.5rem] relative overflow-hidden">
                 <div className="absolute -top-10 -right-10 opacity-5">
-                   <Brain className="w-64 h-64" />
+                   <Brain className="w-80 h-80" />
                 </div>
-                <div className="flex items-center gap-3 mb-8">
-                  <div className="p-3 bg-indigo-500/20 rounded-2xl border border-indigo-500/30">
-                    <ShieldCheck className="w-6 h-6 text-indigo-400" />
+                <div className="flex items-center gap-4 mb-12">
+                  <div className="w-14 h-14 glass-card rounded-2xl flex items-center justify-center text-primary shadow-lg shadow-primary/5 border-primary/20">
+                    <ShieldCheck className="w-7 h-7" />
                   </div>
-                  <h3 className="text-2xl font-black text-white tracking-tight">AI Critical Verdict</h3>
+                  <h3 className="text-3xl font-black text-foreground tracking-tight">AI Critical Verdict</h3>
                 </div>
                 
-                <div className="space-y-8 relative z-10">
-                  <div className="space-y-3">
-                    <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em]">Ringkasan Sintesis</h4>
-                    <p className="text-slate-200 font-medium leading-relaxed italic text-lg">
+                <div className="space-y-10 relative z-10">
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Synthesis Summary</h4>
+                    <p className="text-foreground leading-relaxed italic text-2xl font-medium">
                       "{comparison.verdict?.summary || comparison.conclusion}"
                     </p>
                   </div>
                   
-                  <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
-                    <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.3em] mb-3">Rekomendasi Riset</h4>
-                    <p className="text-slate-300 text-sm leading-relaxed">
+                  <div className="glass-card border-border/30 p-8 rounded-[2rem]">
+                    <h4 className="text-[10px] font-black text-accent uppercase tracking-[0.4em] mb-4">Research Recommendation</h4>
+                    <p className="text-muted-foreground text-base leading-relaxed font-medium">
                       {comparison.verdict?.recommendation || "Lakukan analisis lanjutan berdasarkan perbandingan parameter di bawah."}
                     </p>
                   </div>
@@ -322,43 +324,43 @@ function CompareContent() {
             </div>
 
             {/* Comparison Table */}
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-black text-white flex items-center gap-3">
-                  <div className="w-1.5 h-6 bg-indigo-500 rounded-full" />
+            <div className="space-y-8">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <h3 className="text-2xl font-black text-foreground flex items-center gap-4">
+                  <span className="w-2 h-8 bg-primary rounded-full" />
                   Deep Comparison Matrix
                 </h3>
-                <div className="flex gap-2">
-                   <button className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-black text-slate-400 hover:text-white transition-all">
+                <div className="flex gap-3">
+                   <button className="flex items-center gap-3 px-6 py-3 glass-card rounded-2xl text-[10px] font-black text-muted-foreground uppercase tracking-widest hover:bg-muted transition-all border-border/50">
                       <Download className="w-4 h-4" /> EXPORT PDF
                    </button>
-                   <button className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-xs font-black text-indigo-400 hover:bg-indigo-500/20 transition-all">
+                   <button className="flex items-center gap-3 px-6 py-3 bg-primary/5 border border-primary/20 rounded-2xl text-[10px] font-black text-primary uppercase tracking-widest hover:bg-primary/10 transition-all">
                       <Quote className="w-4 h-4" /> CITE ALL
                    </button>
                 </div>
               </div>
 
-              <div className="overflow-x-auto rounded-[2.5rem] border border-white/10 glass-card shadow-2xl">
+              <div className="overflow-x-auto rounded-[3rem] border border-border/40 glass-card shadow-sm">
                 <table className="w-full text-left border-collapse table-fixed">
                   <thead>
-                    <tr className="bg-indigo-600/20 backdrop-blur-xl sticky top-0 z-20">
+                    <tr className="bg-muted/30 border-b border-border/40">
                       {comparison.headers.map((header: string, i: number) => (
                         <th key={i} className={cn(
-                          "p-8 text-[10px] font-black text-indigo-400 border-b border-white/10 uppercase tracking-[0.2em]",
-                          i === 0 ? "w-48" : ""
+                          "p-10 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]",
+                          i === 0 ? "w-56" : ""
                         )}>
                           {header}
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-border/20">
                     {comparison.rows?.map((row: string[], i: number) => (
-                      <tr key={i} className="hover:bg-white/5 transition-colors group">
+                      <tr key={i} className="hover:bg-muted/10 transition-colors group">
                         {row.map((cell, j) => (
                           <td key={j} className={cn(
-                            "p-8 text-sm leading-relaxed",
-                            j === 0 ? "font-black text-white bg-white/5 w-48 border-r border-white/10" : "text-slate-300 font-medium"
+                            "p-10 text-base leading-relaxed font-medium",
+                            j === 0 ? "text-foreground font-black bg-muted/20 w-56 border-r border-border/20" : "text-muted-foreground"
                           )}>
                             {cell}
                           </td>
@@ -371,18 +373,18 @@ function CompareContent() {
             </div>
 
             {/* Research Gap Banner */}
-            <div className="bg-emerald-500/10 border border-emerald-500/20 p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                 <div className="p-4 bg-emerald-500/20 rounded-2xl">
-                    <Zap className="w-6 h-6 text-emerald-500" />
+            <div className="glass-card bg-emerald-500/[0.03] border-emerald-500/20 p-10 rounded-[3rem] flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="flex items-center gap-6">
+                 <div className="w-16 h-16 bg-emerald-500/10 rounded-[1.5rem] flex items-center justify-center border border-emerald-500/20">
+                    <Zap className="w-7 h-7 text-emerald-500/80" />
                  </div>
                  <div>
-                    <h4 className="text-white font-black">Temukan Peluang Riset Baru?</h4>
-                    <p className="text-slate-400 text-sm font-medium">Berdasarkan celah (gap) yang ditemukan, Anda bisa mengeksplorasi variabel yang belum tersentuh.</p>
+                    <h4 className="text-foreground text-xl font-black tracking-tight">Temukan Peluang Riset Baru?</h4>
+                    <p className="text-muted-foreground font-medium">Berdasarkan celah (gap) yang ditemukan, Anda bisa mengeksplorasi variabel yang belum tersentuh.</p>
                  </div>
               </div>
-              <button className="bg-emerald-500 hover:bg-emerald-600 text-black px-8 py-3 rounded-xl font-black transition-all active:scale-95 flex items-center gap-2">
-                 MULAI RISET BARU <ChevronRight className="w-5 h-5" />
+              <button className="bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-500 px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center gap-3">
+                 START NEW RESEARCH <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -391,16 +393,16 @@ function CompareContent() {
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="py-40 text-center space-y-8 glass-card rounded-[4rem] border border-dashed border-white/10 backdrop-blur-sm"
+              className="py-48 text-center space-y-10 glass-card rounded-[4rem] border border-dashed border-border/60 relative overflow-hidden"
             >
-              <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 relative">
-                <Scale className="w-12 h-12 text-slate-600" />
-                <div className="absolute inset-0 border-2 border-indigo-500/20 rounded-full animate-ping" />
+              <div className="w-28 h-28 bg-muted/50 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 relative">
+                <Scale className="w-12 h-12 text-muted-foreground/30" />
+                <div className="absolute inset-0 border-2 border-primary/10 rounded-[2.5rem] animate-ping" />
               </div>
-              <div className="space-y-2">
-                <h2 className="text-2xl font-black text-white tracking-tight italic">Ready to Bridge the Knowledge Gap?</h2>
-                <p className="text-slate-500 max-w-sm mx-auto font-medium">
-                  Klik tombol <span className="text-indigo-400 font-bold uppercase text-[10px] tracking-widest">Mulai Analisis AI</span> untuk melihat perbedaan metodologi, dataset, dan temuan dari jurnal pilihan Anda.
+              <div className="space-y-4">
+                <h2 className="text-3xl font-black text-foreground tracking-tight">Ready to Bridge the Knowledge Gap?</h2>
+                <p className="text-muted-foreground max-w-sm mx-auto font-medium text-lg">
+                  Klik tombol <span className="text-primary font-black uppercase text-[10px] tracking-[0.2em] px-2 py-1 bg-primary/5 border border-primary/10 rounded-md">Start AI Analysis</span> untuk membedah perbedaan metodologi & temuan riset.
                 </p>
               </div>
             </motion.div>

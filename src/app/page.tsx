@@ -83,264 +83,239 @@ export default function Home() {
     <main className="min-h-screen bg-background relative overflow-hidden text-foreground">
       <Navbar />
       
-      {/* Dynamic Background Elements */}
-      <motion.div 
-        animate={{ 
-          scale: [1, 1.2, 1],
-          rotate: [0, 90, 0],
-          x: [0, 50, 0],
-          y: [0, -50, 0]
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute top-[-10%] left-[-10%] w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" 
-      />
-      <motion.div 
-        animate={{ 
-          scale: [1, 1.3, 1],
-          rotate: [0, -90, 0],
-          x: [0, -50, 0],
-          y: [0, 50, 0]
-        }}
-        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-        className="absolute bottom-[-10%] right-[-10%] w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" 
-      />
+      {/* Premium Subtle Background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.1, 1],
+            x: [0, 20, 0],
+            y: [0, -20, 0]
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full" 
+        />
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.2, 1],
+            x: [0, -20, 0],
+            y: [0, 20, 0]
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-[10%] -right-[10%] w-[500px] h-[500px] bg-accent/5 blur-[120px] rounded-full" 
+        />
+      </div>
 
-      <section className="relative pt-32 pb-20 px-4">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7 text-left space-y-6 md:space-y-8">
+      <section className="relative pt-32 md:pt-48 pb-20 px-4">
+        <div className="max-w-6xl mx-auto text-center space-y-10 md:space-y-16">
+          <div className="space-y-6 md:space-y-8">
             <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="inline-flex items-center space-x-2 bg-primary/10 border border-primary/20 px-4 py-2 rounded-full text-primary text-[10px] md:text-xs font-black uppercase tracking-widest"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center space-x-2 bg-muted/50 border border-border/50 px-4 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground"
             >
-              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-              <span>Asisten Riset Berbasis AI v2.0</span>
+              <Sparkles className="w-3 h-3 text-primary" />
+              <span>Next Generation AI Research Engine</span>
             </motion.div>
 
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1] lg:leading-[1.1]"
+              className="text-5xl md:text-8xl font-black tracking-tight text-foreground leading-[0.9] lg:leading-[0.95]"
             >
-              Cari, Baca, dan <br />
-              Ngobrol dengan <br />
-              <TypewriterTitle />
+              Cari riset <br className="hidden md:block" /> 
+              dengan <TypewriterTitle />
             </motion.h1>
 
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-lg md:text-xl text-muted-foreground max-w-xl font-medium leading-relaxed"
+              className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed"
             >
-              Rasakan masa depan riset. Cari jutaan jurnal, dapatkan ringkasan AI instan, dan tanya jawab langsung dengan isi PDF menggunakan Gemini Pro.
+              Akses jutaan jurnal akademik global. Dapatkan ringkasan AI instan, 
+              temukan research gap, dan buka PDF gratis secara legal dalam satu platform.
             </motion.p>
+          </div>
 
-            <motion.form 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-              onSubmit={handleSearch}
-              className="relative max-w-2xl mt-10"
-            >
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-full blur opacity-25 group-focus-within:opacity-50 transition duration-1000 group-focus-within:duration-200"></div>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Apa yang ingin Anda teliti hari ini?..."
-                    className="w-full bg-card border border-border rounded-full py-5 md:py-7 px-14 md:px-20 text-foreground focus:outline-none focus:border-primary/50 transition-all text-lg md:text-xl shadow-2xl backdrop-blur-2xl placeholder:text-muted-foreground/60"
-                  />
-                  <Search className="absolute left-6 md:left-8 top-1/2 -translate-y-1/2 text-muted-foreground w-6 h-6 md:w-7 md:h-7 group-focus-within:text-primary transition-colors" />
-                  <button 
-                    type="submit"
-                    className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 bg-primary hover:bg-primary/90 text-white px-6 md:px-10 py-3.5 md:py-4.5 rounded-full flex items-center space-x-2 transition-all active:scale-95 shadow-xl font-black text-sm md:text-base uppercase tracking-widest group/btn"
-                  >
-                    <span className="hidden sm:inline">Telusuri</span>
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </button>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="relative max-w-3xl mx-auto"
+          >
+            <form onSubmit={handleSearch} className="relative group">
+              <div className="glass-card rounded-[2.5rem] p-1.5 md:p-2 flex items-center border-border/60 shadow-xl focus-within:border-primary/40 focus-within:ring-8 focus-within:ring-primary/5 transition-all">
+                <div className="pl-6 md:pl-8 pr-4">
+                  <Search className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
                 </div>
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Ketik topik penelitian atau pertanyaan..."
+                  className="flex-grow bg-transparent border-none outline-none text-foreground text-lg md:text-xl font-medium placeholder:text-muted-foreground/40 py-4 md:py-6"
+                />
+                <button 
+                  type="submit"
+                  className="bg-foreground text-background hover:opacity-90 px-8 md:px-12 py-4 md:py-5 rounded-full font-black text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg flex items-center gap-3"
+                >
+                  <span className="hidden sm:inline">Research</span>
+                  <ArrowRight className="w-5 h-5" />
+                </button>
               </div>
 
               {/* AI Optimizer Section */}
               <AnimatePresence>
                 {query.length > 15 && !optimizedData && (
                   <motion.button
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
                     type="button"
                     onClick={handleOptimizeQuery}
                     disabled={isOptimizing}
-                    className="mt-6 flex items-center space-x-2 text-primary hover:text-primary/80 text-[10px] font-black uppercase tracking-widest bg-primary/5 px-5 py-3 rounded-2xl border border-primary/20 transition-all hover:bg-primary/10"
+                    className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex items-center space-x-2 text-primary hover:text-primary/80 text-[10px] font-black uppercase tracking-widest bg-primary/5 px-5 py-3 rounded-full border border-primary/20 transition-all hover:bg-primary/10 backdrop-blur-md"
                   >
-                    {isOptimizing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                    <span>{isOptimizing ? 'Menganalisis Query...' : 'Optimasi dengan AI'}</span>
+                    {isOptimizing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Brain className="w-3.5 h-3.5" />}
+                    <span>{isOptimizing ? 'Thinking...' : 'Optimize with AI'}</span>
                   </motion.button>
                 )}
               </AnimatePresence>
+            </form>
 
-              {/* AI Results */}
-              <AnimatePresence>
-                {(optimizedData || isOptimizing) && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="mt-6 p-6 rounded-3xl bg-card/50 backdrop-blur-xl border border-primary/20 text-left shadow-2xl relative overflow-hidden"
-                  >
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                      <Brain className="w-20 h-20 text-primary" />
-                    </div>
-                    
-                    <div className="flex items-center justify-between mb-4 relative z-10">
-                      <h4 className="text-foreground font-black text-[10px] uppercase tracking-widest flex items-center">
-                        <Sparkles className="w-4 h-4 mr-2 text-primary" />
-                        AI Research Assistant Insights
-                      </h4>
-                      {!isOptimizing && (
-                        <button type="button" onClick={() => setOptimizedData(null)} className="text-muted-foreground hover:text-foreground p-1 transition-colors">
-                          <X className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                    
-                    {isOptimizing ? (
-                      <div className="flex items-center space-x-4 py-4 relative z-10">
-                        <div className="relative">
-                          <div className="w-10 h-10 border-2 border-primary/20 rounded-full animate-ping" />
-                          <Loader2 className="w-10 h-10 text-primary animate-spin absolute inset-0" />
-                        </div>
-                        <div className="space-y-1">
-                          <span className="text-foreground text-sm font-bold block">Memproses ide Anda...</span>
-                          <span className="text-muted-foreground text-xs italic">Merumuskan kata kunci akademik paling relevan</span>
-                        </div>
-                      </div>
-                    ) : (optimizedData?.keywords && optimizedData.keywords.length > 0) ? (
-                      <div className="space-y-4 relative z-10">
-                        <p className="text-xs text-muted-foreground font-medium italic">
-                          "{optimizedData.explanation}"
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {optimizedData.keywords.map((kw, i) => (
-                            <button
-                              key={i}
-                              type="button"
-                              onClick={() => {
-                                setQuery(kw);
-                                router.push(`/search?q=${encodeURIComponent(kw)}`);
-                              }}
-                              className="bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-xl border border-primary/10 text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105 active:scale-95"
-                            >
-                              {kw}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-xs italic">Gagal mendapatkan saran. Coba topik lain.</p>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.form>
-
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="flex flex-wrap gap-4 mt-12"
-            >
-              {categories.map((cat) => (
-                <button 
-                  key={cat.name}
-                  onClick={() => {
-                    setQuery(cat.name);
-                    router.push(`/search?q=${encodeURIComponent(cat.name)}`);
-                  }}
-                  className={`flex items-center space-x-3 rounded-2xl px-5 py-3 text-[11px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 border ${cat.color} shadow-lg`}
+            {/* AI Insights Panel */}
+            <AnimatePresence>
+              {(optimizedData || isOptimizing) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="mt-8 p-8 rounded-[2.5rem] glass-card border-primary/20 text-left shadow-2xl relative overflow-hidden"
                 >
-                  {cat.icon}
-                  <span>{cat.name}</span>
-                </button>
-              ))}
-            </motion.div>
-          </div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h4 className="text-primary font-black text-[10px] uppercase tracking-[0.2em] flex items-center">
+                      <Brain className="w-4 h-4 mr-2" />
+                      AI Research Insights
+                    </h4>
+                    {!isOptimizing && (
+                      <button type="button" onClick={() => setOptimizedData(null)} className="text-muted-foreground hover:text-foreground p-1">
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  
+                  {isOptimizing ? (
+                    <div className="flex items-center space-x-4 py-6">
+                      <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                      <div className="space-y-1">
+                        <span className="text-foreground text-sm font-bold block">Merumuskan strategi riset...</span>
+                        <span className="text-muted-foreground text-xs italic">Menganalisis jutaan parameter data akademik</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <p className="text-base text-muted-foreground leading-relaxed font-medium">
+                        "{optimizedData?.explanation}"
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {optimizedData?.keywords.map((kw, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              setQuery(kw);
+                              router.push(`/search?q=${encodeURIComponent(kw)}`);
+                            }}
+                            className="bg-primary/10 hover:bg-primary/20 text-primary px-5 py-2.5 rounded-xl border border-primary/10 text-xs font-black uppercase tracking-tight transition-all active:scale-95"
+                          >
+                            {kw}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, rotateY: 20 }}
-            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-            transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
-            className="lg:col-span-5 hidden lg:block"
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="flex flex-wrap justify-center gap-3 mt-8"
           >
-            <div className="relative group">
-              <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-purple-600/20 rounded-[3rem] blur-3xl opacity-50 group-hover:opacity-100 transition duration-1000"></div>
-              <APIStatusCard />
-            </div>
+            {categories.map((cat) => (
+              <button 
+                key={cat.name}
+                onClick={() => {
+                  setQuery(cat.name);
+                  router.push(`/search?q=${encodeURIComponent(cat.name)}`);
+                }}
+                className={`flex items-center space-x-3 rounded-full px-5 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all hover:bg-muted border border-border/50 bg-muted/20 text-muted-foreground hover:text-foreground`}
+              >
+                {cat.icon}
+                <span>{cat.name}</span>
+              </button>
+            ))}
           </motion.div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 border-t border-border bg-muted/20 relative">
+      {/* Features Grid */}
+      <section className="py-32 relative">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16 space-y-4">
-            <h2 className="text-3xl md:text-5xl font-black text-foreground">Teknologi Masa Depan Riset</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto font-medium">Platform bertenaga AI yang membantu peneliti menelusuri literatur ilmiah dengan kecepatan cahaya.</p>
-          </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { title: '200 Juta+', desc: 'Paper akademik global yang diindeks setiap hari secara real-time dari berbagai sumber terpercaya.', icon: <BookOpen className="w-6 h-6 text-primary" /> },
-              { title: 'AI Insights', desc: 'Dapatkan ringkasan instan, poin penting, dan analisis gap riset untuk setiap paper dalam hitungan detik.', icon: <Brain className="w-6 h-6 text-purple-400" /> },
-              { title: 'Chat PDF', desc: 'Lupakan membaca ratusan halaman. Tanya langsung ke isi paper dan dapatkan jawaban akurat dari Gemini.', icon: <Zap className="w-6 h-6 text-amber-400" /> },
+              { title: 'Global Index', desc: '200 juta+ paper dari OpenAlex dan Semantic Scholar.', icon: <BookOpen className="w-5 h-5" /> },
+              { title: 'AI Assistant', desc: 'Analisis gap, ringkasan, dan penjelasan ELI5 instan.', icon: <Brain className="w-5 h-5" /> },
+              { title: 'Zero Barrier', desc: 'Buka PDF gratis secara legal dengan Unpaywall API.', icon: <Zap className="w-5 h-5" /> },
             ].map((feature, i) => (
               <motion.div 
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="p-10 rounded-[3rem] bg-card/30 backdrop-blur-md border border-border text-center space-y-6 hover:border-primary/50 transition-all group relative overflow-hidden"
+                className="p-8 rounded-[2.5rem] glass-card space-y-4 group"
               >
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/20 transition-colors" />
-                <div className="w-16 h-16 bg-muted rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-border group-hover:bg-primary/10 group-hover:scale-110 transition-all shadow-inner">
+                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                   {feature.icon}
                 </div>
-                <h3 className="text-2xl font-black text-foreground">{feature.title}</h3>
-                <p className="text-muted-foreground leading-relaxed font-medium text-sm">{feature.desc}</p>
+                <h3 className="text-xl font-black">{feature.title}</h3>
+                <p className="text-muted-foreground text-sm font-medium leading-relaxed">{feature.desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Trending Section with modern container */}
-      <div className="max-w-7xl mx-auto px-4 pb-32">
-        <div className="relative rounded-[4rem] bg-gradient-to-b from-transparent to-primary/5 p-1">
-          <TrendingSection />
+      <TrendingSection />
+
+      {/* Explore Indicator */}
+      <div className="pb-12 flex justify-center">
+        <div className="flex flex-col items-center gap-2 opacity-30">
+          <div className="w-px h-12 bg-gradient-to-b from-primary to-transparent" />
+          <span className="text-[10px] font-black uppercase tracking-[0.3em]">Explore Library</span>
         </div>
       </div>
+    </main>
+  );
+}
 
-      {/* Scroll to Explore Indicator */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center space-y-2 text-muted-foreground"
-      >
-        <span className="text-[10px] font-black uppercase tracking-widest">Explore</span>
-        <motion.div 
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-5 h-8 border-2 border-muted rounded-full flex justify-center p-1"
-        >
-          <div className="w-1 h-2 bg-primary rounded-full" />
-        </motion.div>
-      </motion.div>
+const X = ({ className }: { className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="24" 
+    height="24" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+  </svg>
+);
     </main>
   );
 }

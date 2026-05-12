@@ -47,90 +47,88 @@ export default function JournalCard({ journal }: Props) {
 
   return (
     <div className={cn(
-      "glass-card rounded-2xl p-5 md:p-6 flex flex-col h-full border transition-all hover:border-primary/50 relative group/card",
-      isComparing ? "border-primary/40 bg-primary/5" : "border-border"
+      "glass-card rounded-[2rem] p-6 flex flex-col h-full relative group/card",
+      isComparing ? "border-primary/40 bg-primary/5 shadow-primary/5" : "border-border/40"
     )}>
-      {/* Compare Selector */}
+      {/* Compare Selector - Simplified */}
       <button 
         onClick={toggleCompare}
         className={cn(
-          "absolute -top-2 -right-2 p-2 rounded-xl transition-all shadow-xl z-10 border",
+          "absolute -top-2 -right-2 p-2.5 rounded-xl transition-all shadow-xl z-10 border",
           isComparing 
-            ? "bg-primary text-white border-primary/50 scale-110" 
-            : "bg-card text-muted-foreground border-border hover:text-foreground"
+            ? "bg-primary text-white border-primary/50" 
+            : "bg-card text-muted-foreground border-border/50 hover:text-foreground opacity-0 group-hover/card:opacity-100"
         )}
-        title="Pilih untuk bandingkan"
+        title="Bandingkan"
       >
         <Scale className="w-4 h-4" />
       </button>
 
-      {/* Badges Row */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      {/* Badges Row - Clean & Professional */}
+      <div className="flex flex-wrap gap-2 mb-5">
         {journal.source && (
           <div className={cn(
-            "px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm border",
-            journal.source === 'openalex' ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" : 
-            journal.source === 'googlescholar' ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" :
-            "bg-primary/10 text-primary border-primary/20"
+            "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 border shadow-sm",
+            journal.source === 'openalex' ? "bg-amber-500/5 text-amber-500/80 border-amber-500/10" : 
+            journal.source === 'googlescholar' ? "bg-emerald-500/5 text-emerald-500/80 border-emerald-500/10" :
+            "bg-primary/5 text-primary/80 border-primary/10"
           )}>
             {journal.source === 'openalex' ? <BookX className="w-3 h-3" /> : 
              journal.source === 'googlescholar' ? <Search className="w-3 h-3" /> : 
              <Sparkles className="w-3 h-3" />}
-            {journal.source === 'googlescholar' ? 'Google Scholar' : journal.source}
+            {journal.source === 'googlescholar' ? 'Scholar' : journal.source}
           </div>
         )}
         {journal.isOpenAccess && (
-          <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border border-emerald-500/20 shadow-sm">
-            Akses Terbuka
+          <div className="bg-emerald-500/5 text-emerald-500/80 border border-emerald-500/10 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider">
+            Open Access
           </div>
         )}
         {/* Unpaywall PDF Finder */}
-        {journal.doi && <UnpaywallButton doi={journal.doi} />}
-        
-        <div className="bg-muted text-muted-foreground px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border border-border shadow-sm truncate max-w-[120px]">
-          {journal.venue || 'Journal'}
-        </div>
+        {journal.doi && <UnpaywallButton doi={journal.doi} className="!py-1" />}
       </div>
 
-      <Link href={`/journal/${journal.id || journal.paperId}?source=${journal.source || 'semantic'}`} className="group/title flex-grow">
-        <h3 className="text-lg font-bold text-foreground line-clamp-2 group-hover/title:text-primary transition-colors mb-3 leading-tight">
+      <Link href={`/journal/${journal.id || journal.paperId}?source=${journal.source || 'semantic'}`} className="group/title">
+        <h3 className="text-xl font-bold text-foreground line-clamp-2 group-hover/title:text-primary transition-colors mb-3 leading-snug">
           {journal.title}
         </h3>
       </Link>
 
-      <p className="text-sm text-muted-foreground line-clamp-3 mb-6 flex-grow leading-relaxed">
-        {journal.abstract || 'Abstrak tidak tersedia. Klik untuk melihat detail lebih lanjut.'}
+      <p className="text-sm text-muted-foreground line-clamp-3 mb-6 font-medium leading-relaxed">
+        {journal.abstract || 'Abstrak tidak tersedia. Klik untuk analisis AI mendalam.'}
       </p>
 
-      {/* Metadata Bottom Section */}
-      <div className="space-y-4 pt-5 border-t border-border mt-auto">
-        <div className="flex items-center text-xs text-foreground font-medium bg-muted p-2 rounded-xl border border-border">
-          <Users className="w-3.5 h-3.5 mr-2 text-primary shrink-0" />
-          <span className="truncate">
-            {journal.authors?.map(a => a.name).join(', ') || 'Penulis Anonim'}
+      {/* Metadata Section - Clean Layout */}
+      <div className="mt-auto space-y-4 pt-5 border-t border-border/40">
+        <div className="flex items-center text-[11px] font-bold text-muted-foreground">
+          <Users className="w-3.5 h-3.5 mr-2 text-primary/50 shrink-0" />
+          <span className="truncate italic">
+            {journal.authors && journal.authors.length > 0 
+              ? journal.authors.slice(0, 3).map(a => a.name).join(', ') + (journal.authors.length > 3 ? ' et al.' : '')
+              : 'Penulis Anonim'}
           </span>
         </div>
         
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center space-x-3 text-xs text-muted-foreground font-bold">
-            <div className="flex items-center bg-muted px-2 py-1 rounded-lg border border-border">
-              <Calendar className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center text-[10px] font-black text-muted-foreground uppercase bg-muted/30 px-2 py-1 rounded-lg border border-border/30">
+              <Calendar className="w-3 h-3 mr-1.5 opacity-50" />
               {journal.year || 'N/A'}
             </div>
-            <div className="flex items-center bg-muted px-2 py-1 rounded-lg border border-border">
-              <Star className="w-3.5 h-3.5 mr-1.5 text-amber-500" />
+            <div className="flex items-center text-[10px] font-black text-amber-500/80 bg-amber-500/5 px-2 py-1 rounded-lg border border-amber-500/10">
+              <Star className="w-3 h-3 mr-1.5" />
               {(journal.citationCount || journal.citations || 0).toLocaleString()}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <BookmarkButton journal={journal} />
             <Link 
               href={`/journal/${journal.paperId}?source=${journal.source || 'semantic'}`}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-xl text-xs font-black transition-all shadow-lg active:scale-95"
+              className="bg-foreground text-background px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 flex items-center gap-2"
             >
               <span>AI</span>
-              <Sparkles className="w-3.5 h-3.5" />
+              <Sparkles className="w-3 h-3" />
             </Link>
           </div>
         </div>

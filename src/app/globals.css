@@ -9,94 +9,104 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
 }
 
 :root {
-  /* DARK MODE (Default based on user request) */
-  --background: #000000;
-  --foreground: #ffffff;
-  --primary: #6366f1;
+  /* DARK MODE (Default - Premium Slate/Zinc) */
+  --background: #020617; /* Slate 950 */
+  --foreground: #f8fafc; /* Slate 50 */
+  --primary: #3b82f6; /* Blue 500 */
+  --accent: #8b5cf6; /* Violet 500 */
   
-  /* Card: Grey gelap dikit, opacity 60% */
-  --card: rgba(30, 30, 30, 0.6);
-  --card-foreground: #ffffff;
+  /* Card: Glassmorphism base */
+  --card: rgba(255, 255, 255, 0.03);
+  --card-foreground: #f8fafc;
   
-  --border: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.08);
   --muted: rgba(255, 255, 255, 0.05);
-  --muted-foreground: #a1a1aa;
-  --radius: 1.5rem;
+  --muted-foreground: #94a3b8; /* Slate 400 */
+  --radius: 1rem;
 }
 
 .light {
-  /* LIGHT MODE (Clean & Premium White) */
-  --background: #ffffff;
-  --foreground: #020617; /* Very dark blue for better readability */
-  --primary: #6366f1; /* Keep indigo as primary for brand consistency */
+  /* LIGHT MODE (Clean & Academic) */
+  --background: #f8fafc; /* Slate 50 */
+  --foreground: #0f172a; /* Slate 900 */
+  --primary: #2563eb; /* Blue 600 */
+  --accent: #4f46e5; /* Indigo 600 */
   
-  /* Card: Putih Bersih dengan Border Halus */
+  /* Card: Clean White with soft border */
   --card: #ffffff;
-  --card-foreground: #020617;
+  --card-foreground: #0f172a;
   
-  --border: rgba(0, 0, 0, 0.08);
-  --muted: #f8fafc; /* Slate 50 */
+  --border: rgba(0, 0, 0, 0.06);
+  --muted: #f1f5f9; /* Slate 100 */
   --muted-foreground: #64748b; /* Slate 500 */
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: var(--font-geist-sans), 'Inter', system-ui, sans-serif;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s ease;
+  font-feature-settings: "cv02", "cv05", "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
 }
 
 @layer utilities {
   .glass-card {
     background-color: var(--card);
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid var(--border);
     color: var(--card-foreground);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.1);
   }
 
   .glass-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
-    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
+    border-color: rgba(var(--primary), 0.3);
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  .dark .glass-card:hover {
+     background-color: rgba(255, 255, 255, 0.06);
+     border-color: rgba(255, 255, 255, 0.15);
   }
 
-  .btn-primary {
-    background-color: var(--card);
-    color: var(--card-foreground);
-    border: 1px solid var(--border);
-    transition: all 0.2s ease;
+  .premium-gradient {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
   }
 
-  .btn-primary:hover {
-    background-color: var(--foreground);
-    color: var(--background);
-  }
-
-  .responsive-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
+  .text-gradient {
+    background: linear-gradient(to right, #ffffff, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 }
 
 /* Custom Scrollbar for Premium Feel */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--muted);
+  background: var(--border);
   border-radius: 10px;
+  border: 3px solid var(--background);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border);
+  background: var(--muted-foreground);
+}
+
+/* Typography Overrides */
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.02em;
 }

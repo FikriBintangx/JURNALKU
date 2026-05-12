@@ -98,13 +98,13 @@ function SearchResults() {
     .filter(j => {
       if (filters.openAccess && !j.isOpenAccess) return false;
       if (filters.hasPdf && !j.openAccessPdf?.url) return false;
-      if (j.year && (j.year < (filters.yearStart || 1900) || j.year > (filters.yearEnd || 2024))) return false;
-      if ((filters.minCitations || 0) > 0 && (j.citationCount || 0) < (filters.minCitations || 0)) return false;
+      if (j.year && (j.year < (filters.yearStart || 1900) || j.year > (filters.yearEnd || new Date().getFullYear()))) return false;
+      if ((filters.minCitations || 0) > 0 && (j.citations || 0) < (filters.minCitations || 0)) return false;
       return true;
     })
     .sort((a, b) => {
       if (filters.sortBy === 'year') return (b.year || 0) - (a.year || 0);
-      if (filters.sortBy === 'citations') return (b.citationCount || 0) - (a.citationCount || 0);
+      if (filters.sortBy === 'citations') return (b.citations || 0) - (a.citations || 0);
       return 0; // Default order
     });
 
