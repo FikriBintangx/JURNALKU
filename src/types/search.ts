@@ -75,4 +75,5 @@ export interface SearchResponse {
   error?: boolean;
   message?: string;
   intelligence?: ResearchIntelligence;
+  pagination?: any;
 }
