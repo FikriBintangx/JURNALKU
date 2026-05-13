@@ -156,7 +156,7 @@ function SearchResults() {
                 onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&provider=default`)}
                 className={cn(
                   "btn-fill-mewah flex-1 sm:flex-none px-6 md:px-8 py-2.5 md:py-3.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all",
-                  provider === 'default' ? "bg-foreground text-background shadow-xl" : "text-foreground-muted hover:text-foreground"
+                  provider === 'default' ? "bg-black text-white shadow-xl" : "text-foreground-muted hover:text-foreground"
                 )}
               >
                 Standard
@@ -165,7 +165,7 @@ function SearchResults() {
                 onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&provider=googlescholar`)}
                 className={cn(
                   "btn-fill-mewah flex-1 sm:flex-none px-6 md:px-8 py-2.5 md:py-3.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2",
-                  provider === 'googlescholar' ? "bg-foreground text-background shadow-xl" : "text-foreground-muted hover:text-foreground"
+                  provider === 'googlescholar' ? "bg-black text-white shadow-xl" : "text-foreground-muted hover:text-foreground"
                 )}
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -198,14 +198,14 @@ function SearchResults() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mb-12 p-8 bg-foreground text-background border-none rounded-[2rem] flex items-start gap-6 shadow-2xl"
+              className="mb-12 p-8 bg-white text-black border border-black/10 rounded-[2rem] flex items-start gap-6 shadow-xl"
             >
-              <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center shrink-0">
-                <AlertCircle className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-black/5 rounded-2xl flex items-center justify-center shrink-0">
+                <AlertCircle className="w-6 h-6 text-black" />
               </div>
               <div>
-                <h4 className="text-white font-black text-sm uppercase tracking-widest leading-none mb-2">EKSPERIMENTAL: MODE SCRAPE LANGSUNG</h4>
-                <p className="text-white/60 text-[11px] leading-relaxed font-bold uppercase tracking-wider">
+                <h4 className="text-black font-black text-sm uppercase tracking-widest leading-none mb-2">EKSPERIMENTAL: MODE SCRAPE LANGSUNG</h4>
+                <p className="text-black/70 text-[11px] leading-relaxed font-bold uppercase tracking-wider">
                   Koneksi langsung terbentuk dengan Google Scholar. Integritas data diverifikasi. Harap pertahankan kecepatan pencarian dalam batas aman.
                 </p>
               </div>
@@ -356,7 +356,7 @@ function SearchResults() {
                   onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&provider=default`)}
                   className={cn(
                     "flex-1 px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                    provider === 'default' ? "bg-foreground text-background shadow-xl" : "text-foreground-muted hover:text-foreground"
+                    provider === 'default' ? "bg-black text-white shadow-xl" : "text-foreground-muted hover:text-foreground"
                   )}
                 >
                   Indeks Standar
@@ -365,7 +365,7 @@ function SearchResults() {
                   onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&provider=googlescholar`)}
                   className={cn(
                     "flex-1 px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2",
-                    provider === 'googlescholar' ? "bg-foreground text-background shadow-xl" : "text-foreground-muted hover:text-foreground"
+                    provider === 'googlescholar' ? "bg-black text-white shadow-xl" : "text-foreground-muted hover:text-foreground"
                   )}
                 >
                   <Sparkles className="w-3.5 h-3.5" />

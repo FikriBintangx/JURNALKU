@@ -24,6 +24,7 @@ export async function GET(request: Request) {
   const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
   const pageSize = Math.min(20, Math.max(5, parseInt(searchParams.get('limit') || '15')));
   const enrich = searchParams.get('enrich') === 'true'; // opt-in AI enrichment
+  const provider = searchParams.get('provider') || 'default';
 
   const filters: SearchFilters = {
     yearStart: searchParams.get('yearStart') ? parseInt(searchParams.get('yearStart')!) : undefined,
@@ -55,7 +56,7 @@ export async function GET(request: Request) {
 
     // ─── 1. Multi-source fetch ────────────────────────────────
     const fetchLimit = pageSize * 3; // Over-fetch to allow for filtering
-    const { results: rawPapers, intelligence: queryIntel } = await searchAggregator.search(query, fetchLimit, filters);
+    const { results: rawPapers, intelligence: queryIntel } = await searchAggregator.search(query, fetchLimit, filters, provider);
 
     if (!rawPapers || rawPapers.length === 0) {
       return NextResponse.json({

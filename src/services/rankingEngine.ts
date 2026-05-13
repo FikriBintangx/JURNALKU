@@ -70,14 +70,18 @@ export const rankingEngine = {
       const hasPdf      = !!paper.pdfUrl   ? 0.5 : 0;
       const qualityScore = hasAbstract + hasPdf;
 
-      // Composite — Recency 30%, Semantic 35%, Velocity 10%, Citations 15%, Keyword 12%, Quality 8%
+      // 7. Methodology Match (10%) - Boost if research method detected by AI
+      const methodologyScore = paper.aiEnrichment?.researchMethod !== 'unknown' ? 1.0 : 0;
+
+      // Composite — Semantic 40%, Citations 20%, Recency 15%, Velocity 10%, Keyword 10%, Quality 5%
+      // Adjusted weights based on ecosystem planning Step 8
       const finalScore =
-        (similarity    * 35) +
-        (citationScore * 15) +
-        (recencyScore  * 30) +
-        (velocityNorm  * 10) +
-        (keywordScore  * 12) +
-        (qualityScore  *  8);
+        (similarity       * 40) +
+        (citationScore    * 20) +
+        (recencyScore     * 15) +
+        (velocityNorm     * 10) +
+        (keywordScore     * 10) +
+        (methodologyScore *  5);
 
       const isNew     = age <= 1;
       const isRising  = velocity >= 15 && age <= 5;

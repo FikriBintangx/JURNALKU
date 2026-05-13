@@ -3,6 +3,7 @@ import { fetchArxiv } from './providers/arxivProvider';
 import { fetchPubMed } from './providers/pubmedProvider';
 import { fetchDOAJ } from './providers/doajProvider';
 import { fetchZenodo } from './providers/zenodoProvider';
+import { fetchGoogleScholar } from './providers/googleScholarProvider';
 import type { UniversalPaperEnriched } from '@/types/search';
 import { intelligenceService, ResearchIntelligence } from './intelligenceService';
 
@@ -63,10 +64,10 @@ export const searchAggregator = {
   },
 
   /**
-   * Main search entry point — runs all 8 providers in parallel.
+   * Main search entry point — runs all providers in parallel or targets specific one.
    * Auto-retries with AI-driven expansions if results are sparse.
    */
-  async search(rawQuery: string, limit: number = 20, filters?: any): Promise<{ results: UniversalPaperEnriched[], intelligence?: ResearchIntelligence }> {
+  async search(rawQuery: string, limit: number = 20, filters?: any, provider: string = 'default'): Promise<{ results: UniversalPaperEnriched[], intelligence?: ResearchIntelligence }> {
     const query = this.sanitizeQuery(rawQuery);
     if (!query) {
       console.warn("[SEARCH] Empty query.");
@@ -104,7 +105,7 @@ export const searchAggregator = {
     // 1. Parallel Intelligence & Initial Fetch
     const [queryIntel, initialPapers] = await Promise.all([
       intelligenceService.analyzeQuery(query),
-      this.runParallelFetch(query, limit, filters)
+      this.runParallelFetch(query, limit, filters, provider)
     ]);
 
     let papers = initialPapers;
@@ -115,7 +116,7 @@ export const searchAggregator = {
     if (papers.length < 10 && queryIntel.keywords.length > 0) {
       const expansionQuery = queryIntel.keywords.slice(0, 2).join(' ');
       console.log(`[INTELLIGENCE] Sparse results. Triggering semantic expansion: "${expansionQuery}"`);
-      const extra = await this.runParallelFetch(expansionQuery, limit, filters);
+      const extra = await this.runParallelFetch(expansionQuery, limit, filters, provider);
       papers = this.deduplicate([...papers, ...extra]);
     }
 
@@ -123,7 +124,7 @@ export const searchAggregator = {
     if (papers.length < 5) {
       const basicExpansions = this.expandQuery(query);
       if (basicExpansions.length > 0) {
-        const extra = await this.runParallelFetch(basicExpansions[0], limit, filters);
+        const extra = await this.runParallelFetch(basicExpansions[0], limit, filters, provider);
         papers = this.deduplicate([...papers, ...extra]);
       }
     }
@@ -136,7 +137,13 @@ export const searchAggregator = {
     return { results: final, intelligence: queryIntel };
   },
 
-  async runParallelFetch(query: string, limit: number, filters?: any): Promise<UniversalPaperEnriched[]> {
+  async runParallelFetch(query: string, limit: number, filters?: any, provider: string = 'default'): Promise<UniversalPaperEnriched[]> {
+    // If specific provider requested
+    if (provider === 'googlescholar') {
+      console.log(`[SEARCH] Targeting Google Scholar Scraper: "${query}"`);
+      return await fetchGoogleScholar(query, limit);
+    }
+
     const perSource = Math.ceil(limit / 3);
 
     const results = await Promise.allSettled([
@@ -148,9 +155,10 @@ export const searchAggregator = {
       fetchPubMed(query, Math.ceil(perSource / 2)),
       fetchDOAJ(query, Math.ceil(perSource / 2)),
       fetchZenodo(query, Math.ceil(perSource / 2)),
+      fetchGoogleScholar(query, Math.ceil(perSource / 2)),
     ]);
 
-    const providerNames = ['OpenAlex', 'CORE', 'Crossref', 'Semantic Scholar', 'arXiv', 'PubMed', 'DOAJ', 'Zenodo'];
+    const providerNames = ['OpenAlex', 'CORE', 'Crossref', 'Semantic Scholar', 'arXiv', 'PubMed', 'DOAJ', 'Zenodo', 'Google Scholar'];
     const papers: UniversalPaperEnriched[] = [];
 
     results.forEach((result, i) => {
@@ -173,17 +181,32 @@ export const searchAggregator = {
   deduplicate(papers: UniversalPaperEnriched[]): UniversalPaperEnriched[] {
     const seenDOI = new Set<string>();
     const seenTitle = new Set<string>();
+    
     return papers.filter(paper => {
+      if (!paper || !paper.title) return false;
+
+      // 1. Check DOI (strongest unique ID)
       const doi = (paper.doi || '').toLowerCase().trim();
-      const title = (paper.title || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').trim().slice(0, 80);
-      if (!title) return false;
       if (doi && doi.length > 5) {
         if (seenDOI.has(doi)) return false;
         seenDOI.add(doi);
-      } else {
-        if (seenTitle.has(title)) return false;
-        seenTitle.add(title);
+        return true;
       }
+
+      // 2. Check Title (Fuzzy matching)
+      // Normalize: lowercase, remove special chars, remove double spaces
+      const normalizedTitle = paper.title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      // Use a prefix of the title to catch minor variations
+      const titleHash = normalizedTitle.slice(0, 100);
+      
+      if (seenTitle.has(titleHash)) return false;
+      seenTitle.add(titleHash);
+      
       return true;
     });
   },
