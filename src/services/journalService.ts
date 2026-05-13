@@ -29,7 +29,8 @@ export const journalService = {
           offset: offset,
           data: response.data.data || [],
           success: true,
-          intelligence: response.data.intelligence
+          intelligence: response.data.intelligence,
+          pagination: response.data.pagination // Pass through pagination metadata
         };
       }
       

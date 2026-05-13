@@ -69,112 +69,107 @@ export default function CompareBar() {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ y: 60, opacity: 0 }}
+        initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 60, opacity: 0 }}
+        exit={{ y: 100, opacity: 0 }}
         transition={{
-          duration: 0.4,
-          ease: [0.22, 1, 0.36, 1],
+          duration: 0.6,
+          ease: [0.16, 1, 0.3, 1],
         }}
         className="
           fixed
-          bottom-4
-          left-1/2
+          bottom-0
+          left-0
+          right-0
           z-[9999]
-          w-[92%]
-          max-w-2xl
-          -translate-x-1/2
+          flex
+          justify-center
+          p-4
+          md:p-8
         "
       >
         <div
           className="
             relative
+            w-full
+            max-w-4xl
+            bg-background/80
+            backdrop-blur-md
+            border-2
+            border-foreground
+            shadow-[0_20px_50px_rgba(0,0,0,0.2)]
+            rounded-none
             overflow-hidden
-            rounded-full
-            border
-            border-white/10
-            bg-[#050505]/92
-            backdrop-blur-xl
-            shadow-[0_20px_60px_rgba(0,0,0,0.45)]
+            mb-4
           "
         >
-          {/* subtle gradient */}
-          <div
-            className="
-              pointer-events-none
-              absolute
-              inset-0
-              bg-gradient-to-br
-              from-white/[0.025]
-              via-transparent
-              to-white/[0.01]
-            "
-          />
+          {/* Industrial Accent Line */}
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-foreground/10" />
 
           <div
             className="
               relative
               flex
-              items-center
+              flex-col
+              md:flex-row
+              items-stretch
+              md:items-center
               justify-between
-              gap-3
-              px-4
-              py-3
             "
           >
-            {/* LEFT */}
-            <div className="flex items-center gap-3 min-w-0">
-              {/* icon */}
+            {/* LEFT SECTION */}
+            <div className="flex items-center gap-4 p-4 md:p-5 border-b md:border-b-0 md:border-r-2 border-foreground/10 flex-grow">
               <div
                 className="
                   flex
-                  h-11
-                  w-11
+                  h-10
+                  w-10
                   shrink-0
                   items-center
                   justify-center
-                  rounded-full
-                  border
-                  border-white/10
-                  bg-white/[0.05]
+                  bg-foreground
+                  text-background
                 "
               >
-                <Scale className="h-4 w-4 text-white" />
+                <Scale className="h-5 w-5" />
               </div>
 
-              {/* text */}
               <div className="min-w-0">
                 <h3
                   className="
                     truncate
-                    text-[13px]
+                    text-sm
+                    md:text-base
                     font-black
-                    tracking-tight
-                    text-white
+                    tracking-tightest
+                    text-foreground
+                    uppercase
                   "
                 >
-                  Compare Research
+                  Antrean Neural
                 </h3>
 
-                <p
-                  className="
-                    mt-0.5
-                    text-[9px]
-                    font-bold
-                    uppercase
-                    tracking-[0.18em]
-                    text-white/55
-                  "
-                >
-                  {selectedIds.length} Papers Selected
-                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                   <span className="inline-block w-1.5 h-1.5 bg-foreground animate-pulse" />
+                   <p
+                    className="
+                      text-[8px]
+                      font-black
+                      uppercase
+                      tracking-[0.2em]
+                      text-foreground/40
+                    "
+                  >
+                    {selectedIds.length} JURNAL SIAP
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* RIGHT */}
-            <div className="flex items-center gap-2">
-              {/* file icons */}
-              <div className="hidden items-center -space-x-2 md:flex">
+            {/* RIGHT SECTION */}
+            <div className="flex items-center justify-between md:justify-end gap-1 p-1 bg-foreground/5 md:bg-transparent">
+              {/* Paper list */}
+              <div className="flex items-center gap-1 px-3 overflow-x-auto no-scrollbar max-w-[150px] md:max-w-none border-r border-foreground/5 mr-2">
                 {selectedIds.map((id) => (
                   <button
                     key={id}
@@ -187,111 +182,56 @@ export default function CompareBar() {
                       w-9
                       items-center
                       justify-center
-                      rounded-full
                       border
-                      border-white/10
-                      bg-white/[0.05]
+                      border-foreground/10
+                      bg-background
+                      hover:bg-red-500
+                      hover:text-white
+                      hover:border-red-500
                       transition-all
-                      duration-300
-                      hover:-translate-y-0.5
-                      hover:border-red-500/30
-                      hover:bg-red-500/10
+                      duration-200
                     "
                   >
-                    <FileText
-                      className="
-                        h-3.5
-                        w-3.5
-                        text-white/70
-                        transition-all
-                        duration-200
-                        group-hover:scale-0
-                        group-hover:opacity-0
-                      "
-                    />
-
-                    <X
-                      className="
-                        absolute
-                        h-3.5
-                        w-3.5
-                        scale-0
-                        text-red-400
-                        opacity-0
-                        transition-all
-                        duration-200
-                        group-hover:scale-100
-                        group-hover:opacity-100
-                      "
-                    />
+                    <FileText className="h-3 w-3 group-hover:hidden" />
+                    <X className="hidden group-hover:block h-3 w-3" />
                   </button>
                 ))}
               </div>
 
-              {/* clear */}
-              <button
-                onClick={clearAll}
-                className="
-                  hidden
-                  rounded-full
-                  px-3
-                  py-2
-                  text-[9px]
-                  font-black
-                  uppercase
-                  tracking-[0.18em]
-                  text-white/45
-                  transition-all
-                  duration-300
-                  hover:bg-white/[0.05]
-                  hover:text-white
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={clearAll}
+                  className="
+                    h-14
+                    px-6
+                    text-[9px]
+                    font-black
+                    uppercase
+                    tracking-widest
+                    text-foreground/40
+                    hover:text-foreground
+                    hover:bg-foreground/5
+                    transition-all
+                    hidden md:block
+                  "
+                >
+                  HAPUS
+                </button>
 
-                  md:block
-                "
-              >
-                Clear
-              </button>
-
-              {/* analyze */}
-              <button
-                onClick={handleGoToCompare}
-                disabled={selectedIds.length < 2}
-                className={cn(
-                  `
-                  group
-                  relative
-                  flex
-                  h-10
-                  items-center
-                  justify-center
-                  gap-2
-                  overflow-hidden
-                  rounded-full
-                  px-6
-                  text-[11px]
-                  font-bold
-                  uppercase
-                  tracking-widest
-                  transition-all
-                  duration-300
-                  active:scale-[0.98]
-                `,
-                  selectedIds.length >= 2
-                    ? `
-                      bg-foreground
-                      text-background
-                      hover:opacity-90
-                    `
-                    : `
-                      cursor-not-allowed
-                      bg-muted
-                      text-foreground-muted
-                    `
-                )}
-              >
-                <span className="relative z-10">Analyze</span>
-                <ArrowRight className="relative z-10 h-3.5 w-3.5" />
-              </button>
+                <button
+                  onClick={handleGoToCompare}
+                  disabled={selectedIds.length < 2}
+                  className={cn(
+                    "h-14 px-8 md:px-12 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3",
+                    selectedIds.length >= 2
+                      ? "bg-foreground text-background hover:bg-zinc-800 dark:hover:bg-zinc-200"
+                      : "bg-foreground/10 text-foreground/20 cursor-not-allowed"
+                  )}
+                >
+                  <span>ANALISIS</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

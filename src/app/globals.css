@@ -43,6 +43,11 @@
     --color-border-strong: var(--border-strong);
     --color-muted: var(--muted);
     --color-muted-foreground: var(--muted-foreground);
+
+    /* Premium Animation Tokens */
+    --ease-premium: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out-premium: cubic-bezier(0.76, 0, 0.24, 1);
+    --transition-premium: 0.5s var(--ease-premium);
   }
 
   .dark {
@@ -265,5 +270,45 @@
     background: var(--foreground);
     border-radius: 10px;
     border: 2px solid var(--background);
+  }
+
+  .search-active-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: radial-gradient(circle at 50% 30%, transparent 0%, rgba(0, 0, 0, 0.15) 100%);
+    background-color: rgba(0, 0, 0, 0.05);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    backdrop-filter: blur(14px) saturate(120%);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.5s var(--ease-premium);
+  }
+
+  .dark .search-active-overlay {
+    background: radial-gradient(circle at 50% 30%, transparent 0%, rgba(255, 255, 255, 0.05) 100%);
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .is-search-focused .search-active-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .is-search-focused .search-focus-target {
+    z-index: 10001;
+    transform: scale(1.01) translateY(-4px);
+    box-shadow: 
+      0 0 0 1px var(--foreground),
+      0 20px 60px -10px rgba(0, 0, 0, 0.15),
+      0 0 80px -20px color-mix(in srgb, var(--foreground) 20%, transparent);
+    border-color: var(--foreground) !important;
+    background-color: var(--background) !important;
+  }
+
+  .is-search-focused .search-suggestions-panel {
+    z-index: 1100;
+    transform: translateY(8px);
+    transition: all 0.5s var(--ease-premium);
   }
 }

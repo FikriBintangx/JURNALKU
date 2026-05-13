@@ -55,7 +55,7 @@ export default function UnpaywallButton({ doi, className, showIconOnly = false }
         target="_blank"
         rel="noopener noreferrer"
         className={cn(
-          "inline-flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border border-emerald-500/20 shadow-sm transition-all active:scale-95",
+          "inline-flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2.5 py-1.5 rounded-none text-[10px] font-black uppercase tracking-wider border border-emerald-500/20 shadow-sm transition-all active:scale-95",
           className
         )}
         title="Buka PDF Gratis (Legal)"

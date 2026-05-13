@@ -42,9 +42,9 @@ function RadarChart({ data, headers }: { data: any[], headers: string[] }) {
   };
 
   const colors = [
-    'stroke-foreground fill-foreground/10',
-    'stroke-foreground-secondary fill-foreground/5',
-    'stroke-foreground-muted fill-foreground/5',
+    'stroke-foreground fill-foreground/20',
+    'stroke-foreground/60 fill-foreground/10',
+    'stroke-foreground/40 fill-foreground/5',
   ];
 
   return (
@@ -60,7 +60,7 @@ function RadarChart({ data, headers }: { data: any[], headers: string[] }) {
               const y = center + (radius * step) * Math.sin(angle);
               return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
             }).join(' ') + ' Z'}
-            className="stroke-border fill-none"
+            className="stroke-foreground/10 fill-none"
             strokeWidth="1"
           />
         ))}
@@ -72,7 +72,7 @@ function RadarChart({ data, headers }: { data: any[], headers: string[] }) {
             y1={center}
             x2={p.x}
             y2={p.y}
-            className="stroke-border"
+            className="stroke-foreground/5"
           />
         ))}
         {/* Labels */}
@@ -86,7 +86,7 @@ function RadarChart({ data, headers }: { data: any[], headers: string[] }) {
               x={lx}
               y={ly}
               textAnchor="middle"
-              className="fill-foreground-muted text-[9px] font-bold uppercase tracking-widest"
+              className="fill-foreground/40 text-[9px] font-black uppercase tracking-widest"
             >
               {p.label}
             </text>
@@ -99,19 +99,11 @@ function RadarChart({ data, headers }: { data: any[], headers: string[] }) {
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: 1 }}
             d={getPath(idx)}
-            className={colors[idx % colors.length]}
-            strokeWidth="2"
+            className={cn("transition-all duration-500", colors[idx % colors.length])}
+            strokeWidth="3"
           />
         ))}
       </svg>
-      <div className="mt-8 flex flex-wrap justify-center gap-6">
-        {headers.slice(1).map((h, idx) => (
-          <div key={idx} className="flex items-center gap-2">
-            <div className={cn("w-2 h-2 rounded-full bg-foreground")} />
-            <span className="text-[10px] font-bold text-foreground-secondary truncate max-w-[100px] uppercase tracking-wider">{h}</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -176,14 +168,13 @@ function CompareContent() {
         </div>
         <div className="space-y-2">
           <p className="text-[10px] font-black tracking-[0.3em] uppercase animate-pulse text-foreground">Initializing Neural Synthesis...</p>
-          <p className="text-[9px] text-foreground-muted uppercase tracking-[0.2em] font-bold opacity-30">MAPPING VECTOR DIMENSIONS</p>
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-background pb-32 text-foreground selection:bg-foreground selection:text-background">
+    <div className="min-h-screen bg-background pb-32 text-foreground selection:bg-foreground selection:text-background transition-colors duration-500">
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 md:px-8 pt-32 md:pt-48 relative">
@@ -192,19 +183,19 @@ function CompareContent() {
             <div className="flex flex-wrap items-center gap-4">
               <button 
                 onClick={() => window.history.back()}
-                className="p-4 bg-card rounded-2xl hover:bg-foreground hover:text-background transition-all group border border-border shadow-sm"
+                className="p-5 bg-background hover:bg-foreground hover:text-background transition-all group border-2 border-foreground/10 rounded-none shadow-[4px_4px_0px_rgba(0,0,0,0.1)] active:translate-x-1 active:translate-y-1 active:shadow-none"
               >
-                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                <ArrowLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
               </button>
-              <div className="px-5 py-2.5 bg-card rounded-full text-[10px] font-black text-foreground uppercase tracking-[0.3em] border border-border-strong">
-                Compare Engine <span className="opacity-20 mx-2">|</span> AI OS v2.0
+              <div className="px-6 py-3 bg-foreground text-background text-[10px] font-black uppercase tracking-[0.4em] border-l-8 border-foreground/20">
+                Compare Engine <span className="opacity-40 mx-2">|</span> AI OS v2.0
               </div>
             </div>
-            <h1 className="text-[clamp(2.5rem,8vw,5.5rem)] font-black text-foreground tracking-tighter leading-[0.85] uppercase">
-              Research <br /><span className="text-foreground-muted opacity-30">Synthesis</span>
+            <h1 className="text-[clamp(3.5rem,10vw,7rem)] font-black text-foreground tracking-tightest leading-[0.8] uppercase">
+              RESEARCH <br /><span className="text-foreground/20">SYNTHESIS</span>
             </h1>
-            <p className="text-foreground-secondary font-medium leading-relaxed text-lg md:text-xl max-w-2xl">
-              Advanced cross-pollination of academic methodologies, findings, and innovation metrics powered by JurnalStar Intelligence.
+            <p className="text-foreground/60 font-medium leading-relaxed text-lg md:text-xl max-w-2xl border-l-2 border-foreground/10 pl-8">
+              Advanced cross-pollination of academic methodologies, findings, and innovation metrics.
             </p>
           </div>
 
@@ -212,17 +203,17 @@ function CompareContent() {
             <button 
               onClick={handleCompare}
               disabled={comparing || papers.length < 2}
-              className="flex-1 lg:flex-none btn-primary h-20 md:h-24 px-12 md:px-20 !rounded-[2.5rem] !text-xs !tracking-[0.2em] active:scale-95 disabled:opacity-30 shadow-2xl"
+              className="flex-1 lg:flex-none btn-primary h-20 md:h-28 px-12 md:px-24 rounded-none text-xs md:text-sm tracking-[0.25em] active:scale-95 disabled:opacity-30 shadow-[0_30px_100px_-20px_rgba(0,0,0,0.3)] dark:shadow-[0_30px_100px_-20px_rgba(255,255,255,0.1)] border-none"
             >
               {comparing ? (
                 <div className="flex items-center gap-4">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>SYNTHESIZING...</span>
+                  <span>MENYINTESIS...</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-4">
                   <Sparkles className="w-5 h-5" />
-                  <span>START DEEP ANALYSIS ({papers.length})</span>
+                  <span>MULAI ANALISIS MENDALAM ({papers.length})</span>
                 </div>
               )}
             </button>
@@ -230,34 +221,40 @@ function CompareContent() {
         </div>
 
         {/* Paper Cards Preview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 mb-20 md:mb-32">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1 mb-20 md:mb-32 border-2 border-foreground/10 bg-foreground/10 p-1">
           {papers.map((paper, index) => (
             <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: index * 0.1 }}
               key={`${paper.source || 'journal'}-${paper.paperId || index}`} 
-              className="mono-card p-10 rounded-[3rem] relative flex flex-col h-full bg-card"
+              className="bg-background p-10 relative flex flex-col h-full hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition-all duration-500 group border border-transparent hover:border-foreground/10 hover:-translate-y-1"
             >
-               <div className="flex justify-between items-start mb-10">
-                 <span className="text-[10px] font-black uppercase tracking-widest text-foreground bg-muted px-4 py-2 rounded-xl border border-border">
+               <div className="flex justify-between items-start mb-12">
+                 <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40 border border-foreground/10 px-4 py-2">
                    {paper.source || 'Intel'}
                  </span>
-                 <div className="flex items-center gap-2 text-foreground-muted">
-                    <TrendingUp className="w-3.5 h-3.5" />
+                 <div className="flex items-center gap-2 text-foreground/20 group-hover:text-foreground transition-colors">
+                    <TrendingUp className="w-4 h-4" />
                     <span className="text-[10px] font-black uppercase tracking-widest">{(paper.citationCount || 0).toLocaleString()}</span>
                  </div>
                </div>
                <div className="flex-grow">
-                 <h3 className="text-xl font-extrabold text-foreground leading-[1.2] mb-8 tracking-tighter line-clamp-3 uppercase">{paper.title}</h3>
+                 <h3 className="text-xl md:text-2xl font-black text-foreground leading-tight mb-10 tracking-tight uppercase line-clamp-3 group-hover:text-blue-500 transition-colors">{paper.title}</h3>
                  <div className="flex flex-wrap items-center gap-3">
-                   <div className="px-4 py-2 rounded-xl bg-muted text-[10px] font-bold text-foreground-secondary uppercase tracking-widest border border-border">
+                   <div className="px-5 py-2.5 bg-foreground/5 text-[10px] font-black text-foreground uppercase tracking-widest border border-foreground/5">
                      {paper.year || 'N/A'}
                    </div>
-                   <div className="px-4 py-2 rounded-xl bg-muted text-[10px] font-bold text-foreground-secondary uppercase tracking-widest border border-border truncate max-w-[150px]">
+                   <div className="px-5 py-2.5 bg-foreground/5 text-[10px] font-black text-foreground uppercase tracking-widest border border-foreground/5 truncate max-w-[150px]">
                      {paper.venue || 'Research Venue'}
                    </div>
                  </div>
+               </div>
+               
+               {/* Decorative luxury corner */}
+               <div className="absolute bottom-0 right-0 w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                 <div className="absolute bottom-4 right-4 w-[2px] h-4 bg-foreground/20" />
+                 <div className="absolute bottom-4 right-4 h-[2px] w-4 bg-foreground/20" />
                </div>
             </motion.div>
           ))}
@@ -269,46 +266,48 @@ function CompareContent() {
             <motion.div 
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-24 md:space-y-32"
+              className="space-y-32"
             >
               {/* AI Verdict & Radar */}
-              <div className="grid lg:grid-cols-12 gap-8 md:gap-12">
-                <div className="lg:col-span-4 mono-card p-12 rounded-[3.5rem] flex flex-col items-center justify-center bg-card">
-                  <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground-muted mb-12 self-start flex items-center gap-3">
-                    <Target className="w-4 h-4" /> Vector Analysis
+              <div className="grid lg:grid-cols-12 gap-1 bg-foreground/10 border-2 border-foreground/10">
+                <div className="lg:col-span-5 bg-background p-12 md:p-16 flex flex-col items-center justify-center">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/30 mb-12 self-start flex items-center gap-4">
+                    <Target className="w-5 h-5" /> Matriks Perbandingan Vektor
                   </h3>
-                  <div className="w-full">
+                  <div className="w-full max-w-[400px]">
                     <RadarChart data={comparison.radarData} headers={comparison.headers} />
                   </div>
                 </div>
 
-                <div className="lg:col-span-8 bg-foreground text-background p-12 md:p-20 rounded-[4rem] relative overflow-hidden shadow-2xl">
-                  <div className="absolute -top-20 -right-20 opacity-[0.03] pointer-events-none">
+                <div className="lg:col-span-7 bg-foreground text-background p-12 md:p-24 relative overflow-hidden transition-colors duration-500">
+                  <div className="absolute -top-20 -right-20 opacity-[0.08] pointer-events-none">
                     <Brain className="w-[600px] h-[600px] text-background" />
                   </div>
                   
-                  <div className="relative z-10 space-y-16">
-                    <div className="flex items-center gap-6">
-                      <div className="w-20 h-20 bg-background text-foreground rounded-3xl flex items-center justify-center border border-background/20 shadow-xl">
-                        <ShieldCheck className="w-10 h-10" />
+                  <div className="relative z-10 space-y-20">
+                    <div className="flex items-center gap-8">
+                      <div className="w-24 h-24 bg-background text-foreground rounded-none flex items-center justify-center shadow-2xl border-l-[12px] border-foreground/20">
+                        <ShieldCheck className="w-12 h-12" />
                       </div>
-                      <div className="space-y-1">
-                        <h3 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase text-background">Critical Verdict</h3>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-background/60">Sourced via {comparison.provider || 'Neural Core'}</p>
+                      <div className="space-y-2">
+                        <h3 className="text-5xl md:text-6xl font-black tracking-tighter leading-none uppercase">Verdikt Kritikal</h3>
+                        <p className="text-[11px] font-black uppercase tracking-[0.4em] opacity-40">Sumber data: {comparison.provider || 'Neural Core'}</p>
                       </div>
                     </div>
 
-                    <div className="space-y-12">
-                      <div className="space-y-6">
-                        <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-background/60">Deep Synthesis</h4>
-                        <p className="text-2xl md:text-4xl font-medium leading-[1.2] tracking-tight text-background">
+                    <div className="space-y-16">
+                      <div className="space-y-8 border-l-2 border-background/20 pl-10">
+                        <h4 className="text-[11px] font-black uppercase tracking-[0.3em] opacity-30">Deep Synthesis</h4>
+                        <p className="text-3xl md:text-5xl font-medium leading-[1.1] tracking-tightest">
                           {comparison.verdict?.summary || comparison.conclusion}
                         </p>
                       </div>
                       
-                      <div className="bg-background/10 border border-background/20 p-10 rounded-[3rem]">
-                        <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-background/50 mb-4">Strategic Recommendation</h4>
-                        <p className="text-background text-lg md:text-xl leading-relaxed font-medium">
+                      <div className="bg-background/5 border border-background/10 p-12 rounded-none hover:bg-background/10 transition-colors">
+                        <h4 className="text-[11px] font-black uppercase tracking-[0.3em] opacity-30 mb-6 flex items-center gap-3">
+                          <Zap className="w-4 h-4 text-amber-500" /> Strategic Recommendation
+                        </h4>
+                        <p className="text-xl md:text-2xl leading-relaxed font-medium">
                           {comparison.verdict?.recommendation}
                         </p>
                       </div>
@@ -318,40 +317,38 @@ function CompareContent() {
               </div>
 
               {/* Matrix Table */}
-              <div className="space-y-12">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-4">
-                  <div className="space-y-4">
-                    <h3 className="text-4xl md:text-6xl font-black tracking-tighter uppercase">Comparison Matrix</h3>
-                    <p className="text-foreground-secondary text-lg md:text-xl font-medium">Detailed breakdown of research methodologies and novelty parameters.</p>
+              <div className="space-y-16">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 px-2">
+                  <div className="space-y-6">
+                    <h3 className="text-5xl md:text-7xl font-black tracking-tightest uppercase leading-none">Matriks <br className="md:hidden" /><span className="text-foreground/20">Perbandingan</span></h3>
+                    <p className="text-foreground/50 text-xl md:text-2xl font-medium max-w-2xl leading-relaxed">Rincian mendalam metodologi riset dan parameter kebaruan.</p>
                   </div>
-                  <div className="flex gap-4">
-                    <button className="h-16 px-10 rounded-2xl border border-border-strong text-[10px] font-bold uppercase tracking-widest text-foreground hover:bg-foreground hover:text-background transition-all shadow-sm">
-                      Export Data
-                    </button>
-                  </div>
+                  <button className="btn-primary h-20 px-12 rounded-none border-none text-[10px] tracking-widest shadow-xl active:scale-95">
+                    Ekspor Data Mentah
+                  </button>
                 </div>
 
-                <div className="overflow-x-auto rounded-[3.5rem] border border-border-strong bg-card shadow-2xl">
-                  <table className="w-full text-left border-collapse min-w-[1000px]">
+                <div className="overflow-x-auto border-4 border-foreground bg-foreground">
+                  <table className="w-full text-left border-collapse min-w-[1100px]">
                     <thead>
-                      <tr className="border-b border-border-strong">
+                      <tr>
                         {comparison.headers.map((header: string, i: number) => (
                           <th key={i} className={cn(
-                            "p-12 text-[10px] font-black uppercase tracking-widest text-foreground-muted",
-                            i === 0 ? "w-80 bg-muted/30" : ""
+                            "p-12 text-[11px] font-black uppercase tracking-[0.3em] border-r border-background/10 text-background",
+                            i === 0 ? "w-96 bg-foreground/90 border-l-8 border-background" : "bg-foreground"
                           )}>
                             {header}
                           </th>
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-border">
+                    <tbody className="bg-white dark:bg-black divide-y-2 divide-foreground/5">
                       {comparison.rows?.map((row: string[], i: number) => (
-                        <tr key={i} className="group hover:bg-muted/10 transition-colors">
+                        <tr key={i} className="group hover:bg-zinc-50 dark:hover:bg-zinc-950 transition-all duration-300 relative">
                           {row.map((cell, j) => (
                             <td key={j} className={cn(
-                              "p-12 text-lg font-medium leading-relaxed",
-                              j === 0 ? "bg-muted/30 font-extrabold text-foreground w-80 tracking-tighter uppercase" : "text-foreground-secondary group-hover:text-foreground transition-colors"
+                              "p-12 text-xl font-medium leading-relaxed border-r border-foreground/5",
+                              j === 0 ? "bg-zinc-50 dark:bg-zinc-900 font-black text-foreground w-96 tracking-tight uppercase border-l-8 border-foreground/10" : "text-foreground/70 group-hover:text-foreground transition-colors"
                             )}>
                               {cell}
                             </td>
@@ -367,23 +364,23 @@ function CompareContent() {
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="py-40 text-center space-y-12 mono-card rounded-[4rem] border-dashed border-border-strong bg-card flex flex-col items-center"
+              className="py-48 text-center space-y-16 border-4 border-dashed border-foreground/10 bg-foreground/[0.02] flex flex-col items-center"
             >
-              <div className="w-32 h-32 bg-muted rounded-[3rem] flex items-center justify-center relative group">
-                <Scale className="w-14 h-14 text-foreground/20 group-hover:scale-110 transition-all duration-500" />
-                <div className="absolute inset-0 border-2 border-foreground/10 rounded-[3rem] animate-ping opacity-20" />
+              <div className="w-40 h-40 bg-foreground/5 flex items-center justify-center relative group">
+                <Scale className="w-20 h-20 text-foreground/10 group-hover:scale-110 transition-all duration-700" />
+                <div className="absolute inset-0 border-4 border-foreground/5 animate-ping opacity-20" />
               </div>
-              <div className="space-y-6 px-6">
-                <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase">Ready for Neural Synthesis?</h2>
-                <p className="text-foreground-secondary max-w-lg mx-auto font-medium text-xl leading-relaxed">
-                  Select papers above and initiate the deep analysis engine to uncover cross-disciplinary research patterns.
+              <div className="space-y-8 px-8">
+                <h2 className="text-5xl md:text-6xl font-black tracking-tightest uppercase">Siap untuk Sintesis Neural?</h2>
+                <p className="text-foreground/40 max-w-xl mx-auto font-medium text-xl leading-relaxed">
+                  Pilih jurnal di atas dan aktifkan mesin analisis mendalam untuk mengungkap pola riset lintas disiplin.
                 </p>
-                <div className="pt-6">
+                <div className="pt-10">
                   <button 
                     onClick={handleCompare}
-                    className="text-[10px] font-bold uppercase tracking-widest px-12 py-6 bg-foreground text-background rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl"
+                    className="btn-primary text-[12px] px-16 py-8 rounded-none active:scale-95 shadow-2xl border-none"
                   >
-                    Quick Analysis Start
+                    Mulai Analisis Cepat
                   </button>
                 </div>
               </div>
@@ -399,9 +396,9 @@ export default function ComparePage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 text-foreground animate-spin opacity-20" />
-          <span className="text-[10px] font-bold tracking-widest uppercase opacity-40">Loading Core...</span>
+        <div className="flex flex-col items-center gap-6">
+          <Loader2 className="w-12 h-12 text-foreground animate-spin opacity-20" />
+          <span className="text-[10px] font-black tracking-[0.4em] uppercase opacity-40">Loading Core...</span>
         </div>
       </div>
     }>

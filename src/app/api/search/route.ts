@@ -22,6 +22,7 @@ export async function GET(request: Request) {
   // ─── Parse params ─────────────────────────────────────────
   const rawQuery = searchParams.get('q') || searchParams.get('query') || '';
   const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+  const offset = parseInt(searchParams.get('offset') || '0');
   const pageSize = Math.min(20, Math.max(5, parseInt(searchParams.get('limit') || '15')));
   const enrich = searchParams.get('enrich') === 'true'; // opt-in AI enrichment
   const provider = searchParams.get('provider') || 'default';
@@ -55,8 +56,8 @@ export async function GET(request: Request) {
     console.log(`[SEARCH API] Query: "${query}", Filters:`, JSON.stringify(filters));
 
     // ─── 1. Multi-source fetch ────────────────────────────────
-    const fetchLimit = pageSize * 3; // Over-fetch to allow for filtering
-    const { results: rawPapers, intelligence: queryIntel } = await searchAggregator.search(query, fetchLimit, filters, provider);
+    const fetchLimit = pageSize * 4; // Over-fetch to allow for filtering
+    const { results: rawPapers, intelligence: queryIntel } = await searchAggregator.search(query, fetchLimit, offset, filters, provider);
 
     if (!rawPapers || rawPapers.length === 0) {
       return NextResponse.json({
@@ -116,9 +117,9 @@ export async function GET(request: Request) {
 
     // ─── 8. Paginate ──────────────────────────────────────────
     const total = sorted.length;
-    const offset = (page - 1) * pageSize;
-    const paginated = sorted.slice(offset, offset + pageSize);
-    const hasMore = offset + pageSize < total;
+    // Since we already fetched from provider with offset, we just take the top pageSize results from the filtered list
+    const paginated = sorted.slice(0, pageSize);
+    const hasMore = sorted.length >= pageSize; // If we got at least one full page, there might be more
 
     console.log(`[SEARCH API] Done in ${Date.now() - startTime}ms — returning ${paginated.length}/${total} papers`);
 
@@ -129,6 +130,11 @@ export async function GET(request: Request) {
       page,
       pageSize,
       hasMore,
+      pagination: {
+        page: Math.floor(offset / pageSize),
+        limit: pageSize,
+        hasMore
+      },
       message: `${total} karya ilmiah ditemukan.`,
       enriched: enrich,
       intelligence: queryIntel,

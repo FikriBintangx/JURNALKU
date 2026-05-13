@@ -20,6 +20,8 @@ export default function WorkspacePage() {
   const [collections, setCollections] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
   const [streamText, setStreamText] = useState("Menunggu dokumen atau instruksi penelitian...");
+  const [history, setHistory] = useState<any[]>([]);
+  const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null);
   
   // SSE Streaming States
   const [chatInput, setChatInput] = useState("");
@@ -35,7 +37,7 @@ export default function WorkspacePage() {
   });
   const [vectorStats, setVectorStats] = useState({ docs: 0, chunks: 0 });
 
-  // Fetch Vector Stats on mount
+  // Fetch Vector Stats and History on mount
   React.useEffect(() => {
     let isMounted = true;
     const initWorkspace = async () => {
@@ -48,6 +50,10 @@ export default function WorkspacePage() {
         
         const activeUserId = userData?.user?.id || 'session_workspace';
         setUser(userData?.user || { id: 'session_workspace' });
+
+        // Load History from LocalStorage
+        const savedHistory = localStorage.getItem(`workspace_history_${activeUserId}`);
+        if (savedHistory) setHistory(JSON.parse(savedHistory));
 
         const [statsRes, colRes] = await Promise.all([
           fetch(`/api/workspace/stats?userId=${activeUserId}`),
@@ -71,6 +77,42 @@ export default function WorkspacePage() {
     initWorkspace();
     return () => { isMounted = false; };
   }, []);
+
+  const saveToHistory = (data: { title: string, content: string, type: string, gap?: string, graph?: string }) => {
+    const userId = user?.id || 'session_workspace';
+    const newItem = {
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      ...data
+    };
+    const newHistory = [newItem, ...history].slice(0, 20);
+    setHistory(newHistory);
+    localStorage.setItem(`workspace_history_${userId}`, JSON.stringify(newHistory));
+    setActiveHistoryId(newItem.id);
+  };
+
+  const loadHistoryItem = (item: any) => {
+    setActiveHistoryId(item.id);
+    setActiveTab(item.type);
+    setSynthesisOutput(item.content);
+    setResearchGap(item.gap || "");
+    setKnowledgeGraph(item.graph || "");
+    setStreamText(`Memuat Riwayat: ${item.title}`);
+  };
+
+  const deleteHistoryItem = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const userId = user?.id || 'session_workspace';
+    const newHistory = history.filter(h => h.id !== id);
+    setHistory(newHistory);
+    localStorage.setItem(`workspace_history_${userId}`, JSON.stringify(newHistory));
+    if (activeHistoryId === id) {
+      setSynthesisOutput("");
+      setResearchGap("");
+      setKnowledgeGraph("");
+      setActiveHistoryId(null);
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -153,6 +195,23 @@ export default function WorkspacePage() {
           }
         }
       }
+
+      // Save to history after stream finishes
+      const currentQuery = chatInput;
+      setTimeout(() => {
+        setSynthesisOutput(prev => {
+          if (prev) {
+            saveToHistory({
+              title: currentQuery || "Sintesis Riset Baru",
+              content: prev,
+              type: activeTab,
+              gap: researchGap,
+              graph: knowledgeGraph
+            });
+          }
+          return prev;
+        });
+      }, 500);
     } catch (err) {
       setStreamText("Gagal menghubungi orchestrator.");
     } finally {
@@ -217,6 +276,48 @@ export default function WorkspacePage() {
             </ul>
           </div>
 
+          {/* RIWAYAT */}
+          <div>
+            <h3 className="text-[10px] font-black text-foreground-muted uppercase tracking-[0.25em] mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Activity className="w-3 h-3" /> Riwayat Riset
+              </div>
+              <span className="text-[8px] opacity-30">{history.length}/20</span>
+            </h3>
+            <ul className="space-y-2">
+              {history.length === 0 ? (
+                <li className="text-[11px] text-foreground-muted italic font-medium opacity-30">Belum ada riwayat...</li>
+              ) : (
+                history.map((item) => (
+                  <li 
+                    key={item.id} 
+                    onClick={() => loadHistoryItem(item)}
+                    className={cn(
+                      "group flex items-center justify-between p-3 rounded-none border transition-all cursor-pointer",
+                      activeHistoryId === item.id 
+                        ? "bg-foreground text-background border-foreground shadow-lg" 
+                        : "hover:bg-foreground/[0.05] border-transparent hover:border-border"
+                    )}
+                  >
+                    <div className="flex items-center space-x-3 text-[11px] font-bold min-w-0">
+                      <div className={cn("w-1.5 h-1.5 rounded-full", item.type === 'synthesis' ? "bg-blue-500" : item.type === 'compare' ? "bg-amber-500" : "bg-emerald-500")} />
+                      <span className="truncate max-w-[140px] uppercase tracking-tighter">{item.title}</span>
+                    </div>
+                    <button 
+                      onClick={(e) => deleteHistoryItem(e, item.id)}
+                      className={cn(
+                        "opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity p-1",
+                        activeHistoryId === item.id && "group-hover:opacity-100 text-background"
+                      )}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+
           {/* KOLEKSI */}
           <div>
             <h3 className="text-[10px] font-black text-foreground-muted uppercase tracking-[0.25em] mb-4 flex items-center gap-2">
@@ -255,12 +356,12 @@ export default function WorkspacePage() {
       <main className="flex-1 flex flex-col relative overflow-hidden">
         {/* TOP NAV */}
         <header className="h-20 border-b border-border flex items-center px-8 justify-between glass-nav sticky top-0 z-30">
-          <div className="flex items-center gap-4 flex-1">
-            <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden p-2"><Menu className="w-6 h-6" /></button>
-            <div className="flex p-1 bg-muted/30 rounded-2xl border border-border">
-              <button onClick={() => setActiveTab('synthesis')} className={cn("btn-fill-mewah px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all", activeTab === 'synthesis' ? "bg-foreground text-background shadow-lg" : "text-foreground-muted hover:text-foreground")}>Sintesis AI</button>
-              <button onClick={() => setActiveTab('review')} className={cn("btn-fill-mewah px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all", activeTab === 'review' ? "bg-foreground text-background shadow-lg" : "text-foreground-muted hover:text-foreground")}>Tinjauan Pustaka</button>
-              <button onClick={() => setActiveTab('compare')} className={cn("btn-fill-mewah px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2", activeTab === 'compare' ? "bg-foreground text-background shadow-lg" : "text-foreground-muted hover:text-foreground")}>
+          <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
+            <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden p-2 shrink-0"><Menu className="w-6 h-6" /></button>
+            <div className="flex p-1 bg-muted/30 rounded-2xl border border-border overflow-x-auto hide-scrollbar w-full md:w-auto">
+              <button onClick={() => setActiveTab('synthesis')} className={cn("btn-fill-mewah px-4 md:px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all whitespace-nowrap", activeTab === 'synthesis' ? "bg-foreground text-background shadow-lg" : "text-foreground-muted hover:text-foreground")}>Sintesis AI</button>
+              <button onClick={() => setActiveTab('review')} className={cn("btn-fill-mewah px-4 md:px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all whitespace-nowrap", activeTab === 'review' ? "bg-foreground text-background shadow-lg" : "text-foreground-muted hover:text-foreground")}>Tinjauan</button>
+              <button onClick={() => setActiveTab('compare')} className={cn("btn-fill-mewah px-4 md:px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 whitespace-nowrap", activeTab === 'compare' ? "bg-foreground text-background shadow-lg" : "text-foreground-muted hover:text-foreground")}>
                 <GitCompare className="w-3.5 h-3.5" /> <span>Komparasi</span>
               </button>
             </div>
@@ -326,21 +427,21 @@ export default function WorkspacePage() {
         </div>
 
         {/* INPUT BAR */}
-        <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-background via-background/90 to-transparent pt-20">
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-background via-background/90 to-transparent pt-20">
           <div className="max-w-4xl mx-auto relative group">
             <div className="absolute -inset-2 bg-foreground/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <form onSubmit={handleChatSubmit} className="relative flex items-center bg-card border-4 border-foreground rounded-full px-10 py-6 shadow-[0_30px_100px_-20px_rgba(0,0,0,0.5)] saturated-bar">
-              <Search className="w-7 h-7 text-foreground mr-6" />
+            <form onSubmit={handleChatSubmit} className="relative flex items-center bg-card border-[3px] md:border-4 border-foreground rounded-full px-6 md:px-10 py-3 md:py-6 shadow-[0_30px_100px_-20px_rgba(0,0,0,0.5)] saturated-bar">
+              <Search className="w-5 h-5 md:w-7 md:h-7 text-foreground mr-3 md:mr-6 shrink-0" />
               <input 
                 type="text" 
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 disabled={isStreaming}
                 placeholder="KENDALIKAN INTELIJEN..." 
-                className="flex-1 bg-transparent border-none outline-none text-xl font-black text-foreground placeholder:text-foreground/10 disabled:opacity-50 uppercase tracking-tighter"
+                className="flex-1 min-w-0 bg-transparent border-none outline-none text-sm md:text-xl font-black text-foreground placeholder:text-foreground/20 disabled:opacity-50 uppercase tracking-tighter"
               />
-              <button type="submit" disabled={isStreaming} className="bg-foreground text-background p-4 rounded-full transition-all ml-6 shadow-2xl hover:scale-110 active:scale-95 disabled:opacity-50">
-                <ChevronRight className="w-6 h-6 stroke-[4px]" />
+              <button type="submit" disabled={isStreaming} className="bg-foreground text-background p-3 md:p-4 rounded-full transition-all ml-3 md:ml-6 shadow-2xl hover:scale-110 active:scale-95 disabled:opacity-50 shrink-0">
+                <ChevronRight className="w-5 h-5 md:w-6 md:h-6 stroke-[4px]" />
               </button>
             </form>
           </div>

@@ -44,7 +44,7 @@ export const ModelSelector = () => {
           <Cpu size={16} className="text-card-foreground/70" />
         </div>
         <div className="text-left">
-          <p className="text-[9px] font-black text-card-foreground/40 uppercase tracking-widest leading-none mb-1">AI Intelligence</p>
+          <p className="text-[9px] font-black text-card-foreground/40 uppercase tracking-widest leading-none mb-1">Intelijen AI</p>
           <p className="text-xs font-bold text-card-foreground flex items-center gap-2">
             {currentModel.name}
             <ChevronDown size={14} className={cn("opacity-40 transition-transform", isOpen && "rotate-180")} />

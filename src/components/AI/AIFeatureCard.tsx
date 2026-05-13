@@ -151,13 +151,13 @@ export const AIFeatureCard = ({
                     {!String(data).includes('(Fallback)') && !intelligence?.fallback && (
                       <div className="flex items-center gap-2 py-1.5 px-4 bg-primary/10 border border-primary/20 rounded-full w-fit">
                         <Sparkles size={10} className="text-primary animate-pulse" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">ISAGI Intelligence Certified</span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Sertifikasi Intelijen ISAGI</span>
                       </div>
                     )}
                     {(intelligence?.fallback || String(data).includes('[FALLBACK MODE]')) && (
                       <div className="flex items-center gap-2 py-1.5 px-4 bg-amber-500/10 border border-amber-500/20 rounded-full w-fit">
                         <AlertCircle size={10} className="text-amber-500" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-500">Autonomous Fallback Mode</span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-500">Mode Cadangan Otonom</span>
                       </div>
                     )}
                   </div>

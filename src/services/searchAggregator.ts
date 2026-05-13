@@ -4,6 +4,9 @@ import { fetchPubMed } from './providers/pubmedProvider';
 import { fetchDOAJ } from './providers/doajProvider';
 import { fetchZenodo } from './providers/zenodoProvider';
 import { fetchGoogleScholar } from './providers/googleScholarProvider';
+import { fetchLens } from './providers/lensProvider';
+import { fetchBASE } from './providers/baseProvider';
+import { fetchGaruda } from './providers/garudaProvider';
 import type { UniversalPaperEnriched } from '@/types/search';
 import { intelligenceService, ResearchIntelligence } from './intelligenceService';
 
@@ -67,7 +70,7 @@ export const searchAggregator = {
    * Main search entry point — runs all providers in parallel or targets specific one.
    * Auto-retries with AI-driven expansions if results are sparse.
    */
-  async search(rawQuery: string, limit: number = 20, filters?: any, provider: string = 'default'): Promise<{ results: UniversalPaperEnriched[], intelligence?: ResearchIntelligence }> {
+  async search(rawQuery: string, limit: number = 20, offset: number = 0, filters?: any, provider: string = 'default'): Promise<{ results: UniversalPaperEnriched[], intelligence?: ResearchIntelligence }> {
     const query = this.sanitizeQuery(rawQuery);
     if (!query) {
       console.warn("[SEARCH] Empty query.");
@@ -105,7 +108,7 @@ export const searchAggregator = {
     // 1. Parallel Intelligence & Initial Fetch
     const [queryIntel, initialPapers] = await Promise.all([
       intelligenceService.analyzeQuery(query),
-      this.runParallelFetch(query, limit, filters, provider)
+      this.runParallelFetch(query, limit, offset, filters, provider)
     ]);
 
     let papers = initialPapers;
@@ -116,7 +119,7 @@ export const searchAggregator = {
     if (papers.length < 10 && queryIntel.keywords.length > 0) {
       const expansionQuery = queryIntel.keywords.slice(0, 2).join(' ');
       console.log(`[INTELLIGENCE] Sparse results. Triggering semantic expansion: "${expansionQuery}"`);
-      const extra = await this.runParallelFetch(expansionQuery, limit, filters, provider);
+      const extra = await this.runParallelFetch(expansionQuery, limit, offset, filters, provider);
       papers = this.deduplicate([...papers, ...extra]);
     }
 
@@ -124,50 +127,80 @@ export const searchAggregator = {
     if (papers.length < 5) {
       const basicExpansions = this.expandQuery(query);
       if (basicExpansions.length > 0) {
-        const extra = await this.runParallelFetch(basicExpansions[0], limit, filters, provider);
+        const extra = await this.runParallelFetch(basicExpansions[0], limit, offset, filters, provider);
         papers = this.deduplicate([...papers, ...extra]);
       }
     }
 
-    // 4. Advanced Intelligence Ranking (ARIS)
-    const ranked = this.rankResults(papers, query, queryIntel);
-    const final = ranked.slice(0, limit);
+    // 4. Global Filtering (Last Guard for Year/Access constraints)
+    if (filters) {
+      if (filters.yearStart || filters.yearEnd) {
+        const start = filters.yearStart || 0;
+        const end = filters.yearEnd || new Date().getFullYear();
+        papers = papers.filter(p => {
+          const y = p.year || 0;
+          return y >= start && y <= end;
+        });
+      }
+      if (filters.openAccess) {
+        papers = papers.filter(p => p.isOpenAccess);
+      }
+    }
 
-    console.log(`[INTELLIGENCE] Pipeline Complete: ${papers.length} raw → ${ranked.length} unique → ${final.length} returned in ${Date.now() - t0}ms`);
+    // 5. Advanced Intelligence Ranking (ARIS)
+    const ranked = this.rankResults(papers, query, queryIntel);
+    
+    // Enrich with direct PDFs
+    const enriched = await this.enrichWithDirectPdfs(ranked.slice(0, 10));
+    const final = [...enriched, ...ranked.slice(10)].slice(0, limit);
+
+    console.log(`[INTELLIGENCE] Pipeline Complete (Offset: ${offset}): ${papers.length} raw → ${ranked.length} unique → ${final.length} returned in ${Date.now() - t0}ms`);
     return { results: final, intelligence: queryIntel };
   },
 
-  async runParallelFetch(query: string, limit: number, filters?: any, provider: string = 'default'): Promise<UniversalPaperEnriched[]> {
-    // If specific provider requested
+  async runParallelFetch(query: string, limit: number, offset: number = 0, filters?: any, provider: string = 'default'): Promise<UniversalPaperEnriched[]> {
+    let activeResults: PromiseSettledResult<UniversalPaperEnriched[]>[] = [];
+    let providerNames: string[] = [];
+
     if (provider === 'googlescholar') {
-      console.log(`[SEARCH] Targeting Google Scholar Scraper: "${query}"`);
-      return await fetchGoogleScholar(query, limit);
+      console.log(`[SEARCH] Targeting Deep Scholar Mode (Offset: ${offset}): "${query}"`);
+      providerNames = ['Google Scholar', 'OpenAlex', 'Lens.org', 'BASE', 'Garuda'];
+      activeResults = await Promise.allSettled([
+        fetchGoogleScholar(query, limit, offset), // Pass offset to GS
+        this.fetchOpenAlex(query, limit, offset, filters),
+        fetchLens(query, Math.ceil(limit / 2)),
+        fetchBASE(query, Math.ceil(limit / 2)),
+        fetchGaruda(query, limit),
+      ]);
+    } else {
+      const perSource = Math.ceil(limit / 3);
+      providerNames = ['OpenAlex', 'CORE', 'Crossref', 'Semantic Scholar', 'arXiv', 'PubMed', 'DOAJ', 'Zenodo', 'Google Scholar', 'Lens.org', 'BASE', 'Garuda'];
+      activeResults = await Promise.allSettled([
+        this.fetchOpenAlex(query, perSource, offset, filters),
+        this.fetchCORE(query, perSource, filters),
+        this.fetchCrossref(query, perSource, offset, filters),
+        this.fetchSemanticScholar(query, perSource, offset, filters),
+        fetchArxiv(query, perSource),
+        fetchPubMed(query, Math.ceil(perSource / 2)),
+        fetchDOAJ(query, Math.ceil(perSource / 2)),
+        fetchZenodo(query, Math.ceil(perSource / 2)),
+        fetchGoogleScholar(query, Math.ceil(perSource / 3), offset),
+        fetchLens(query, Math.ceil(perSource / 2)),
+        fetchBASE(query, Math.ceil(perSource / 2)),
+        fetchGaruda(query, perSource),
+      ]);
     }
 
-    const perSource = Math.ceil(limit / 3);
-
-    const results = await Promise.allSettled([
-      this.fetchOpenAlex(query, perSource, filters),
-      this.fetchCORE(query, perSource, filters),
-      this.fetchCrossref(query, perSource, filters),
-      this.fetchSemanticScholar(query, perSource, filters),
-      fetchArxiv(query, perSource),
-      fetchPubMed(query, Math.ceil(perSource / 2)),
-      fetchDOAJ(query, Math.ceil(perSource / 2)),
-      fetchZenodo(query, Math.ceil(perSource / 2)),
-      fetchGoogleScholar(query, Math.ceil(perSource / 2)),
-    ]);
-
-    const providerNames = ['OpenAlex', 'CORE', 'Crossref', 'Semantic Scholar', 'arXiv', 'PubMed', 'DOAJ', 'Zenodo', 'Google Scholar'];
     const papers: UniversalPaperEnriched[] = [];
-
-    results.forEach((result, i) => {
+    activeResults.forEach((result, i) => {
+      const name = providerNames[i] || 'Unknown';
       if (result.status === 'fulfilled' && Array.isArray(result.value)) {
         const valid = result.value.filter(p => this.isValidPaper(p));
-        if (valid.length > 0) console.log(`[PROVIDER] ${providerNames[i]}: ${valid.length} results`);
+        if (valid.length > 0) console.log(`[PROVIDER] ${name}: ${valid.length} results`);
+        else console.log(`[PROVIDER] ${name}: No results`);
         papers.push(...(valid as UniversalPaperEnriched[]));
       } else if (result.status === 'rejected') {
-        console.error(`[PROVIDER] ${providerNames[i]} failed: ${result.reason?.message}`);
+        console.error(`[PROVIDER] ${name} failed: ${result.reason?.message || 'Unknown error'}`);
       }
     });
 
@@ -207,6 +240,26 @@ export const searchAggregator = {
       if (seenTitle.has(titleHash)) return false;
       seenTitle.add(titleHash);
       
+      return true;
+    });
+  },
+
+  removeDuplicatePapers(oldResults: UniversalPaperEnriched[], newResults: UniversalPaperEnriched[]): UniversalPaperEnriched[] {
+    const existingIds = new Set(oldResults.map(p => p.paperId).filter(Boolean));
+    const existingDOIs = new Set(oldResults.map(p => (p.doi || '').toLowerCase().trim()).filter(Boolean));
+    const existingTitles = new Set(oldResults.map(p => 
+      (p.title || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 100)
+    ).filter(Boolean));
+
+    return newResults.filter(paper => {
+      if (paper.paperId && existingIds.has(paper.paperId)) return false;
+      
+      const doi = (paper.doi || '').toLowerCase().trim();
+      if (doi && existingDOIs.has(doi)) return false;
+
+      const title = (paper.title || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 100);
+      if (title && existingTitles.has(title)) return false;
+
       return true;
     });
   },
@@ -282,11 +335,35 @@ export const searchAggregator = {
     }).sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0));
   },
 
-  async fetchOpenAlex(query: string, limit: number, filters?: any): Promise<UniversalPaperEnriched[]> {
+  async enrichWithDirectPdfs(papers: UniversalPaperEnriched[]): Promise<UniversalPaperEnriched[]> {
+    return await Promise.all(papers.map(async (paper) => {
+      // If we already have a PDF or no DOI, skip
+      if (paper.pdfUrl || !paper.doi) return paper;
+
+      try {
+        // Unpaywall is the best for finding legal open access PDFs
+        const res = await axios.get(`https://api.unpaywall.org/v2/${paper.doi}`, {
+          params: { email: 'contact@jurnalstar.id' },
+          timeout: 3000 // Fast timeout
+        });
+
+        const bestLocation = res.data?.best_oa_location;
+        if (bestLocation?.url_for_pdf) {
+          return { ...paper, pdfUrl: bestLocation.url_for_pdf, isOpenAccess: true };
+        }
+      } catch (e) {
+        // Silent fail for PDF enrichment
+      }
+      return paper;
+    }));
+  },
+
+  async fetchOpenAlex(query: string, limit: number, offset: number = 0, filters?: any): Promise<UniversalPaperEnriched[]> {
     try {
       const params: any = { 
         search: query, 
         per_page: Math.min(limit, 50), 
+        offset,
         sort: 'relevance_score:desc' 
       };
 
@@ -339,14 +416,14 @@ export const searchAggregator = {
     }
   },
 
-  async fetchSemanticScholar(query: string, limit: number, filters?: any): Promise<UniversalPaperEnriched[]> {
+  async fetchSemanticScholar(query: string, limit: number, offset: number = 0, filters?: any): Promise<UniversalPaperEnriched[]> {
     try {
       const headers: Record<string, string> = {};
       const apiKey = process.env.SEMANTIC_SCHOLAR_API_KEY;
       if (apiKey && apiKey !== 'your_key_here') headers['x-api-key'] = apiKey;
 
       const params: any = {
-        query, limit: Math.min(limit, 100),
+        query, limit: Math.min(limit, 100), offset,
         fields: 'title,abstract,authors,year,citationCount,externalIds,openAccessPdf,venue,isOpenAccess',
       };
 
@@ -392,10 +469,11 @@ export const searchAggregator = {
     }
   },
 
-  async fetchCrossref(query: string, limit: number, filters?: any): Promise<UniversalPaperEnriched[]> {
+  async fetchCrossref(query: string, limit: number, offset: number = 0, filters?: any): Promise<UniversalPaperEnriched[]> {
     try {
       const params: any = {
         query, rows: Math.min(limit, 50),
+        offset,
         select: 'DOI,title,abstract,author,published,is-referenced-by-count,link,URL,container-title,type',
       };
 

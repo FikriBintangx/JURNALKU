@@ -90,8 +90,8 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
             {history.length > 0 ? (
               <div className="space-y-6">
                 <div className="px-6 flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/40">Recent Intel History</span>
-                  <button onClick={clearHistory} className="text-[9px] font-black uppercase tracking-widest opacity-20 hover:opacity-100 transition-all hover:text-red-500">Purge Cache</button>
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/40">Riwayat Penelusuran</span>
+                  <button onClick={clearHistory} className="text-[9px] font-black uppercase tracking-widest opacity-20 hover:opacity-100 transition-all hover:text-red-500">Bersihkan Histori</button>
                 </div>
                 <div className="space-y-1">
                   {history.map((h, i) => (
@@ -101,22 +101,22 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
                         saveToHistory(h);
                         onSelect?.(h);
                       }}
-                      className="w-full flex items-center gap-5 px-6 py-4 rounded-[1.5rem] hover:bg-foreground/5 transition-all group text-left"
+                      className="w-full flex items-center gap-5 px-6 py-4 rounded-none hover:bg-foreground/5 transition-all group text-left"
                     >
-                      <div className="w-10 h-10 rounded-2xl bg-foreground/5 flex items-center justify-center group-hover:bg-foreground group-hover:text-background transition-all shrink-0">
-                        <Search className="w-4 h-4 opacity-40 group-hover:opacity-100" />
+                      <div className="w-10 h-10 rounded-none bg-foreground/10 border border-foreground/10 flex items-center justify-center group-hover:bg-foreground group-hover:text-background transition-all shrink-0">
+                        <Search className="w-4 h-4 opacity-60 group-hover:opacity-100" />
                       </div>
-                      <span className="text-base font-bold text-foreground/70 group-hover:text-foreground transition-colors truncate">{h}</span>
+                      <span className="text-base font-bold text-foreground/80 group-hover:text-foreground transition-colors truncate">{h}</span>
                     </button>
                   ))}
                 </div>
               </div>
             ) : (
               <div className="py-12 text-center space-y-4">
-                <div className="w-14 h-14 bg-foreground/5 rounded-full flex items-center justify-center mx-auto border border-foreground/5">
+                <div className="w-14 h-14 bg-foreground/5 rounded-none flex items-center justify-center mx-auto border border-foreground/5">
                   <Sparkles className="w-6 h-6 text-foreground/20" />
                 </div>
-                <p className="label-caps !opacity-20">Neural Cache Empty</p>
+                <p className="label-caps !opacity-20">Riwayat Masih Kosong</p>
               </div>
             )}
           </motion.div>
@@ -131,7 +131,7 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
               <Loader2 className="w-10 h-10 animate-spin text-foreground opacity-10" />
               <Sparkles className="w-5 h-5 text-foreground absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             </div>
-            <span className="label-caps !opacity-40 animate-pulse">Neural Mapping...</span>
+            <span className="label-caps !opacity-40 animate-pulse">Memetakan Sinyal Riset...</span>
           </motion.div>
         ) : suggestions.length > 0 ? (
           <motion.div 
@@ -141,12 +141,12 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
           >
             <div className="px-6 py-4 flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-foreground rounded-xl flex items-center justify-center shadow-xl">
+                <div className="w-8 h-8 bg-foreground rounded-none flex items-center justify-center shadow-xl">
                   <Sparkles className="w-4 h-4 text-background" />
                 </div>
-                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground">AI Neural Signals</span>
+                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground">Sinyal Riset AI</span>
               </div>
-              <span className="text-[9px] font-black uppercase tracking-widest opacity-20">{suggestions.length} Vectors</span>
+              <span className="text-[9px] font-black uppercase tracking-widest opacity-20">{suggestions.length} Hasil</span>
             </div>
 
             <div className="space-y-1">
@@ -157,18 +157,18 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
                     saveToHistory(s.title);
                     onSelect?.(s.title);
                   }}
-                  className="w-full flex items-center justify-between px-6 py-5 transition-all rounded-[1.75rem] group text-left hover:bg-foreground/5 hover:translate-x-1"
+                  className="w-full flex items-center justify-between px-6 py-5 transition-all rounded-none group text-left hover:bg-foreground/5 hover:translate-x-1"
                 >
                   <div className="flex items-center gap-5 flex-1 min-w-0">
-                    <div className="w-11 h-11 rounded-[1.25rem] bg-foreground/5 border border-foreground/5 flex items-center justify-center shrink-0 group-hover:bg-foreground group-hover:text-background transition-all">
+                    <div className="w-11 h-11 rounded-none bg-foreground/10 border border-foreground/10 flex items-center justify-center shrink-0 group-hover:bg-foreground group-hover:text-background transition-all">
                       {s.type === 'topic' ? <Search className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-[15px] font-bold truncate tracking-tight mb-0.5 text-foreground/80 group-hover:text-foreground">
+                      <span className="text-[15px] font-bold truncate tracking-tight mb-0.5 text-foreground group-hover:opacity-80 transition-opacity">
                         {highlightText(s.title, query)}
                       </span>
-                      <span className="text-[9px] opacity-30 uppercase font-black tracking-[0.2em] group-hover:opacity-50">
-                        {s.type === 'topic' ? 'Topical Cluster' : 'Research Document'}
+                      <span className="text-[9px] opacity-40 uppercase font-black tracking-[0.2em] group-hover:opacity-60">
+                        {s.type === 'topic' ? 'Klaster Topik' : 'Dokumen Riset'}
                       </span>
                     </div>
                   </div>
@@ -183,12 +183,12 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
             animate={{ opacity: 1 }}
             className="p-16 text-center space-y-6"
           >
-            <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto border border-border/50">
+            <div className="w-16 h-16 bg-muted rounded-none flex items-center justify-center mx-auto border border-border/50">
               <Search className="w-6 h-6 opacity-20" />
             </div>
             <div className="space-y-2">
-              <p className="text-base font-black opacity-40">No Signal Detected</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold opacity-30 leading-relaxed">Expand your query for deeper intelligence mapping</p>
+              <p className="text-base font-black opacity-40">Sinyal Tidak Terdeteksi</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold opacity-30 leading-relaxed">Perluas kata kunci untuk pemetaan intelijen yang lebih dalam</p>
             </div>
           </motion.div>
         )}

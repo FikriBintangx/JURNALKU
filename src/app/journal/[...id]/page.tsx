@@ -89,9 +89,9 @@ export default function JournalDetail() {
           </div>
           
           <div className="space-y-3">
-            <h1 className="text-3xl font-black text-foreground tracking-tight uppercase">Data Not Found</h1>
+            <h1 className="text-3xl font-black text-foreground tracking-tight uppercase">Data Tidak Ditemukan</h1>
             <p className="text-muted-foreground text-sm leading-relaxed font-medium">
-              {error || "The requested journal identifier is not available in our neural mapping."}
+              {error || "Identitas jurnal yang diminta tidak tersedia dalam pemetaan neural kami."}
             </p>
           </div>
 
@@ -101,19 +101,19 @@ export default function JournalDetail() {
               className="flex items-center justify-center gap-2 bg-foreground text-background px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95"
             >
               <RotateCcw className="w-4 h-4" />
-              Try Again
+              Coba Lagi
             </button>
             <Link
               href="/search"
               className="flex items-center justify-center gap-2 bg-muted/50 hover:bg-muted text-foreground px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest border border-border transition-all active:scale-95"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Terminal
+              Kembali ke Pencarian
             </Link>
           </div>
 
           <div className="pt-6 border-t border-white/5">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-slate-600 font-black mb-3">System Diagnostic</div>
+            <div className="text-[10px] uppercase tracking-[0.2em] text-slate-600 font-black mb-3">Diagnostik Sistem</div>
             <div className="flex flex-wrap justify-center gap-2">
               <span className="px-3 py-1 bg-black/40 rounded-lg border border-white/5 text-[10px] text-slate-500 font-mono">ID: {decodedId}</span>
               <span className="px-3 py-1 bg-black/40 rounded-lg border border-white/5 text-[10px] text-slate-500 font-mono uppercase">Source: {source}</span>
@@ -189,7 +189,7 @@ export default function JournalDetail() {
                     <Users className="w-5 h-5" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Authors</span>
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Penulis</span>
                     <span className="text-sm font-bold italic line-clamp-1">
                       {journal?.authors && journal.authors.length > 0 
                         ? journal.authors.map((a: any) => a.name).join(", ") 
@@ -221,7 +221,7 @@ export default function JournalDetail() {
                   className="btn-primary btn-fill-mewah flex-1 sm:flex-none flex items-center justify-center gap-3 bg-foreground text-background px-8 py-5 !rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95"
                 >
                   <ExternalLink className="w-4 h-4 relative z-10" />
-                  <span className="relative z-10">Source Link</span>
+                  <span className="relative z-10">Tautan Sumber</span>
                 </a>
               )}
 
@@ -233,7 +233,7 @@ export default function JournalDetail() {
                   className="btn-fill-mewah flex-1 sm:flex-none flex items-center justify-center gap-3 bg-muted border border-border px-8 py-5 !rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm active:scale-95 group relative overflow-hidden"
                 >
                   <ExternalLink className="w-4 h-4 text-primary relative z-10" />
-                  <span className="relative z-10">DOI Link</span>
+                  <span className="relative z-10">Tautan DOI</span>
                 </a>
               )}
               
@@ -261,7 +261,7 @@ export default function JournalDetail() {
             <div className="flex items-center gap-4">
               <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.4em] flex items-center gap-2 whitespace-nowrap">
                 <Brain className="w-4 h-4" />
-                AI Research Intelligence
+                Intelijen Riset AI
               </h2>
               <div className="h-px flex-1 bg-gradient-to-r from-primary/20 via-primary/5 to-transparent" />
             </div>
@@ -290,11 +290,11 @@ export default function JournalDetail() {
 
             <aside className="space-y-6">
               <div className="glass-card rounded-[2.5rem] p-8 space-y-8 border-border/40">
-                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Meta Information</h4>
+                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Informasi Metadata</h4>
                 
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground font-bold text-sm">Citation Count</span>
+                    <span className="text-muted-foreground font-bold text-sm">Jumlah Sitasi</span>
                     <div className="flex items-center gap-2">
                       <Star className="w-4 h-4 text-amber-500/80" />
                       <span className="text-foreground font-black">{journal?.citationCount || 0}</span>
@@ -302,18 +302,18 @@ export default function JournalDetail() {
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground font-bold text-sm">Access Status</span>
+                    <span className="text-muted-foreground font-bold text-sm">Status Akses</span>
                     <span className={cn(
                       "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider",
                       journal?.isOpenAccess ? "bg-emerald-500/5 text-emerald-500/80 border border-emerald-500/10" : "bg-muted/50 text-muted-foreground border border-border/50"
                     )}>
-                      {journal?.isOpenAccess ? "Open Access" : "Limited"}
+                      {journal?.isOpenAccess ? "Akses Terbuka" : "Terbatas"}
                     </span>
                   </div>
 
                   {journal?.doi && (
                     <div className="pt-6 border-t border-border/40">
-                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-2">Digital Object Identifier</span>
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-2">Identifikasi Objek Digital (DOI)</span>
                       <span className="text-primary/70 text-xs font-mono break-all leading-relaxed">{journal.doi}</span>
                     </div>
                   )}

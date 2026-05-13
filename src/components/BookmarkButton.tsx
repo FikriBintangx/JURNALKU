@@ -47,7 +47,7 @@ export default function BookmarkButton({ journal, variant = 'icon', className }:
       <button 
         onClick={handleToggle}
         className={cn(
-          "w-full py-3 rounded-xl text-sm font-medium border flex items-center justify-center space-x-2 transition-all active:scale-95",
+          "w-full py-3 rounded-none text-sm font-medium border flex items-center justify-center space-x-2 transition-all active:scale-95",
           isBookmarked 
             ? "bg-primary/20 text-primary border-primary/30" 
             : "bg-muted text-foreground border-border/50",
@@ -64,7 +64,7 @@ export default function BookmarkButton({ journal, variant = 'icon', className }:
     <button 
       onClick={handleToggle}
       className={cn(
-        "p-2.5 rounded-xl transition-all border group backdrop-blur-md",
+        "p-2.5 rounded-none transition-all border group backdrop-blur-md",
         isBookmarked 
           ? "bg-primary/10 text-primary border-primary/30" 
           : "bg-muted/30 text-muted-foreground border-border/50 hover:text-foreground",

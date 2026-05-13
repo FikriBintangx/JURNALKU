@@ -24,12 +24,12 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
       aria-checked={checked}
       onClick={onChange}
       className={cn(
-        "w-11 h-6 rounded-full transition-all relative flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/50",
+        "w-11 h-6 rounded-none transition-all relative flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/50",
         checked ? "bg-primary" : "bg-muted-foreground/30"
       )}
     >
       <div className={cn(
-        "absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all",
+        "absolute top-1 w-4 h-4 bg-white rounded-none shadow transition-all",
         checked ? "right-1" : "left-1"
       )} />
     </button>
@@ -46,7 +46,7 @@ function FilterSection({ title, icon: Icon, children, defaultOpen = true, action
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <section className="border border-border rounded-2xl overflow-hidden">
+    <section className="border border-border rounded-none overflow-hidden">
       <div className="flex items-center justify-between p-4 bg-muted/5">
         <button
           onClick={() => setOpen(!open)}
@@ -104,7 +104,7 @@ function PillSelector<T extends string>({
               }
             }}
             className={cn(
-              "px-3 py-1.5 rounded-full text-xs font-bold transition-all border",
+              "px-3 py-1.5 rounded-none text-xs font-bold transition-all border",
               isSelected
                 ? "bg-foreground text-background border-foreground shadow-md shadow-foreground/25"
                 : "bg-muted/10 border-border/50 text-card-foreground/50 hover:border-card-foreground/50 hover:text-card-foreground"
@@ -143,7 +143,7 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
     local.minRelevanceScore && local.minRelevanceScore > 0,
   ].filter(Boolean).length;
 
-  const selectClass = "w-full rounded-xl px-3 py-2 text-sm font-black focus:ring-2 focus:ring-primary outline-none transition-all border border-border appearance-none cursor-pointer bg-muted/20 text-card-foreground";
+  const selectClass = "w-full rounded-none px-3 py-2 text-sm font-black focus:ring-2 focus:ring-primary outline-none transition-all border border-border appearance-none cursor-pointer bg-muted/20 text-card-foreground";
 
   return (
     <AnimatePresence>
@@ -172,7 +172,7 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-black text-card-foreground">Filter Cerdas</h2>
                   {activeCount > 0 && (
-                    <span className="bg-card-foreground text-card text-[10px] font-black px-2.5 py-1 rounded-full">
+                    <span className="bg-card-foreground text-card text-[10px] font-black px-2.5 py-1 rounded-none">
                       {activeCount} AKTIF
                     </span>
                   )}
@@ -183,7 +183,7 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
               </div>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                className="p-2 hover:bg-muted rounded-none text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -249,7 +249,7 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
                         set({ sources: allSources });
                       }
                     }}
-                    className="text-[9px] font-black text-primary bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded-md uppercase tracking-wider transition-all"
+                    className="text-[9px] font-black text-primary bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded-none uppercase tracking-wider transition-all"
                   >
                     {(local.sources?.length || 0) === 8 ? 'Hapus Semua' : 'Pilih Semua'}
                   </button>
@@ -276,11 +276,11 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
               <FilterSection title="Akses & Tipe" icon={BookOpen}>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between py-2">
-                    <span className="text-sm font-semibold text-card-foreground/80">Open Access Saja</span>
+                    <span className="text-sm font-semibold text-card-foreground/80">Akses Terbuka Saja</span>
                     <Toggle checked={!!local.openAccess} onChange={() => set({ openAccess: !local.openAccess })} />
                   </div>
                   <div className="flex items-center justify-between py-2 border-t border-border/50">
-                    <span className="text-sm font-semibold text-card-foreground/80">Ada PDF</span>
+                    <span className="text-sm font-semibold text-card-foreground/80">Tersedia PDF</span>
                     <Toggle checked={!!local.hasPdf} onChange={() => set({ hasPdf: !local.hasPdf })} />
                   </div>
                 </div>
@@ -288,9 +288,9 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
                   <span className="text-[10px] text-muted-foreground font-bold ml-1">TIPE DOKUMEN</span>
                   <PillSelector<DocumentType>
                     options={[
-                      { value: 'journal_article', label: 'Jurnal' },
-                      { value: 'conference_paper', label: 'Konferensi' },
-                      { value: 'thesis', label: 'Thesis' },
+                      { value: 'journal_article', label: 'Artikel Jurnal' },
+                      { value: 'conference_paper', label: 'Prosiding Konferensi' },
+                      { value: 'thesis', label: 'Tesis/Disertasi' },
                       { value: 'review', label: 'Review' },
                       { value: 'preprint', label: 'Preprint' },
                     ]}
@@ -306,11 +306,11 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
                   type="range" min={0} max={1000} step={25}
                   value={local.minCitations || 0}
                   onChange={e => set({ minCitations: parseInt(e.target.value) })}
-                  className="w-full accent-primary h-2 bg-muted rounded-lg appearance-none cursor-pointer"
+                  className="w-full accent-primary h-2 bg-muted rounded-none appearance-none cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-muted-foreground font-bold px-1">
                   <span>0</span>
-                  <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                  <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-none">
                     {local.minCitations || 0}+ sitasi
                   </span>
                   <span>1000+</span>
@@ -321,7 +321,7 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
               <div className="flex items-center gap-2 py-1">
                 <div className="flex-1 h-px bg-border" />
                 <span className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest">
-                  <Sparkles className="w-3 h-3" /> AI Filters
+                  <Sparkles className="w-3 h-3" /> Filter Intelijen AI
                 </span>
                 <div className="flex-1 h-px bg-border" />
               </div>
@@ -335,12 +335,12 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
                   type="range" min={0} max={90} step={10}
                   value={local.minRelevanceScore || 0}
                   onChange={e => set({ minRelevanceScore: parseInt(e.target.value) })}
-                  className="w-full accent-primary h-2 bg-muted rounded-lg appearance-none cursor-pointer"
+                  className="w-full accent-primary h-2 bg-muted rounded-none appearance-none cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-muted-foreground font-bold px-1">
                   <span>Semua</span>
                   <span className={cn(
-                    "px-2 py-0.5 rounded-full font-black",
+                    "px-2 py-0.5 rounded-none font-black",
                     (local.minRelevanceScore || 0) >= 70 ? "text-background bg-foreground" :
                     (local.minRelevanceScore || 0) >= 40 ? "text-foreground bg-muted" :
                     "text-foreground bg-muted/50"
@@ -352,8 +352,8 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
               </FilterSection>
 
               {/* Research Method */}
-              <FilterSection title="Metode Penelitian" icon={Layers} defaultOpen={false}>
-                <p className="text-[11px] text-muted-foreground mb-2">Dideteksi AI dari abstrak jurnal.</p>
+              <FilterSection title="Metodologi Riset" icon={Layers} defaultOpen={false}>
+                <p className="text-[11px] text-muted-foreground mb-2">Hasil sintesis AI terhadap abstrak jurnal.</p>
                 <PillSelector<ResearchMethod>
                   options={[
                     { value: 'kuantitatif', label: '📊 Kuantitatif' },
@@ -389,7 +389,7 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
 
               {/* Complexity Level */}
               <FilterSection title="Tingkat Kompleksitas" icon={Sparkles} defaultOpen={false}>
-                <p className="text-[11px] text-muted-foreground mb-2">Dianalisis AI berdasarkan gaya penulisan dan konten.</p>
+                <p className="text-[11px] text-muted-foreground mb-2">Analisis AI terhadap kedalaman teknis penulisan.</p>
                 <PillSelector<ComplexityLevel>
                   options={[
                     { value: 'beginner', label: '🟢 Pemula' },
@@ -411,16 +411,16 @@ export default function FilterSidebar({ isOpen, onClose, filters, onApply, onRes
                     onReset();
                     setLocal({});
                   }}
-                  className="px-4 py-3 bg-card-foreground/5 hover:bg-card-foreground/10 text-card-foreground/60 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-border/50"
+                  className="px-4 py-3 bg-card-foreground/5 hover:bg-card-foreground/10 text-card-foreground/60 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-border/50"
                 >
                   Reset Semua
                 </button>
                 <button
                   onClick={() => { onApply(local); onClose(); }}
-                  className="px-4 py-3 bg-card-foreground text-card hover:opacity-90 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-white/5 relative overflow-hidden"
+                  className="px-4 py-3 bg-card-foreground text-card hover:opacity-90 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-white/5 relative overflow-hidden"
                 >
                   {activeCount > 0 && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-card/50 rounded-full animate-pulse" />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-card/50 rounded-none animate-pulse" />
                   )}
                   Terapkan{activeCount > 0 ? ` (${activeCount})` : ''}
                 </button>
