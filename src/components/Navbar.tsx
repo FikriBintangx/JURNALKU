@@ -125,8 +125,8 @@ function NavbarContent() {
         {/* SEARCH BAR */}
         <div 
           className={cn(
-            "flex items-center gap-4 flex-1 max-w-xl mx-2 md:mx-8 relative transition-all duration-700 ease-premium",
-            isSearchFocused ? "search-focus-target" : "z-[70]"
+            "flex items-center gap-4 flex-1 max-w-xl mx-2 md:mx-8 relative transition-all duration-700 ease-premium z-[70]",
+            isSearchFocused && "z-[10001] scale-[1.01] -translate-y-1"
           )} 
           ref={containerRef}
         >

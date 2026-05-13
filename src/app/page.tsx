@@ -125,8 +125,8 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className={cn(
-              "relative max-w-3xl mx-auto transition-all duration-700 ease-premium",
-              isSearchFocused ? "search-focus-target" : "z-20"
+              "relative max-w-3xl mx-auto transition-all duration-700 ease-premium z-20",
+              isSearchFocused && "z-[10001] scale-[1.01] -translate-y-1"
             )}
           >
             <form 

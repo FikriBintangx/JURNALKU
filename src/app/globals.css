@@ -295,17 +295,6 @@
     pointer-events: auto;
   }
 
-  .is-search-focused .search-focus-target {
-    z-index: 10001;
-    transform: scale(1.01) translateY(-4px);
-    box-shadow: 
-      0 0 0 1px var(--foreground),
-      0 20px 60px -10px rgba(0, 0, 0, 0.15),
-      0 0 80px -20px color-mix(in srgb, var(--foreground) 20%, transparent);
-    border-color: var(--foreground) !important;
-    background-color: var(--background) !important;
-  }
-
   .is-search-focused .search-suggestions-panel {
     z-index: 1100;
     transform: translateY(8px);
