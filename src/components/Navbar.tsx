@@ -51,7 +51,7 @@ function NavbarContent() {
     e.preventDefault();
     if (!query.trim()) return;
     setShowDropdown(false);
-    const yearParam = selectedYear ? `&yearStart=${selectedYear}` : '';
+    const yearParam = selectedYear ? `&yearStart=${selectedYear}&sortBy=year` : '';
     router.push(`/search?q=${encodeURIComponent(query)}${yearParam}`);
   };
 
@@ -73,26 +73,26 @@ function NavbarContent() {
           </div>
         </div>
 
-        <div className="hidden md:flex items-center gap-4 flex-1 max-w-xl mx-6 relative" ref={containerRef}>
+        <div className="flex items-center gap-2 sm:gap-4 flex-1 sm:max-w-xl mx-1 sm:mx-6 relative" ref={containerRef}>
           <form onSubmit={handleSearch} className="w-full relative group flex items-center bg-muted/30 border border-border rounded-full transition-all focus-within:bg-background focus-within:ring-4 focus-within:ring-foreground/5 focus-within:border-foreground-muted overflow-hidden h-11">
-            <div className="relative flex items-center px-4 h-full border-r border-border cursor-pointer hover:bg-muted transition-colors">
+            <div className="relative flex items-center px-2 sm:px-4 h-full border-r border-border cursor-pointer hover:bg-muted transition-colors">
               <select 
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               >
-                <option value="" className="bg-background">Kapan pun</option>
+                <option value="" className="bg-background">Tahun</option>
                 <option value="2026" className="bg-background">2026</option>
                 <option value="2025" className="bg-background">2025</option>
                 <option value="2024" className="bg-background">2024</option>
                 <option value="2023" className="bg-background">2023</option>
                 <option value="2020" className="bg-background">2020+</option>
               </select>
-              <div className="flex items-center gap-2 pointer-events-none">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-foreground-muted whitespace-nowrap">
-                  {selectedYear || 'Tahun'}
+              <div className="flex items-center gap-1 sm:gap-2 pointer-events-none">
+                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-foreground-muted whitespace-nowrap">
+                  {selectedYear || 'YR'}
                 </span>
-                <ChevronDown className="w-3 h-3 text-foreground-muted" />
+                <ChevronDown className="w-2.5 h-2.5 sm:w-3 h-3 text-foreground-muted" />
               </div>
             </div>
             
@@ -103,10 +103,10 @@ function NavbarContent() {
                 value={query}
                 onFocus={() => setShowDropdown(true)}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Cari di mesin riset..."
-                className="w-full h-full bg-transparent pl-11 pr-4 text-[13px] font-bold outline-none placeholder:text-foreground-muted placeholder:opacity-30"
+                placeholder="Cari..."
+                className="w-full h-full bg-transparent pl-8 sm:pl-11 pr-2 sm:pr-4 text-[10px] sm:text-[13px] font-bold outline-none placeholder:text-foreground-muted placeholder:opacity-30"
               />
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted/40 group-focus-within:text-foreground transition-all" />
+              <Search className="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 h-4 text-foreground-muted/40 group-focus-within:text-foreground transition-all" />
             </div>
           </form>
 
@@ -128,9 +128,9 @@ function NavbarContent() {
           </AnimatePresence>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <ThemeToggle />
           <div className="hidden sm:flex items-center gap-4">
-            <ThemeToggle />
             {user ? (
               <Link 
                 href="/profile" 
@@ -147,13 +147,14 @@ function NavbarContent() {
               </Link>
             )}
           </div>
-          <button 
-            onClick={() => router.push('/')}
-            className="sm:hidden w-9 h-9 flex items-center justify-center rounded-full bg-muted border border-border text-foreground active:scale-95 transition-all"
-            title="Cari Jurnal"
-          >
-            <Search className="w-4 h-4" />
-          </button>
+          {user && (
+            <Link 
+              href="/profile" 
+              className="sm:hidden w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center active:scale-95 transition-all overflow-hidden"
+            >
+              <User className="w-4 h-4" />
+            </Link>
+          )}
         </div>
       </div>
 

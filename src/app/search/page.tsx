@@ -31,12 +31,12 @@ function SearchResults() {
   const provider = (searchParams.get('provider') as 'default' | 'googlescholar') || 'default';
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({
-    yearStart: 1900,
-    yearEnd: new Date().getFullYear(),
-    openAccess: false,
-    hasPdf: false,
-    minCitations: 0,
-    sortBy: 'relevance'
+    yearStart: searchParams.get('yearStart') ? parseInt(searchParams.get('yearStart')!) : 1900,
+    yearEnd: searchParams.get('yearEnd') ? parseInt(searchParams.get('yearEnd')!) : new Date().getFullYear(),
+    openAccess: searchParams.get('openAccess') === 'true',
+    hasPdf: searchParams.get('hasPdf') === 'true',
+    minCitations: searchParams.get('minCitations') ? parseInt(searchParams.get('minCitations')!) : 0,
+    sortBy: (searchParams.get('sortBy') as any) || 'relevance'
   });
 
   const observer = useRef<IntersectionObserver | null>(null);

@@ -26,7 +26,7 @@ export default function Home() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      const yearParam = selectedYear ? `&yearStart=${selectedYear}` : '';
+      const yearParam = selectedYear ? `&yearStart=${selectedYear}&sortBy=year` : '';
       router.push(`/search?q=${encodeURIComponent(query)}${yearParam}`);
     }
   };
@@ -112,15 +112,15 @@ export default function Home() {
                   }}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="APA YANG INGIN ANDA TEMUKAN HARI INI?"
-                  className="flex-grow bg-transparent border-none outline-none text-base md:text-3xl font-black text-foreground placeholder:text-foreground/20 py-3 md:py-6 min-w-0 uppercase tracking-tighter"
+                  className="flex-grow bg-transparent border-none outline-none text-[10px] sm:text-base md:text-3xl font-black text-foreground placeholder:text-foreground/20 py-3 md:py-6 min-w-0 uppercase tracking-tighter"
                 />
-                <div className="hidden sm:flex items-center gap-2 px-6 border-l border-foreground/10 h-14 my-auto">
+                <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-6 border-l border-foreground/10 h-10 sm:h-14 my-auto">
                   <select 
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(e.target.value)}
-                    className="bg-transparent text-[11px] font-black uppercase tracking-[0.25em] outline-none cursor-pointer pr-2 text-foreground appearance-none"
+                    className="bg-transparent text-[8px] sm:text-[11px] font-black uppercase tracking-[0.15em] sm:tracking-[0.25em] outline-none cursor-pointer pr-1 sm:pr-2 text-foreground appearance-none"
                   >
-                    <option value="" className="bg-background text-foreground">ALL TIME</option>
+                    <option value="" className="bg-background text-foreground">TAHUN</option>
                     <option value="2026" className="bg-background text-foreground">2026</option>
                     <option value="2025" className="bg-background text-foreground">2025</option>
                     <option value="2020" className="bg-background text-foreground">LAST 5Y</option>
