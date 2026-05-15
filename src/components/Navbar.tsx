@@ -94,8 +94,8 @@ function NavbarContent() {
       )}>
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-8 h-8 flex items-center justify-center transition-all duration-500 shadow-[3px_3px_0px_rgba(37,99,235,1)] bg-foreground text-background">
-              <Sparkles className="w-4 h-4" />
+            <div className="w-8 h-8 flex items-center justify-center transition-all duration-500 shadow-[3px_3px_0px_rgba(37,99,235,1)] bg-foreground overflow-hidden p-1">
+              <img src="/logo.png" alt="JurnalStar Logo" className="w-full h-full object-contain" />
             </div>
             <span className="font-black text-xl tracking-tightest uppercase hidden md:block transition-colors duration-500 text-foreground">
               JurnalStar

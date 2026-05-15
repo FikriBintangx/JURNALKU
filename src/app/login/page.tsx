@@ -238,8 +238,8 @@ export default function LoginPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="bg-background w-24 h-24 flex items-center justify-center rounded-[3rem] mb-12 mx-auto shadow-[0_0_50px_rgba(255,255,255,0.1)]">
-              <Command className="w-12 h-12 text-foreground" />
+            <div className="bg-background w-24 h-24 flex items-center justify-center rounded-[3rem] mb-12 mx-auto shadow-[0_0_50px_rgba(255,255,255,0.1)] overflow-hidden p-5">
+              <img src="/logo.png" alt="JurnalStar Logo" className="w-full h-full object-contain" />
             </div>
             <h2 className="text-background text-7xl font-black uppercase tracking-tighter leading-[0.75] italic">Jurnal<br/>Star</h2>
             <div className="h-[3px] w-20 bg-background/20 mx-auto mt-12 mb-8" />
