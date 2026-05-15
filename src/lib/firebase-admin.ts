@@ -1,11 +1,16 @@
 import * as admin from 'firebase-admin';
 
-if (!admin.apps.length) {
-  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
+let serviceAccount = undefined;
+try {
+  serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
     ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
     : undefined;
+} catch (e) {
+  console.warn("FIREBASE_SERVICE_ACCOUNT_KEY is not a valid JSON or missing. Skipping Admin init during build.");
+}
 
-  if (serviceAccount) {
+if (serviceAccount && admin.apps.length === 0) {
+  try {
     // Fix for private key newlines
     if (serviceAccount.private_key) {
       serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
@@ -14,12 +19,8 @@ if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
-  } else {
-    // Fallback for development if only PROJECT_ID is provided
-    // This might only work in some environments (like GCP)
-    admin.initializeApp({
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    });
+  } catch (e) {
+    console.error("Failed to initialize Firebase Admin:", e);
   }
 }
 
