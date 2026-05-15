@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Mail, Lock, LogIn, ArrowRight, Command, 
   Loader2, CheckCircle2, AlertCircle 
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { auth, googleProvider } from '@/lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
 
