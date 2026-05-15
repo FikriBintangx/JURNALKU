@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ArrowUp, Sparkles, BookMarked } from 'lucide-react';
+import { Search, ArrowUp, Sparkles, BookMarked, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -35,6 +35,17 @@ export const FloatingActionButtons = () => {
       <AnimatePresence>
         {isVisible && (
           <>
+            <Link href="/profile">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.5, y: 20 }}
+                className="w-12 h-12 bg-card/40 backdrop-blur-2xl border border-border/50 text-foreground rounded-full flex items-center justify-center shadow-2xl active:scale-90"
+              >
+                <User className="w-5 h-5" />
+              </motion.div>
+            </Link>
+
             <motion.button
               initial={{ opacity: 0, scale: 0.5, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
