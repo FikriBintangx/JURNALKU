@@ -94,10 +94,15 @@ function NavbarContent() {
       )}>
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-8 h-8 flex items-center justify-center transition-all duration-500 shadow-[3px_3px_0px_rgba(37,99,235,1)] bg-foreground overflow-hidden p-1">
+            <motion.div 
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9, rotate: -5 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              className="w-12 h-12 flex items-center justify-center transition-all duration-300 overflow-hidden"
+            >
               <img src="/logo.png" alt="JurnalStar Logo" className="w-full h-full object-contain" />
-            </div>
-            <span className="font-black text-xl tracking-tightest uppercase hidden md:block transition-colors duration-500 text-foreground">
+            </motion.div>
+            <span className="font-black text-2xl tracking-tightest uppercase hidden md:block transition-colors duration-500 text-foreground">
               JurnalStar
             </span>
           </Link>

@@ -28,6 +28,10 @@ export const metadata: Metadata = {
   description: "Meta Search Engine Jurnal Akademik dengan dukungan AI Gemini. Anti Rate Limit, Multi-Source, dan Zero Crash Experience.",
   keywords: ["jurnal", "riset", "akademik", "AI", "Gemini", "OpenAlex", "Semantic Scholar"],
   authors: [{ name: "JurnalStar Team" }],
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
