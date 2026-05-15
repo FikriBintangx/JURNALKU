@@ -195,44 +195,57 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-hidden selection:bg-foreground selection:text-background">
       {/* Visual Side (40%) */}
-      <div className="hidden md:flex md:w-[40%] bg-foreground relative overflow-hidden items-center justify-center border-r border-foreground/5">
-        {/* Animated Marquee Background */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none select-none">
-          <div className="absolute inset-0 flex flex-col justify-around py-20 -space-y-20">
-            {[...Array(8)].map((_, i) => (
+      <div className="hidden md:flex md:w-[40%] bg-foreground relative overflow-hidden items-center justify-center border-r border-foreground/10">
+        {/* Cinematic Animated Marquee Background */}
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none select-none">
+          <div className="absolute inset-0 flex flex-col justify-around py-10 -space-y-32">
+            {[...Array(10)].map((_, i) => (
               <motion.div
                 key={i}
-                initial={{ x: i % 2 === 0 ? "-20%" : "-50%" }}
-                animate={{ x: i % 2 === 0 ? "-50%" : "-20%" }}
+                initial={{ x: i % 2 === 0 ? "-20%" : "-40%" }}
+                animate={{ x: i % 2 === 0 ? "-40%" : "-20%" }}
                 transition={{
-                  duration: 25 + i * 5,
+                  duration: 20 + i * 3,
                   repeat: Infinity,
-                  ease: "linear",
+                  repeatType: "reverse",
+                  ease: "easeInOut",
                 }}
-                className="whitespace-nowrap flex gap-10 rotate-[-25deg]"
+                className={cn(
+                  "whitespace-nowrap flex gap-12 rotate-[-20deg]",
+                  i % 3 === 0 ? "font-black" : "font-thin"
+                )}
               >
-                {[...Array(10)].map((_, j) => (
-                  <span key={j} className="text-[10rem] font-black tracking-tighter uppercase leading-none">
+                {[...Array(8)].map((_, j) => (
+                  <span 
+                    key={j} 
+                    className={cn(
+                      "text-[12rem] tracking-tighter uppercase leading-none",
+                      j % 2 === 0 ? "text-background" : "text-transparent border-white/20 border-2 [-webkit-text-stroke:1px_rgba(255,255,255,0.3)]"
+                    )}
+                  >
                     JURNALKU
                   </span>
                 ))}
               </motion.div>
             ))}
           </div>
+          {/* Vignette Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-foreground via-transparent to-foreground opacity-60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-foreground via-transparent to-foreground opacity-60" />
         </div>
         
         <div className="relative z-10 text-center px-12">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: "circOut" }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="bg-background w-20 h-20 flex items-center justify-center rounded-[2.5rem] mb-10 mx-auto shadow-2xl">
-              <Command className="w-10 h-10 text-foreground" />
+            <div className="bg-background w-24 h-24 flex items-center justify-center rounded-[3rem] mb-12 mx-auto shadow-[0_0_50px_rgba(255,255,255,0.1)]">
+              <Command className="w-12 h-12 text-foreground" />
             </div>
-            <h2 className="text-background text-6xl font-black uppercase tracking-tighter leading-[0.8] italic">Jurnal<br/>Star</h2>
-            <div className="h-[2px] w-16 bg-background/20 mx-auto mt-10 mb-6" />
-            <p className="text-background/40 text-[9px] uppercase tracking-[0.6em] font-black">Intelligence Engine</p>
+            <h2 className="text-background text-7xl font-black uppercase tracking-tighter leading-[0.75] italic">Jurnal<br/>Star</h2>
+            <div className="h-[3px] w-20 bg-background/20 mx-auto mt-12 mb-8" />
+            <p className="text-background/40 text-[10px] uppercase tracking-[0.7em] font-black">Intelligence Engine</p>
           </motion.div>
         </div>
       </div>
