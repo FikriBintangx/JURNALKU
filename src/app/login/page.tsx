@@ -195,38 +195,44 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-hidden selection:bg-foreground selection:text-background">
       {/* Visual Side (40%) */}
-      <div className="hidden md:flex md:w-[40%] bg-foreground relative overflow-hidden items-center justify-center">
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
-          {[...Array(12)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ x: -100, y: 200 }}
-              animate={{ x: 800, y: -800 }}
-              transition={{
-                duration: 10 + i * 1.5,
-                repeat: Infinity,
-                ease: "linear",
-                delay: i * -2.5
-              }}
-              className="whitespace-nowrap text-[12rem] font-black text-background tracking-tighter rotate-[-30deg] leading-[0.8] select-none"
-            >
-              JURNALKU JURNALKU JURNALKU JURNALKU
-            </motion.div>
-          ))}
+      <div className="hidden md:flex md:w-[40%] bg-foreground relative overflow-hidden items-center justify-center border-r border-foreground/5">
+        {/* Animated Marquee Background */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none select-none">
+          <div className="absolute inset-0 flex flex-col justify-around py-20 -space-y-20">
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ x: i % 2 === 0 ? "-20%" : "-50%" }}
+                animate={{ x: i % 2 === 0 ? "-50%" : "-20%" }}
+                transition={{
+                  duration: 25 + i * 5,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                className="whitespace-nowrap flex gap-10 rotate-[-25deg]"
+              >
+                {[...Array(10)].map((_, j) => (
+                  <span key={j} className="text-[10rem] font-black tracking-tighter uppercase leading-none">
+                    JURNALKU
+                  </span>
+                ))}
+              </motion.div>
+            ))}
+          </div>
         </div>
         
         <div className="relative z-10 text-center px-12">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: "circOut" }}
           >
-            <div className="bg-background w-20 h-20 flex items-center justify-center rounded-[2.5rem] mb-8 mx-auto shadow-2xl">
+            <div className="bg-background w-20 h-20 flex items-center justify-center rounded-[2.5rem] mb-10 mx-auto shadow-2xl">
               <Command className="w-10 h-10 text-foreground" />
             </div>
-            <h2 className="text-background text-5xl font-black uppercase tracking-tighter leading-none italic">Jurnal<br/>Star</h2>
-            <div className="h-1 w-12 bg-background/20 mx-auto mt-8 mb-4" />
-            <p className="text-background/40 text-[9px] uppercase tracking-[0.5em] font-bold">Intelligence Engine</p>
+            <h2 className="text-background text-6xl font-black uppercase tracking-tighter leading-[0.8] italic">Jurnal<br/>Star</h2>
+            <div className="h-[2px] w-16 bg-background/20 mx-auto mt-10 mb-6" />
+            <p className="text-background/40 text-[9px] uppercase tracking-[0.6em] font-black">Intelligence Engine</p>
           </motion.div>
         </div>
       </div>
