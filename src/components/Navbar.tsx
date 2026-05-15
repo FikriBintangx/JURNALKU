@@ -93,18 +93,15 @@ function NavbarContent() {
         isSearchFocused && "bg-background/60"
       )}>
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center space-x-3 group">
+          <Link href="/" className="flex items-center group">
             <motion.div 
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9, rotate: -5 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              className="w-12 h-12 flex items-center justify-center transition-all duration-300 overflow-hidden"
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 1.4 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              className="w-14 h-14 flex items-center justify-center transition-all duration-300 overflow-hidden"
             >
               <img src="/logo.png" alt="JurnalStar Logo" className="w-full h-full object-contain" />
             </motion.div>
-            <span className="font-black text-2xl tracking-tightest uppercase hidden md:block transition-colors duration-500 text-foreground">
-              JurnalStar
-            </span>
           </Link>
           
           <div className="hidden lg:flex items-center space-x-10">

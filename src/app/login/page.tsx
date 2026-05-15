@@ -10,6 +10,7 @@ import { Mail, Lock, LogIn, ArrowRight, Command,
 import { cn } from '@/lib/utils';
 import { auth, googleProvider } from '@/lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
+import Image from 'next/image';
 
 function LoginContent() {
   const router = useRouter();
@@ -198,27 +199,29 @@ export default function LoginPage() {
       {/* Visual Side (40%) */}
       <div className="hidden md:flex md:w-[40%] bg-foreground relative overflow-hidden items-center justify-center border-r border-foreground/10">
         {/* Cinematic Animated Marquee Background */}
-        <div className="absolute inset-0 opacity-[0.06] pointer-events-none select-none">
-          <div className="absolute inset-0 flex flex-col justify-around py-10 -space-y-32">
-            {[...Array(10)].map((_, i) => (
+        <div className="absolute inset-0 opacity-[0.07] pointer-events-none select-none">
+          <div className="absolute inset-0 flex flex-col justify-around py-20 -space-y-16">
+            {[...Array(12)].map((_, i) => (
               <motion.div
                 key={i}
-                initial={{ x: i % 2 === 0 ? "-20%" : "-40%" }}
-                animate={{ x: i % 2 === 0 ? "-40%" : "-20%" }}
+                initial={{ x: i % 2 === 0 ? "-10%" : "-30%" }}
+                animate={{ x: i % 2 === 0 ? "-30%" : "-10%" }}
                 transition={{
-                  duration: 20 + i * 3,
+                  duration: 25 + i * 2,
                   repeat: Infinity,
                   repeatType: "reverse",
-                  ease: "easeInOut",
+                  ease: "linear",
                 }}
-                className="whitespace-nowrap flex gap-12 rotate-[-20deg] font-black"
+                className="whitespace-nowrap flex gap-16 rotate-[-15deg] font-black"
               >
-                {[...Array(8)].map((_, j) => (
+                {[...Array(6)].map((_, j) => (
                   <span 
                     key={j} 
                     className={cn(
-                      "text-[12rem] tracking-tightest uppercase leading-none",
-                      j % 2 === 0 ? "text-background" : "text-transparent border-white/40 border-[3px] [-webkit-text-stroke:2px_rgba(255,255,255,0.5)]"
+                      "text-[10rem] tracking-tightest uppercase leading-none px-4",
+                      j % 2 === 0 
+                        ? "text-background" 
+                        : "text-transparent [-webkit-text-stroke:4px_rgba(255,255,255,0.6)]"
                     )}
                   >
                     JURNALKU
@@ -228,8 +231,8 @@ export default function LoginPage() {
             ))}
           </div>
           {/* Vignette Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground via-transparent to-foreground opacity-60" />
-          <div className="absolute inset-0 bg-gradient-to-b from-foreground via-transparent to-foreground opacity-60" />
+          <div className="absolute inset-0 bg-gradient-to-r from-foreground via-transparent to-foreground opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-foreground via-transparent to-foreground opacity-80" />
         </div>
         
         <div className="relative z-10 text-center px-12">
@@ -238,8 +241,14 @@ export default function LoginPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="bg-background w-24 h-24 flex items-center justify-center rounded-[3rem] mb-12 mx-auto shadow-[0_0_50px_rgba(255,255,255,0.1)] overflow-hidden p-5">
-              <img src="/logo.png" alt="JurnalStar Logo" className="w-full h-full object-contain" />
+            <div className="bg-background w-28 h-28 flex items-center justify-center rounded-[3.5rem] mb-12 mx-auto shadow-[0_0_60px_rgba(255,255,255,0.15)] overflow-hidden p-6 relative">
+              <Image 
+                src="/logo.png" 
+                alt="JurnalStar Logo" 
+                fill 
+                className="object-contain p-6"
+                priority
+              />
             </div>
             <h2 className="text-background text-7xl font-black uppercase tracking-tighter leading-[0.75] italic">Jurnal<br/>Star</h2>
             <div className="h-[3px] w-20 bg-background/20 mx-auto mt-12 mb-8" />
