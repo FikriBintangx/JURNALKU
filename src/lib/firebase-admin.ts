@@ -24,4 +24,17 @@ if (serviceAccount && admin.apps.length === 0) {
   }
 }
 
-export const adminAuth = admin.auth();
+// Export a function to get auth to ensure it's only called after initialization
+export const getAdminAuth = () => {
+  if (admin.apps.length === 0) {
+    // If somehow not initialized, try initializing with project ID at least
+    if (process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+      admin.initializeApp({
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      });
+    } else {
+      throw new Error("Firebase Admin not initialized and project ID missing");
+    }
+  }
+  return admin.auth();
+};

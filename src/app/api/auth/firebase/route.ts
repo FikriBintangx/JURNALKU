@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { adminAuth } from '@/lib/firebase-admin';
+import { getAdminAuth } from '@/lib/firebase-admin';
 import prisma from '@/lib/prisma';
 import { SignJWT } from 'jose';
 import { cookies } from 'next/headers';
@@ -21,6 +21,7 @@ export async function POST(req: Request) {
     }
 
     // Verify Firebase ID Token
+    const adminAuth = getAdminAuth();
     const decodedToken = await adminAuth.verifyIdToken(idToken);
     const { email, name, uid, picture } = decodedToken;
 
