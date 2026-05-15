@@ -110,18 +110,18 @@ function LoginContent() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-1">Alamat Email</label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-foreground transition-colors" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-background/40 group-focus-within:text-background transition-colors z-10" />
                 <input 
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                   placeholder="NAMA@EMAIL.COM"
-                  className="w-full bg-muted/30 border-2 border-transparent rounded-2xl py-5 pl-12 pr-4 text-foreground focus:bg-background focus:border-foreground transition-all placeholder:text-muted-foreground/30 font-bold text-sm outline-none"
+                  className="w-full bg-foreground border-2 border-foreground rounded-none py-6 pl-12 pr-4 text-background focus:bg-foreground/90 transition-all placeholder:text-background/20 font-bold text-sm outline-none"
                 />
               </div>
             </div>
@@ -132,14 +132,14 @@ function LoginContent() {
                 <Link href="#" onClick={(e) => e.preventDefault()} className="text-[9px] font-black text-muted-foreground uppercase tracking-widest transition-colors opacity-50 cursor-not-allowed pointer-events-none">Lupa?</Link>
               </div>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-foreground transition-colors" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-background/40 group-focus-within:text-background transition-colors z-10" />
                 <input 
                   type="password"
                   required
                   value={formData.password}
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
                   placeholder="••••••••••••"
-                  className="w-full bg-muted/30 border-2 border-transparent rounded-2xl py-5 pl-12 pr-4 text-foreground focus:bg-background focus:border-foreground transition-all placeholder:text-muted-foreground/30 font-bold text-sm outline-none"
+                  className="w-full bg-foreground border-2 border-foreground rounded-none py-6 pl-12 pr-4 text-background focus:bg-foreground/90 transition-all placeholder:text-background/20 font-bold text-sm outline-none"
                 />
               </div>
             </div>
@@ -147,7 +147,7 @@ function LoginContent() {
             <button 
               type="submit"
               disabled={loading}
-              className="w-full bg-foreground text-background py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.4em] flex items-center justify-center gap-3 transition-all active:scale-[0.98] hover:shadow-2xl hover:shadow-foreground/20 disabled:opacity-50"
+              className="w-full bg-foreground text-background py-6 rounded-none font-black text-[11px] uppercase tracking-[0.5em] flex items-center justify-center gap-3 transition-all active:scale-[0.98] border-2 border-foreground hover:bg-background hover:text-foreground disabled:opacity-50"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                 <>
@@ -160,17 +160,17 @@ function LoginContent() {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-foreground/5"></div>
+              <div className="w-full border-t border-foreground/10"></div>
             </div>
             <div className="relative flex justify-center text-[9px] uppercase">
-              <span className="bg-background px-4 text-muted-foreground font-black tracking-[0.3em]">Atau</span>
+              <span className="bg-background px-6 text-muted-foreground font-black tracking-[0.4em]">Atau</span>
             </div>
           </div>
 
           <button 
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full bg-background border-2 border-foreground/5 text-foreground py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.4em] flex items-center justify-center gap-3 transition-all active:scale-[0.98] hover:bg-foreground hover:text-background disabled:opacity-50 group"
+            className="w-full bg-background border-2 border-foreground text-foreground py-6 rounded-none font-black text-[11px] uppercase tracking-[0.5em] flex items-center justify-center gap-3 transition-all active:scale-[0.98] hover:bg-foreground hover:text-background disabled:opacity-50 group"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
