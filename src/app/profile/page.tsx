@@ -23,6 +23,15 @@ export default function ProfilePage() {
     fetchUser();
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login';
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+  };
+
   if (loading) return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="w-12 h-12 border-4 border-foreground/10 border-t-foreground rounded-full animate-spin" />
@@ -53,17 +62,17 @@ export default function ProfilePage() {
               </div>
               
               <div className="space-y-1">
-                <h1 className="text-2xl font-black tracking-tighter uppercase">{user?.name || 'Researcher'}</h1>
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-60">Level 4 Academic Intelligence</p>
+                <h1 className="text-2xl font-black tracking-tighter uppercase">{user?.name || 'Peneliti'}</h1>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-60">Peneliti Aktif</p>
               </div>
             </div>
 
             <div className="mono-card overflow-hidden p-2 space-y-1">
               {[
-                { id: 'account', label: 'Account Systems', icon: User },
-                { id: 'security', label: 'Security Layer', icon: Shield },
-                { id: 'notifications', label: 'Signal Feed', icon: Bell },
-                { id: 'settings', label: 'Core Config', icon: Settings },
+                { id: 'account', label: 'Profil Saya', icon: User },
+                { id: 'security', label: 'Keamanan', icon: Shield },
+                { id: 'notifications', label: 'Notifikasi', icon: Bell },
+                { id: 'settings', label: 'Pengaturan', icon: Settings },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -96,9 +105,12 @@ export default function ProfilePage() {
               ))}
             </div>
 
-            <button className="w-full flex items-center justify-center gap-3 p-5 text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/5 transition-all rounded-2xl border-2 border-red-500/10">
+            <button 
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-3 p-5 text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/5 transition-all rounded-2xl border-2 border-red-500/10"
+            >
               <LogOut className="w-4 h-4" />
-              <span>Terminate Session</span>
+              <span>Keluar Akun</span>
             </button>
           </div>
 
@@ -112,12 +124,12 @@ export default function ProfilePage() {
             >
               <div className="space-y-2">
                 <h2 className="text-4xl font-black tracking-tighter uppercase leading-none">
-                  {activeTab === 'account' ? 'Identity Management' : 
-                   activeTab === 'security' ? 'Access Credentials' :
-                   activeTab === 'notifications' ? 'Intelligence Alerts' : 'Interface Configuration'}
+                  {activeTab === 'account' ? 'Pengaturan Profil' : 
+                   activeTab === 'security' ? 'Keamanan Akun' :
+                   activeTab === 'notifications' ? 'Notifikasi & Berita' : 'Konfigurasi Sistem'}
                 </h2>
                 <p className="text-muted-foreground text-sm font-medium opacity-60">
-                  Update your research environment parameters and authentication tokens.
+                  Kelola informasi akun dan preferensi riset Anda di sini.
                 </p>
               </div>
 
@@ -126,7 +138,7 @@ export default function ProfilePage() {
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Legal Identifier</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Nama Lengkap</label>
                         <input 
                           type="text" 
                           defaultValue={user?.name}
@@ -134,7 +146,7 @@ export default function ProfilePage() {
                         />
                       </div>
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Communication Endpoint</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Alamat Email</label>
                         <input 
                           type="email" 
                           defaultValue={user?.email}
@@ -143,10 +155,10 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Research Biography</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Bio Singkat</label>
                       <textarea 
                         rows={4}
-                        placeholder="State your primary research objectives..."
+                        placeholder="Ceritakan sedikit tentang fokus riset Anda..."
                         className="w-full bg-muted/50 border-2 border-border rounded-2xl px-6 py-4 text-sm font-bold focus:bg-background focus:border-foreground/20 transition-all outline-none resize-none"
                       />
                     </div>
@@ -180,7 +192,7 @@ export default function ProfilePage() {
               <div className="pt-8 border-t border-border/50 flex justify-end">
                 <button className="bg-foreground text-background px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
                   <Save className="w-4 h-4" />
-                  <span>Sync Parameters</span>
+                  <span>Simpan Perubahan</span>
                 </button>
               </div>
             </motion.div>
