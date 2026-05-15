@@ -52,6 +52,9 @@ function LoginContent() {
     setError(null);
     setLoading(true);
     try {
+      if (!auth) {
+        throw new Error("Firebase Auth belum dikonfigurasi.");
+      }
       const result = await signInWithPopup(auth, googleProvider);
       const idToken = await result.user.getIdToken();
       
