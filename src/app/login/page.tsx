@@ -11,8 +11,14 @@ import { cn } from '@/lib/utils';
 import { auth, googleProvider } from '@/lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
 import Image from 'next/image';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 function LoginContent() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const logoSrc = mounted && resolvedTheme === 'light' ? '/logo-light.png' : '/logo-dark.png';
   const router = useRouter();
   const searchParams = useSearchParams();
   const registered = searchParams.get('registered');
@@ -243,7 +249,7 @@ export default function LoginPage() {
           >
             <div className="bg-background w-28 h-28 flex items-center justify-center rounded-[3.5rem] mb-12 mx-auto shadow-[0_0_60px_rgba(255,255,255,0.15)] overflow-hidden p-6 relative">
               <Image 
-                src="/logo.png" 
+                src={logoSrc} 
                 alt="JurnalStar Logo" 
                 fill 
                 className="object-contain p-6"

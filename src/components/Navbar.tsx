@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchSuggestions from './SearchSuggestions';
+import { useTheme } from 'next-themes';
 
 function NavbarContent() {
   const router = useRouter();
@@ -21,6 +22,14 @@ function NavbarContent() {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [user, setUser] = useState<{ id: string, name: string, email: string } | null>(null);
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const logoSrc = mounted && resolvedTheme === 'light' ? '/logo-light.png' : '/logo-dark.png';
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -100,7 +109,7 @@ function NavbarContent() {
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
               className="w-14 h-14 flex items-center justify-center transition-all duration-300 overflow-hidden"
             >
-              <img src="/logo.png" alt="JurnalStar Logo" className="w-full h-full object-contain" />
+              <img src={logoSrc} alt="JurnalStar Logo" className="w-full h-full object-contain" />
             </motion.div>
           </Link>
           
