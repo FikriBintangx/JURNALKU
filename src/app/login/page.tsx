@@ -198,7 +198,7 @@ export default function LoginPage() {
       {/* Visual Side (40%) */}
       <div className="hidden md:flex md:w-[40%] bg-foreground relative overflow-hidden items-center justify-center border-r border-foreground/10">
         {/* Cinematic Animated Marquee Background */}
-        <div className="absolute inset-0 opacity-[0.04] pointer-events-none select-none">
+        <div className="absolute inset-0 opacity-[0.06] pointer-events-none select-none">
           <div className="absolute inset-0 flex flex-col justify-around py-10 -space-y-32">
             {[...Array(10)].map((_, i) => (
               <motion.div
@@ -211,17 +211,14 @@ export default function LoginPage() {
                   repeatType: "reverse",
                   ease: "easeInOut",
                 }}
-                className={cn(
-                  "whitespace-nowrap flex gap-12 rotate-[-20deg]",
-                  i % 3 === 0 ? "font-black" : "font-thin"
-                )}
+                className="whitespace-nowrap flex gap-12 rotate-[-20deg] font-black"
               >
                 {[...Array(8)].map((_, j) => (
                   <span 
                     key={j} 
                     className={cn(
-                      "text-[12rem] tracking-tighter uppercase leading-none",
-                      j % 2 === 0 ? "text-background" : "text-transparent border-white/20 border-2 [-webkit-text-stroke:1px_rgba(255,255,255,0.3)]"
+                      "text-[12rem] tracking-tightest uppercase leading-none",
+                      j % 2 === 0 ? "text-background" : "text-transparent border-white/40 border-[3px] [-webkit-text-stroke:2px_rgba(255,255,255,0.5)]"
                     )}
                   >
                     JURNALKU
