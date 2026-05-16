@@ -1,23 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Mail, Lock, User, ArrowRight, Command, 
-  Loader2, AlertCircle, CheckCircle2 
+  Mail, Lock, User, ArrowRight, Loader2, 
+  AlertCircle, CheckCircle2, Search, 
+  Library, Sparkles, Moon, Sun
 } from 'lucide-react';
 import Image from 'next/image';
-import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { auth, googleProvider } from '@/lib/firebase';
+import { signInWithPopup } from 'firebase/auth';
 
 export default function RegisterPage() {
-  const { resolvedTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const logoSrc = mounted && resolvedTheme === 'light' ? '/logo-light.png' : '/logo-dark.png';
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,156 +61,213 @@ export default function RegisterPage() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      if (!auth) throw new Error("Firebase Auth belum dikonfigurasi.");
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+      
+      const res = await fetch('/api/auth/firebase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Login Google gagal');
+
+      window.location.href = '/';
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const currentTheme = resolvedTheme || theme || 'light';
+
+  if (!mounted) return null;
+
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-hidden selection:bg-foreground selection:text-background">
-      {/* Visual Side (40%) */}
-      <div className="hidden md:flex md:w-[40%] bg-foreground relative overflow-hidden items-center justify-center border-r border-foreground/10">
-        {/* Cinematic Animated Marquee Background */}
-        <div className="absolute inset-0 opacity-[0.07] pointer-events-none select-none">
+    <div className="flex flex-col md:flex-row min-h-screen bg-background overflow-hidden selection:bg-foreground selection:text-background text-foreground">
+      <style jsx global>{`
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 60px white inset !important;
+          -webkit-text-fill-color: black !important;
+        }
+        .dark input:-webkit-autofill,
+        .dark input:-webkit-autofill:hover, 
+        .dark input:-webkit-autofill:focus, 
+        .dark input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 60px #0a0a0a inset !important;
+          -webkit-text-fill-color: white !important;
+        }
+      `}</style>
+
+      {/* Theme Toggle */}
+      <div className="absolute top-10 right-10 z-50">
+        <button
+          onClick={() => setTheme(currentTheme === 'dark' ? 'light' : 'dark')}
+          className="p-4 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 rounded-full transition-all active:scale-90"
+        >
+          {currentTheme === 'dark' ? <Sun className="w-5 h-5 text-foreground" /> : <Moon className="w-5 h-5 text-foreground" />}
+        </button>
+      </div>
+
+      {/* LEFT PANEL */}
+      <div className="hidden md:flex md:w-[42%] bg-background relative overflow-hidden flex-col items-center justify-center border-r border-foreground/10">
+        <div className="absolute inset-0 opacity-[0.08] select-none pointer-events-none">
           <div className="absolute inset-0 flex flex-col justify-around py-20 -space-y-16">
             {[...Array(12)].map((_, i) => (
               <motion.div
                 key={i}
-                initial={{ x: i % 2 === 0 ? "-10%" : "-30%" }}
-                animate={{ x: i % 2 === 0 ? "-30%" : "-10%" }}
-                transition={{
-                  duration: 25 + i * 2,
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  ease: "linear",
-                }}
-                className="whitespace-nowrap flex gap-16 rotate-[-15deg] font-black"
+                initial={{ x: "-10%" }}
+                animate={{ x: "-30%" }}
+                transition={{ duration: 50, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
+                className="whitespace-nowrap flex gap-16 rotate-[-15deg] font-black text-[14rem] tracking-tighter uppercase text-foreground"
               >
                 {[...Array(6)].map((_, j) => (
-                  <span 
-                    key={j} 
-                    className={cn(
-                      "text-[10rem] tracking-tightest uppercase leading-none px-4",
-                      j % 2 === 0 
-                        ? "text-background" 
-                        : "text-transparent [-webkit-text-stroke:4px_rgba(255,255,255,0.6)]"
-                    )}
-                  >
-                    JURNALKU
-                  </span>
+                  <span key={j} className="[-webkit-text-stroke:6px_currentColor]">JURNALKU</span>
                 ))}
               </motion.div>
             ))}
           </div>
-          {/* Vignette Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground via-transparent to-foreground opacity-80" />
-          <div className="absolute inset-0 bg-gradient-to-b from-foreground via-transparent to-foreground opacity-80" />
         </div>
-        
-        <div className="relative z-10 text-center px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="bg-background w-28 h-28 flex items-center justify-center rounded-[3.5rem] mb-12 mx-auto shadow-[0_0_60px_rgba(255,255,255,0.15)] overflow-hidden p-6 relative">
-              <Image 
-                src={logoSrc} 
-                alt="JurnalStar Logo" 
-                fill 
-                className="object-contain p-6"
-                priority
-              />
-            </div>
-            <h2 className="text-background text-7xl font-black uppercase tracking-tighter leading-[0.75] italic">Jurnal<br/>Star</h2>
-            <div className="h-[3px] w-20 bg-background/20 mx-auto mt-12 mb-8" />
-            <p className="text-background/40 text-[10px] uppercase tracking-[0.7em] font-black">Intelligence Engine</p>
-          </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-10 flex flex-col items-center gap-16"
+        >
+          <div className="w-full max-w-[640px] px-8">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentTheme}
+                initial={{ opacity: 0, filter: "blur(20px)" }}
+                animate={{ opacity: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, filter: "blur(20px)" }}
+                transition={{ duration: 0.5 }}
+              >
+                <Image
+                  src={currentTheme === "dark" ? "/assets/logo/logojurnalkudarkmode.png" : "/assets/logo/logojurnalkulightmode.png"}
+                  alt="JURNALKU Logo"
+                  width={800}
+                  height={800}
+                  priority
+                  unoptimized
+                  className="object-contain w-full h-auto select-none pointer-events-none"
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          <div className="flex flex-col items-center gap-3 text-center">
+            <span className="text-[14px] font-black tracking-[1.2em] uppercase opacity-40">STAR.CO</span>
+            <span className="text-[11px] font-black tracking-[1em] uppercase opacity-10">GEN 2.0</span>
+          </div>
+        </motion.div>
+
+        <div className="absolute bottom-16 left-0 w-full flex justify-center gap-16 text-[10px] font-black uppercase tracking-[0.4em] opacity-30 text-foreground">
+          <div className="flex items-center gap-3"><Search className="w-3 h-3" /> CARI</div>
+          <div className="flex items-center gap-3"><Library className="w-3 h-3" /> PERPUSTAKAAN</div>
+          <div className="flex items-center gap-3"><Sparkles className="w-3 h-3" /> MESIN AI</div>
         </div>
       </div>
 
-      {/* Form Side (60%) */}
-      <div className="flex-1 flex items-center justify-center p-6 md:p-12 bg-background relative z-10">
+      {/* RIGHT PANEL */}
+      <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-24 lg:p-32 relative bg-background">
         <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="w-full max-w-md"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="w-full max-w-lg space-y-12"
         >
-          {error && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-none text-red-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-3"
-            >
-              <AlertCircle className="w-5 h-5" />
-              {error}
-            </motion.div>
-          )}
+          <div className="space-y-6">
+            <h1 className="text-6xl font-black uppercase tracking-tightest italic leading-tight text-foreground">Bergabunglah</h1>
+            <p className="text-muted-foreground text-[12px] uppercase tracking-[0.5em] font-black opacity-40 italic">Buat akun profesional Anda</p>
+          </div>
 
-          <div className="space-y-10">
-            <div className="text-left">
-              <h1 className="text-5xl font-black text-foreground tracking-tighter uppercase leading-[0.85]">
-                Daftar <br /> Akun Baru
-              </h1>
-              <p className="text-muted-foreground mt-6 text-[10px] font-black uppercase tracking-[0.4em] opacity-60">
-                Mulai perjalanan riset cerdas Anda
-              </p>
-            </div>
+          <div className="space-y-8">
+            <AnimatePresence mode="wait">
+              {error && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-red-500/5 border border-red-500/10 p-6 flex items-center gap-4"
+                >
+                  <AlertCircle className="w-5 h-5 text-red-500" />
+                  <p className="text-red-500 text-[10px] uppercase font-black tracking-widest italic">{error}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-1">Nama Lengkap</label>
-                <div className="relative group">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-background/40 group-focus-within:text-background transition-colors z-10" />
-                  <input 
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    placeholder="NAMA PENELITI"
-                    className="w-full bg-foreground border-2 border-foreground rounded-none py-5 pl-12 pr-4 text-background focus:bg-foreground/90 transition-all placeholder:text-background/20 font-bold text-sm outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-1">Alamat Email</label>
-                <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-background/40 group-focus-within:text-background transition-colors z-10" />
-                  <input 
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    placeholder="EMAIL@RESEARCH.IO"
-                    className="w-full bg-foreground border-2 border-foreground rounded-none py-5 pl-12 pr-4 text-background focus:bg-foreground/90 transition-all placeholder:text-background/20 font-bold text-sm outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-1">Kata Sandi</label>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black uppercase tracking-[0.4em] opacity-40 ml-2 text-foreground">Nama Lengkap</label>
                   <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-background/40 group-focus-within:text-background transition-colors z-10" />
+                    <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30 transition-all group-focus-within:text-foreground group-focus-within:scale-110 z-10" />
                     <input 
-                      type="password"
+                      type="text"
+                      placeholder="MASUKKAN NAMA LENGKAP"
+                      className="w-full bg-background border-2 border-foreground/10 px-14 py-6 outline-none transition-all focus:border-foreground/40 font-black text-[12px] placeholder:text-muted-foreground/20 tracking-widest uppercase text-foreground shadow-sm relative z-0"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
                       required
-                      value={formData.password}
-                      onChange={(e) => setFormData({...formData, password: e.target.value})}
-                      placeholder="••••••••"
-                      className="w-full bg-foreground border-2 border-foreground rounded-none py-5 pl-12 pr-4 text-background focus:bg-foreground/90 transition-all placeholder:text-background/20 font-bold text-sm outline-none"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-1">Konfirmasi</label>
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black uppercase tracking-[0.4em] opacity-40 ml-2 text-foreground">Alamat Email</label>
                   <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-background/40 group-focus-within:text-background transition-colors z-10" />
+                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30 transition-all group-focus-within:text-foreground group-focus-within:scale-110 z-10" />
                     <input 
-                      type="password"
+                      type="email"
+                      placeholder="MASUKKAN EMAIL ANDA"
+                      className="w-full bg-background border-2 border-foreground/10 px-14 py-6 outline-none transition-all focus:border-foreground/40 font-black text-[12px] placeholder:text-muted-foreground/20 tracking-widest text-foreground shadow-sm relative z-0"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
                       required
-                      value={formData.confirmPassword}
-                      onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                      placeholder="••••••••"
-                      className="w-full bg-foreground border-2 border-foreground rounded-none py-5 pl-12 pr-4 text-background focus:bg-foreground/90 transition-all placeholder:text-background/20 font-bold text-sm outline-none"
                     />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black uppercase tracking-[0.4em] opacity-40 ml-2 text-foreground">Kata Sandi</label>
+                    <div className="relative group">
+                      <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30 transition-all group-focus-within:text-foreground group-focus-within:scale-110 z-10" />
+                      <input 
+                        type="password"
+                        placeholder="••••••••"
+                        className="w-full bg-background border-2 border-foreground/10 px-14 py-6 outline-none transition-all focus:border-foreground/40 font-black text-[12px] placeholder:text-muted-foreground/20 tracking-widest text-foreground shadow-sm relative z-0"
+                        value={formData.password}
+                        onChange={(e) => setFormData({...formData, password: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black uppercase tracking-[0.4em] opacity-40 ml-2 text-foreground">Konfirmasi</label>
+                    <div className="relative group">
+                      <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30 transition-all group-focus-within:text-foreground group-focus-within:scale-110 z-10" />
+                      <input 
+                        type="password"
+                        placeholder="••••••••"
+                        className="w-full bg-background border-2 border-foreground/10 px-14 py-6 outline-none transition-all focus:border-foreground/40 font-black text-[12px] placeholder:text-muted-foreground/20 tracking-widest text-foreground shadow-sm relative z-0"
+                        value={formData.confirmPassword}
+                        onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -214,21 +275,30 @@ export default function RegisterPage() {
               <button 
                 type="submit"
                 disabled={loading}
-                className="w-full bg-foreground text-background py-6 rounded-none font-black text-[11px] uppercase tracking-[0.5em] flex items-center justify-center gap-3 transition-all active:scale-[0.98] border-2 border-foreground hover:bg-background hover:text-foreground disabled:opacity-50 mt-4"
+                className="group relative w-full overflow-hidden bg-foreground border-2 border-foreground py-7 font-black text-[12px] uppercase tracking-[0.8em] transition-all disabled:opacity-50 text-background flex items-center justify-center gap-4 active:scale-[0.98] mt-4"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
                   <>
-                    <span>Daftar Sekarang</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <span>Buat Akun</span>
+                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-3 duration-300" />
                   </>
                 )}
               </button>
             </form>
 
-            <p className="text-center text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">
-              Sudah punya akun? {' '}
-              <Link href="/login" className="text-foreground border-b-2 border-foreground/20 hover:border-foreground transition-colors ml-2">Masuk di sini</Link>
-            </p>
+            <div className="relative py-4">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-foreground/5"></div></div>
+              <div className="relative flex justify-center text-[10px] uppercase"><span className="bg-background px-8 text-muted-foreground font-black tracking-[0.5em] opacity-40">atau</span></div>
+            </div>
+
+            <button onClick={handleGoogleLogin} disabled={loading} className="w-full bg-background border-2 border-foreground/10 text-foreground py-7 font-black text-[12px] uppercase tracking-[0.5em] flex items-center justify-center gap-5 transition-all active:scale-[0.97] hover:bg-foreground/[0.03] disabled:opacity-50 group">
+              <svg className="w-6 h-6" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1c-2.97 0-5.46.98-7.28 2.66l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              <span>Akun Google</span>
+            </button>
+
+            <p className="text-center text-[11px] text-muted-foreground font-black uppercase tracking-[0.3em] opacity-60">Sudah punya akun? <Link href="/login" className="text-foreground border-b-2 border-foreground/20 hover:border-foreground transition-colors ml-3 pb-1">Masuk</Link></p>
           </div>
         </motion.div>
       </div>

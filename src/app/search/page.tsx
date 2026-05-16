@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { journalService } from '@/services/journalService';
 import { Journal } from '@/types/journal';
 import { cn } from '@/lib/utils';
@@ -40,6 +41,26 @@ function SearchResults() {
   });
   const [page, setPage] = useState(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  
+  const LOADING_VARIANTS = [
+    {
+      gif: "https://media1.tenor.com/m/SH31iAEWLT8AAAAC/pikachu-running.gif",
+      title: "( PIKAPIKA JALAN DULS )",
+      sub: "MENCARI JURNAL KE SELURUH WORLD"
+    },
+    {
+      gif: "https://media1.tenor.com/m/MuMLDWrW95gAAAAd/gojo-domain-expansion.gif",
+      title: "( PERLUASAN DOMAIN - NAH I'D WIN )",
+      sub: "BIARKAN GOJO MENCARI JURNAL MU"
+    },
+    {
+      gif: "https://media1.tenor.com/m/hp1qKBQclPMAAAAC/jujutsu-kaisen-shibuya-arc-sukuna-domain-expansion.gif",
+      title: "( DOMAIN EXPANSION - RYOIKI TENKAI )",
+      sub: "BIARKAN SUKUNA MENCARI KAN LU JURNAL"
+    }
+  ];
+
+  const [activeLoadingState, setActiveLoadingState] = useState(LOADING_VARIANTS[0]);
 
   const handleSearchMore = async () => {
     if (isLoadingMore || !hasMore) return;
@@ -75,6 +96,10 @@ function SearchResults() {
     setHasMore(true);
     setLoading(true);
     setError(null);
+
+    // Pick random loading state
+    const randomIdx = Math.floor(Math.random() * LOADING_VARIANTS.length);
+    setActiveLoadingState(LOADING_VARIANTS[randomIdx]);
   }, [query, recommend, provider, JSON.stringify(filters)]);
 
   useEffect(() => {
@@ -150,6 +175,13 @@ function SearchResults() {
                 </h1>
                 
                 <div className="flex items-center gap-3 mt-3">
+                  <Link 
+                    href="/" 
+                    className="lg:hidden flex items-center gap-1.5 px-3 py-1 bg-foreground text-background text-[10px] font-black uppercase tracking-widest hover:invert transition-all"
+                  >
+                    <Search className="w-3 h-3 rotate-180" />
+                    <span>Beranda</span>
+                  </Link>
                   <button 
                     onClick={() => setIsTitleExpanded(!isTitleExpanded)}
                     className="flex items-center gap-1.5 px-2 py-1 rounded-none bg-muted hover:bg-slate-200 text-[10px] font-bold text-foreground transition-colors uppercase tracking-wider"
@@ -239,11 +271,11 @@ function SearchResults() {
         {loading ? (
           <div className="space-y-12">
             <div className="flex flex-col items-center justify-center py-24 space-y-6">
-              <div className="relative w-32 h-32 mb-2">
+              <div className="relative w-48 h-48 mb-2">
                 <img 
-                  src="https://media1.tenor.com/m/SH31iAEWLT8AAAAC/pikachu-running.gif" 
+                  src={activeLoadingState.gif} 
                   alt="Loading..." 
-                  className="w-full h-full object-contain drop-shadow-2xl"
+                  className="w-full h-full object-contain drop-shadow-2xl border-4 border-foreground"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23000000' opacity='0.1'/%3E%3C/svg%3E";
                   }}
@@ -251,10 +283,10 @@ function SearchResults() {
               </div>
               <div className="text-center space-y-2">
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">
-                  ( sabar ya mba, mas, pak, kids , bot sedang mencari )
+                  {activeLoadingState.title}
                 </h3>
                 <p className="text-[10px] text-foreground-muted font-bold uppercase tracking-widest animate-pulse">
-                  Memetakan Niat Semantik • Memperluas Domain Riset • Mengumpulkan Provider
+                  {activeLoadingState.sub}
                 </p>
               </div>
             </div>

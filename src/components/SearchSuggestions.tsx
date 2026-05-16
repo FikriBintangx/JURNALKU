@@ -125,13 +125,24 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="p-12 flex flex-col items-center justify-center space-y-6"
+            className="py-4 px-2 space-y-1"
           >
-            <div className="relative">
-              <Loader2 className="w-10 h-10 animate-spin text-foreground opacity-10" />
-              <Sparkles className="w-5 h-5 text-foreground absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            <div className="px-6 py-4 flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 skeleton shadow-xl" />
+                <div className="w-32 h-4 skeleton" />
+              </div>
+              <div className="w-16 h-3 skeleton" />
             </div>
-            <span className="label-caps !opacity-40 animate-pulse">Memetakan Sinyal Riset...</span>
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-center gap-5 px-6 py-5">
+                <div className="w-11 h-11 skeleton shrink-0" />
+                <div className="flex flex-col gap-2 flex-1">
+                  <div className="w-3/4 h-5 skeleton" />
+                  <div className="w-1/4 h-3 skeleton" />
+                </div>
+              </div>
+            ))}
           </motion.div>
         ) : suggestions.length > 0 ? (
           <motion.div 

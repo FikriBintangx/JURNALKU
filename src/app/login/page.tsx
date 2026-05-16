@@ -1,24 +1,27 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, ArrowRight, Command, 
-  Loader2, CheckCircle2, AlertCircle 
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Mail, Lock, ArrowRight, Loader2, 
+  CheckCircle2, AlertCircle, Search, 
+  Library, Sparkles, Moon, Sun
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { auth, googleProvider } from '@/lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
 
 function LoginContent() {
-  const { resolvedTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const logoSrc = mounted && resolvedTheme === 'light' ? '/logo-light.png' : '/logo-dark.png';
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
   const router = useRouter();
   const searchParams = useSearchParams();
   const registered = searchParams.get('registered');
@@ -44,7 +47,7 @@ function LoginContent() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Email atau password salah');
+      if (!res.ok) throw new Error(data.message || 'Email atau kata sandi salah');
 
       window.location.href = '/';
     } catch (err: any) {
@@ -69,7 +72,7 @@ function LoginContent() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Google login failed');
+      if (!res.ok) throw new Error(data.message || 'Login Google gagal');
 
       window.location.href = '/';
     } catch (err: any) {
@@ -79,193 +82,213 @@ function LoginContent() {
     }
   };
 
+  const currentTheme = resolvedTheme || theme || 'light';
+
+  if (!mounted) return null;
+
   return (
-    <div className="flex-1 flex items-center justify-center p-6 md:p-12 bg-background relative z-10">
-      <motion.div 
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="w-full max-w-md"
-      >
-        {registered && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-4 bg-foreground/5 border border-foreground/10 rounded-2xl text-foreground text-[10px] font-black uppercase tracking-widest flex items-center gap-3"
-          >
-            <CheckCircle2 className="w-5 h-5" />
-            Pendaftaran berhasil! Silakan masuk.
-          </motion.div>
-        )}
+    <div className="flex flex-col md:flex-row min-h-screen bg-background overflow-hidden selection:bg-foreground selection:text-background text-foreground">
+      <style jsx global>{`
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 60px white inset !important;
+          -webkit-text-fill-color: black !important;
+        }
+        .dark input:-webkit-autofill,
+        .dark input:-webkit-autofill:hover, 
+        .dark input:-webkit-autofill:focus, 
+        .dark input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 60px #0a0a0a inset !important;
+          -webkit-text-fill-color: white !important;
+        }
+      `}</style>
 
-        {error && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-3"
-          >
-            <AlertCircle className="w-5 h-5" />
-            {error}
-          </motion.div>
-        )}
+      {/* Theme Toggle */}
+      <div className="absolute top-10 right-10 z-50">
+        <button
+          onClick={() => setTheme(currentTheme === 'dark' ? 'light' : 'dark')}
+          className="p-4 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 rounded-full transition-all active:scale-90"
+        >
+          {currentTheme === 'dark' ? <Sun className="w-5 h-5 text-foreground" /> : <Moon className="w-5 h-5 text-foreground" />}
+        </button>
+      </div>
 
-        <div className="space-y-12">
-          <div className="text-left">
-            <h1 className="text-5xl font-black text-foreground tracking-tighter uppercase leading-[0.85]">
-              Masuk <br /> Ke Akun
-            </h1>
-            <p className="text-muted-foreground mt-6 text-[10px] font-black uppercase tracking-[0.4em] opacity-60">
-              Selamat datang kembali di JurnalStar
-            </p>
+      {/* LEFT PANEL */}
+      <div className="hidden md:flex md:w-[42%] bg-background relative overflow-hidden flex-col items-center justify-center border-r border-foreground/10">
+        <div className="absolute inset-0 opacity-[0.08] select-none pointer-events-none">
+          <div className="absolute inset-0 flex flex-col justify-around py-20 -space-y-16">
+            {[...Array(12)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ x: "-10%" }}
+                animate={{ x: "-30%" }}
+                transition={{ duration: 50, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
+                className="whitespace-nowrap flex gap-16 rotate-[-15deg] font-black text-[14rem] tracking-tighter uppercase text-foreground"
+              >
+                {[...Array(6)].map((_, j) => (
+                  <span key={j} className="[-webkit-text-stroke:6px_currentColor]">JURNALKU</span>
+                ))}
+              </motion.div>
+            ))}
           </div>
-
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-1">Alamat Email</label>
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-background/40 group-focus-within:text-background transition-colors z-10" />
-                <input 
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  placeholder="NAMA@EMAIL.COM"
-                  className="w-full bg-foreground border-2 border-foreground rounded-none py-6 pl-12 pr-4 text-background focus:bg-foreground/90 transition-all placeholder:text-background/20 font-bold text-sm outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between items-center ml-1">
-                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Kata Sandi</label>
-                <Link href="#" onClick={(e) => e.preventDefault()} className="text-[9px] font-black text-muted-foreground uppercase tracking-widest transition-colors opacity-50 cursor-not-allowed pointer-events-none">Lupa?</Link>
-              </div>
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-background/40 group-focus-within:text-background transition-colors z-10" />
-                <input 
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  placeholder="••••••••••••"
-                  className="w-full bg-foreground border-2 border-foreground rounded-none py-6 pl-12 pr-4 text-background focus:bg-foreground/90 transition-all placeholder:text-background/20 font-bold text-sm outline-none"
-                />
-              </div>
-            </div>
-
-            <button 
-              type="submit"
-              disabled={loading}
-              className="w-full bg-foreground text-background py-6 rounded-none font-black text-[11px] uppercase tracking-[0.5em] flex items-center justify-center gap-3 transition-all active:scale-[0.98] border-2 border-foreground hover:bg-background hover:text-foreground disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                <>
-                  <span>Masuk Sekarang</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-foreground/10"></div>
-            </div>
-            <div className="relative flex justify-center text-[9px] uppercase">
-              <span className="bg-background px-6 text-muted-foreground font-black tracking-[0.4em]">Atau</span>
-            </div>
-          </div>
-
-          <button 
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            className="w-full bg-background border-2 border-foreground text-foreground py-6 rounded-none font-black text-[11px] uppercase tracking-[0.5em] flex items-center justify-center gap-3 transition-all active:scale-[0.98] hover:bg-foreground hover:text-background disabled:opacity-50 group"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            <span>Lanjutkan dengan Google</span>
-          </button>
-
-          <p className="text-center text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">
-            Belum punya akun? {' '}
-            <Link href="/register" className="text-foreground border-b-2 border-foreground/20 hover:border-foreground transition-colors ml-2">Daftar di sini</Link>
-          </p>
         </div>
-      </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-10 flex flex-col items-center gap-16"
+        >
+          <div className="w-full max-w-[640px] px-8">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentTheme}
+                initial={{ opacity: 0, filter: "blur(20px)" }}
+                animate={{ opacity: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, filter: "blur(20px)" }}
+                transition={{ duration: 0.5 }}
+              >
+                <Image
+                  src={currentTheme === "dark" ? "/assets/logo/logojurnalkudarkmode.png" : "/assets/logo/logojurnalkulightmode.png"}
+                  alt="JURNALKU Logo"
+                  width={800}
+                  height={800}
+                  priority
+                  unoptimized
+                  className="object-contain w-full h-auto select-none pointer-events-none"
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          <div className="flex flex-col items-center gap-3 text-center">
+            <span className="text-[14px] font-black tracking-[1.2em] uppercase opacity-40">STAR.CO</span>
+            <span className="text-[11px] font-black tracking-[1em] uppercase opacity-10">GEN 2.0</span>
+          </div>
+        </motion.div>
+
+        <div className="absolute bottom-16 left-0 w-full flex justify-center gap-16 text-[10px] font-black uppercase tracking-[0.4em] opacity-30 text-foreground">
+          <div className="flex items-center gap-3"><Search className="w-3 h-3" /> CARI</div>
+          <div className="flex items-center gap-3"><Library className="w-3 h-3" /> PERPUSTAKAAN</div>
+          <div className="flex items-center gap-3"><Sparkles className="w-3 h-3" /> MESIN AI</div>
+        </div>
+      </div>
+
+      {/* RIGHT PANEL */}
+      <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-24 lg:p-32 relative bg-background">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="w-full max-w-lg space-y-16"
+        >
+          <div className="space-y-6">
+            <h1 className="text-6xl font-black uppercase tracking-tightest italic leading-tight text-foreground">Selamat <br /> Datang</h1>
+            <p className="text-muted-foreground text-[12px] uppercase tracking-[0.5em] font-black opacity-40 italic">Lanjutkan perjalanan riset Anda</p>
+          </div>
+
+          <div className="space-y-10">
+            <AnimatePresence mode="wait">
+              {registered && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-emerald-500/5 border border-emerald-500/10 p-6 flex items-center gap-4"
+                >
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <p className="text-emerald-500 text-[10px] uppercase font-black tracking-widest italic">Berhasil! Anda sekarang dapat masuk.</p>
+                </motion.div>
+              )}
+
+              {error && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-red-500/5 border border-red-500/10 p-6 flex items-center gap-4"
+                >
+                  <AlertCircle className="w-5 h-5 text-red-500" />
+                  <p className="text-red-500 text-[10px] uppercase font-black tracking-widest italic">{error}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-8">
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black uppercase tracking-[0.4em] opacity-40 ml-2 text-foreground">Alamat Email</label>
+                  <div className="relative group">
+                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30 transition-all group-focus-within:text-foreground group-focus-within:scale-110 z-10" />
+                    <input 
+                      type="email"
+                      placeholder="MASUKKAN EMAIL ANDA"
+                      className="w-full bg-background border-2 border-foreground/10 px-14 py-6 outline-none transition-all focus:border-foreground/40 font-black text-[12px] placeholder:text-muted-foreground/20 tracking-widest text-foreground shadow-sm relative z-0"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center px-2">
+                    <label className="text-[11px] font-black uppercase tracking-[0.4em] opacity-40 text-foreground">Kata Sandi</label>
+                    <Link href="#" onClick={(e) => e.preventDefault()} className="text-[10px] font-black uppercase tracking-[0.2em] opacity-20 hover:opacity-100 transition-opacity text-foreground">Lupa?</Link>
+                  </div>
+                  <div className="relative group">
+                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30 transition-all group-focus-within:text-foreground group-focus-within:scale-110 z-10" />
+                    <input 
+                      type="password"
+                      placeholder="••••••••"
+                      className="w-full bg-background border-2 border-foreground/10 px-14 py-6 outline-none transition-all focus:border-foreground/40 font-black text-[12px] placeholder:text-muted-foreground/20 tracking-widest text-foreground shadow-sm relative z-0"
+                      value={formData.password}
+                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                disabled={loading}
+                className="group relative w-full overflow-hidden bg-foreground border-2 border-foreground py-7 font-black text-[12px] uppercase tracking-[0.8em] transition-all disabled:opacity-50 text-background flex items-center justify-center gap-4 active:scale-[0.98]"
+              >
+                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                  <>
+                    <span>Masuk</span>
+                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-3 duration-300" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="relative py-6">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-foreground/5"></div></div>
+              <div className="relative flex justify-center text-[10px] uppercase"><span className="bg-background px-8 text-muted-foreground font-black tracking-[0.5em] opacity-40">atau</span></div>
+            </div>
+
+            <button onClick={handleGoogleLogin} disabled={loading} className="w-full bg-background border-2 border-foreground/10 text-foreground py-7 font-black text-[12px] uppercase tracking-[0.5em] flex items-center justify-center gap-5 transition-all active:scale-[0.97] hover:bg-foreground/[0.03] disabled:opacity-50 group">
+              <svg className="w-6 h-6" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1c-2.97 0-5.46.98-7.28 2.66l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              <span>Akun Google</span>
+            </button>
+
+            <p className="text-center text-[11px] text-muted-foreground font-black uppercase tracking-[0.3em] opacity-60">Belum punya akun? <Link href="/register" className="text-foreground border-b-2 border-foreground/20 hover:border-foreground transition-colors ml-3 pb-1">Buat Akun</Link></p>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-hidden selection:bg-foreground selection:text-background">
-      {/* Visual Side (40%) */}
-      <div className="hidden md:flex md:w-[40%] bg-foreground relative overflow-hidden items-center justify-center border-r border-foreground/10">
-        {/* Cinematic Animated Marquee Background */}
-        <div className="absolute inset-0 opacity-[0.07] pointer-events-none select-none">
-          <div className="absolute inset-0 flex flex-col justify-around py-20 -space-y-16">
-            {[...Array(12)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ x: i % 2 === 0 ? "-10%" : "-30%" }}
-                animate={{ x: i % 2 === 0 ? "-30%" : "-10%" }}
-                transition={{
-                  duration: 25 + i * 2,
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  ease: "linear",
-                }}
-                className="whitespace-nowrap flex gap-16 rotate-[-15deg] font-black"
-              >
-                {[...Array(6)].map((_, j) => (
-                  <span 
-                    key={j} 
-                    className={cn(
-                      "text-[10rem] tracking-tightest uppercase leading-none px-4",
-                      j % 2 === 0 
-                        ? "text-background" 
-                        : "text-transparent [-webkit-text-stroke:4px_rgba(255,255,255,0.6)]"
-                    )}
-                  >
-                    JURNALKU
-                  </span>
-                ))}
-              </motion.div>
-            ))}
-          </div>
-          {/* Vignette Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground via-transparent to-foreground opacity-80" />
-          <div className="absolute inset-0 bg-gradient-to-b from-foreground via-transparent to-foreground opacity-80" />
-        </div>
-        
-        <div className="relative z-10 text-center px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="bg-background w-28 h-28 flex items-center justify-center rounded-[3.5rem] mb-12 mx-auto shadow-[0_0_60px_rgba(255,255,255,0.15)] overflow-hidden p-6 relative">
-              <Image 
-                src={logoSrc} 
-                alt="JurnalStar Logo" 
-                fill 
-                className="object-contain p-6"
-                priority
-              />
-            </div>
-            <h2 className="text-background text-7xl font-black uppercase tracking-tighter leading-[0.75] italic">Jurnal<br/>Star</h2>
-            <div className="h-[3px] w-20 bg-background/20 mx-auto mt-12 mb-8" />
-            <p className="text-background/40 text-[10px] uppercase tracking-[0.7em] font-black">Intelligence Engine</p>
-          </motion.div>
-        </div>
-      </div>
-
-      <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>}>
-        <LoginContent />
-      </Suspense>
-    </div>
+    <Suspense fallback={<div className="flex-1 flex items-center justify-center bg-background min-h-screen"><Loader2 className="w-10 h-10 animate-spin text-muted-foreground" /></div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

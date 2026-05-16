@@ -21,6 +21,7 @@ function NavbarContent() {
   const [navTheme, setNavTheme] = useState<'light' | 'dark'>('dark');
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isLogoZoomed, setIsLogoZoomed] = useState(false);
   const [user, setUser] = useState<{ id: string, name: string, email: string } | null>(null);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -29,7 +30,9 @@ function NavbarContent() {
     setMounted(true);
   }, []);
 
-  const logoSrc = mounted && resolvedTheme === 'light' ? '/logo-light.png' : '/logo-dark.png';
+  const logoSrc = mounted && resolvedTheme === 'light' 
+    ? '/assets/logo/logojurnalkulightmode.png' 
+    : '/assets/logo/logojurnalkudarkmode.png';
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -102,16 +105,16 @@ function NavbarContent() {
         isSearchFocused && "bg-background/60"
       )}>
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center group">
+          <div className="flex items-center group cursor-pointer" onClick={() => setIsLogoZoomed(true)}>
             <motion.div 
               whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 1.4 }}
+              whileTap={{ scale: 0.9 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
               className="w-14 h-14 flex items-center justify-center transition-all duration-300 overflow-hidden"
             >
               <img src={logoSrc} alt="JurnalStar Logo" className="w-full h-full object-contain" />
             </motion.div>
-          </Link>
+          </div>
           
           <div className="hidden lg:flex items-center space-x-10">
             <Link href="/workspace" className="group relative py-1">
@@ -228,18 +231,37 @@ function NavbarContent() {
 
     </nav>
     <AnimatePresence>
-      {isSearchFocused && (
+      {(isSearchFocused || isLogoZoomed) && (
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="search-active-overlay"
+          style={{ pointerEvents: 'auto' }}
           onClick={() => {
             setIsSearchFocused(false);
             setShowDropdown(false);
+            setIsLogoZoomed(false);
             document.body.classList.remove('is-search-focused');
           }}
         />
+      )}
+    </AnimatePresence>
+
+    {/* Hero Logo Zoom Overlay */}
+    <AnimatePresence>
+      {isLogoZoomed && (
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center pointer-events-none">
+          <motion.div
+            initial={{ scale: 0.2, opacity: 0, y: -100 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.2, opacity: 0, y: -100 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="w-[300px] h-[300px] md:w-[500px] md:h-[500px] flex items-center justify-center bg-background border-4 border-foreground p-12 shadow-[0_50px_100px_rgba(0,0,0,0.5)]"
+          >
+            <img src={logoSrc} alt="JurnalStar Logo Large" className="w-full h-full object-contain" />
+          </motion.div>
+        </div>
       )}
     </AnimatePresence>
     </>
