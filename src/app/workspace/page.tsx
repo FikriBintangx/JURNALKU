@@ -273,7 +273,7 @@ export default function WorkspacePage() {
       </aside>
 
       {/* MAIN CANVAS */}
-      <main className="flex-1 flex flex-col min-w-0 bg-background-secondary md:rounded-l-3xl md:border-l md:border-border/50 shadow-2xl overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 bg-background-secondary md:rounded-l-3xl md:border-l md:border-border/50 shadow-2xl">
         
         {/* TOP NAV */}
         <header className="h-20 px-6 lg:px-10 flex items-center justify-between shrink-0 glass-nav z-30">
@@ -309,7 +309,7 @@ export default function WorkspacePage() {
         </header>
 
         {/* CONTENT AREA */}
-        <div className="flex-1 overflow-y-auto hide-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           <div className="max-w-4xl mx-auto px-6 lg:px-10 py-10 pb-8 space-y-12">
             
             {/* AGENT STATUS HERO */}
