@@ -31,56 +31,42 @@ export const FloatingActionButtons = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[90] flex flex-col gap-3 md:hidden">
+    <div className="fixed bottom-6 left-4 right-4 z-[90] flex justify-center md:hidden pointer-events-none">
       <AnimatePresence>
         {isVisible && (
-          <>
-            <Link href="/profile">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.5, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.5, y: 20 }}
-                className="w-12 h-12 bg-card/40 backdrop-blur-2xl border border-border/50 text-foreground rounded-full flex items-center justify-center shadow-2xl active:scale-90"
-              >
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            className="flex items-center justify-between w-full max-w-md p-2 bg-card/60 backdrop-blur-3xl border border-border/50 rounded-full shadow-2xl pointer-events-auto"
+          >
+            <Link href="/profile" className="flex-1 flex justify-center">
+              <div className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-foreground/10 active:scale-95 transition-all text-foreground">
                 <User className="w-5 h-5" />
-              </motion.div>
+              </div>
             </Link>
 
-            <motion.button
-              initial={{ opacity: 0, scale: 0.5, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.5, y: 20 }}
+            <button
               onClick={scrollToTop}
-              className="w-12 h-12 bg-card/40 backdrop-blur-2xl border border-border/50 text-foreground rounded-full flex items-center justify-center shadow-2xl active:scale-90"
+              className="flex-1 flex justify-center w-12 h-12 items-center rounded-full hover:bg-foreground/10 active:scale-95 transition-all text-foreground"
             >
               <ArrowUp className="w-5 h-5" />
-            </motion.button>
+            </button>
 
-            <motion.button
-              initial={{ opacity: 0, scale: 0.5, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.5, y: 20 }}
+            <button
               onClick={() => router.push('/workspace')}
-              className="w-12 h-12 bg-card/40 backdrop-blur-2xl border border-border/50 text-foreground rounded-full flex items-center justify-center shadow-2xl active:scale-90"
+              className="flex-1 flex justify-center w-12 h-12 items-center rounded-full hover:bg-foreground/10 active:scale-95 transition-all"
             >
-              <Sparkles className="w-5 h-5 text-indigo-500" />
-            </motion.button>
+              <Sparkles className="w-6 h-6 text-indigo-500" />
+            </button>
 
-            <Link href="/library">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.5, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.5, y: 20 }}
-                className="w-12 h-12 bg-card/40 backdrop-blur-2xl border border-border/50 text-foreground rounded-full flex items-center justify-center shadow-2xl active:scale-90"
-              >
+            <Link href="/library" className="flex-1 flex justify-center">
+              <div className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-foreground/10 active:scale-95 transition-all text-foreground">
                 <BookMarked className="w-5 h-5" />
-              </motion.div>
+              </div>
             </Link>
 
-            <motion.button
-              initial={{ opacity: 0, scale: 0.5, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.5, y: 20 }}
+            <button
               onClick={() => {
                 const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
                 if (searchInput) {
@@ -88,11 +74,11 @@ export const FloatingActionButtons = () => {
                   setTimeout(() => searchInput.focus(), 300);
                 }
               }}
-              className="w-14 h-14 bg-foreground/10 backdrop-blur-3xl border border-foreground/20 text-foreground rounded-2xl flex items-center justify-center shadow-2xl active:scale-90"
+              className="flex-1 flex justify-center w-12 h-12 items-center rounded-full hover:bg-foreground/10 active:scale-95 transition-all text-foreground"
             >
-              <Search className="w-6 h-6" />
-            </motion.button>
-          </>
+              <Search className="w-5 h-5" />
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

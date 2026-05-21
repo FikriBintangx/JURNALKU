@@ -47,27 +47,27 @@ export default function ProfilePage() {
           
           {/* Sidebar Navigation */}
           <div className="lg:col-span-4 space-y-8">
-            <div className="mono-card p-8 text-center space-y-6">
+            <div className="bg-card text-card-foreground rounded-3xl border border-border/50 shadow-sm p-8 text-center space-y-6">
               <div className="relative inline-block group">
-                <div className="w-32 h-32 bg-muted rounded-[2.5rem] flex items-center justify-center border-2 border-border overflow-hidden">
+                <div className="w-32 h-32 bg-card-foreground/5 rounded-[2.5rem] flex items-center justify-center border-2 border-card-foreground/10 overflow-hidden">
                   {user?.image ? (
                     <img src={user.image} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <User className="w-16 h-16 opacity-20" />
                   )}
                 </div>
-                <button className="absolute bottom-0 right-0 w-10 h-10 bg-foreground text-background rounded-2xl flex items-center justify-center shadow-2xl hover:scale-110 transition-all border-4 border-background">
+                <button className="absolute bottom-0 right-0 w-10 h-10 bg-card-foreground text-card rounded-2xl flex items-center justify-center shadow-2xl hover:scale-110 transition-all border-4 border-card">
                   <Camera className="w-5 h-5" />
                 </button>
               </div>
               
               <div className="space-y-1">
                 <h1 className="text-2xl font-black tracking-tighter uppercase">{user?.name || 'Peneliti'}</h1>
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-60">Peneliti Aktif</p>
+                <p className="text-[10px] font-black text-card-foreground/60 uppercase tracking-[0.3em]">Peneliti Aktif</p>
               </div>
             </div>
 
-            <div className="mono-card overflow-hidden p-2 space-y-1">
+            <div className="bg-card text-card-foreground rounded-3xl border border-border/50 shadow-sm overflow-hidden p-2 space-y-1">
               {[
                 { id: 'account', label: 'Profil Saya', icon: User },
                 { id: 'security', label: 'Keamanan', icon: Shield },
@@ -79,26 +79,26 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
                     "relative w-full flex items-center justify-between p-4 text-[10px] font-black uppercase tracking-widest transition-all rounded-2xl group overflow-hidden",
-                    activeTab === tab.id ? "text-background" : "hover:bg-foreground/[0.03] text-foreground/60 hover:text-foreground"
+                    activeTab === tab.id ? "text-card" : "hover:bg-card-foreground/5 text-card-foreground/60 hover:text-card-foreground"
                   )}
                 >
                   {activeTab === tab.id && (
                     <motion.div 
                       layoutId="activeTabBg"
-                      className="absolute inset-0 bg-foreground shadow-2xl z-0"
+                      className="absolute inset-0 bg-card-foreground shadow-2xl z-0"
                       transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                     />
                   )}
                   
                   <div className="flex items-center gap-4 relative z-10">
-                    <tab.icon className={cn("w-4 h-4 transition-colors", activeTab === tab.id ? "text-background" : "text-foreground/40 group-hover:text-primary")} />
+                    <tab.icon className={cn("w-4 h-4 transition-colors", activeTab === tab.id ? "text-card" : "text-card-foreground/40 group-hover:text-card-foreground")} />
                     <span>{tab.label}</span>
                   </div>
                   
                   <div className="relative z-10">
                     <div className={cn(
                       "w-1.5 h-1.5 rounded-full transition-all duration-500", 
-                      activeTab === tab.id ? "bg-background scale-150" : "bg-foreground/10 group-hover:bg-primary/40"
+                      activeTab === tab.id ? "bg-card scale-150" : "bg-card-foreground/10 group-hover:bg-card-foreground/40"
                     )} />
                   </div>
                 </button>
@@ -120,7 +120,7 @@ export default function ProfilePage() {
               key={activeTab}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="mono-card p-12 space-y-12"
+              className="bg-card text-card-foreground rounded-3xl border border-border/50 shadow-sm p-12 space-y-12"
             >
               <div className="space-y-2">
                 <h2 className="text-4xl font-black tracking-tighter uppercase leading-none">
@@ -128,7 +128,7 @@ export default function ProfilePage() {
                    activeTab === 'security' ? 'Keamanan Akun' :
                    activeTab === 'notifications' ? 'Notifikasi & Berita' : 'Konfigurasi Sistem'}
                 </h2>
-                <p className="text-muted-foreground text-sm font-medium opacity-60">
+                <p className="text-card-foreground/60 text-sm font-medium">
                   Kelola informasi akun dan preferensi riset Anda di sini.
                 </p>
               </div>
@@ -138,28 +138,28 @@ export default function ProfilePage() {
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Nama Lengkap</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-card-foreground/60 ml-1">Nama Lengkap</label>
                         <input 
                           type="text" 
                           defaultValue={user?.name}
-                          className="w-full bg-muted/50 border-2 border-border rounded-2xl px-6 py-4 text-sm font-bold focus:bg-background focus:border-foreground/20 transition-all outline-none"
+                          className="w-full bg-card-foreground/5 border-2 border-card-foreground/10 rounded-2xl px-6 py-4 text-sm font-bold text-card-foreground focus:bg-card focus:border-card-foreground/20 transition-all outline-none"
                         />
                       </div>
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Alamat Email</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-card-foreground/60 ml-1">Alamat Email</label>
                         <input 
                           type="email" 
                           defaultValue={user?.email}
-                          className="w-full bg-muted/50 border-2 border-border rounded-2xl px-6 py-4 text-sm font-bold focus:bg-background focus:border-foreground/20 transition-all outline-none"
+                          className="w-full bg-card-foreground/5 border-2 border-card-foreground/10 rounded-2xl px-6 py-4 text-sm font-bold text-card-foreground focus:bg-card focus:border-card-foreground/20 transition-all outline-none"
                         />
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Bio Singkat</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-card-foreground/60 ml-1">Bio Singkat</label>
                       <textarea 
                         rows={4}
                         placeholder="Ceritakan sedikit tentang fokus riset Anda..."
-                        className="w-full bg-muted/50 border-2 border-border rounded-2xl px-6 py-4 text-sm font-bold focus:bg-background focus:border-foreground/20 transition-all outline-none resize-none"
+                        className="w-full bg-card-foreground/5 border-2 border-card-foreground/10 rounded-2xl px-6 py-4 text-sm font-bold text-card-foreground focus:bg-card focus:border-card-foreground/20 transition-all outline-none resize-none placeholder:text-card-foreground/30"
                       />
                     </div>
                   </>
@@ -167,20 +167,20 @@ export default function ProfilePage() {
 
                 {activeTab === 'security' && (
                   <div className="space-y-8">
-                    <div className="p-8 bg-muted rounded-3xl border-2 border-foreground/5 space-y-6">
+                    <div className="p-8 bg-card-foreground/5 rounded-3xl border-2 border-card-foreground/10 space-y-6">
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
-                          <p className="text-sm font-black uppercase">Multi-Factor Authentication</p>
-                          <p className="text-xs text-muted-foreground">Add an extra layer of biometric security.</p>
+                          <p className="text-sm font-black uppercase text-card-foreground">Multi-Factor Authentication</p>
+                          <p className="text-xs text-card-foreground/60">Add an extra layer of biometric security.</p>
                         </div>
-                        <div className="w-12 h-6 bg-foreground rounded-full relative">
-                          <div className="absolute right-1 top-1 w-4 h-4 bg-background rounded-full" />
+                        <div className="w-12 h-6 bg-card-foreground rounded-full relative">
+                          <div className="absolute right-1 top-1 w-4 h-4 bg-card rounded-full" />
                         </div>
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Update Password</label>
-                      <button className="w-full text-left bg-muted/50 border-2 border-border rounded-2xl px-6 py-4 text-sm font-bold hover:bg-muted transition-all flex items-center justify-between">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-card-foreground/60 ml-1">Update Password</label>
+                      <button className="w-full text-left bg-card-foreground/5 border-2 border-card-foreground/10 rounded-2xl px-6 py-4 text-sm font-bold text-card-foreground hover:bg-card-foreground/10 transition-all flex items-center justify-between">
                         <span>Change Access Secret</span>
                         <ArrowRight className="w-4 h-4 opacity-20" />
                       </button>
@@ -189,8 +189,8 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              <div className="pt-8 border-t border-border/50 flex justify-end">
-                <button className="bg-foreground text-background px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
+              <div className="pt-8 border-t border-card-foreground/10 flex justify-end">
+                <button className="bg-card-foreground text-card px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
                   <Save className="w-4 h-4" />
                   <span>Simpan Perubahan</span>
                 </button>

@@ -17,11 +17,11 @@ function NavbarContent() {
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [showYearDropdown, setShowYearDropdown] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [navTheme, setNavTheme] = useState<'light' | 'dark'>('dark');
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isLogoZoomed, setIsLogoZoomed] = useState(false);
   const [user, setUser] = useState<{ id: string, name: string, email: string } | null>(null);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -68,6 +68,7 @@ function NavbarContent() {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setShowDropdown(false);
         setIsSearchFocused(false);
+        setShowYearDropdown(false);
         document.body.classList.remove('is-search-focused');
       }
     };
@@ -96,40 +97,34 @@ function NavbarContent() {
 
   return (
     <>
-    <nav className="fixed top-0 left-0 right-0 z-[10001] w-full">
+    <nav className="fixed top-0 left-0 right-0 z-[10001] w-full flex justify-center pointer-events-none px-4 md:px-0">
       <div className={cn(
-        "transition-all duration-700 ease-premium px-6 flex items-center justify-between backdrop-blur-xl relative z-10",
-        isScrolled 
-          ? "py-2 bg-background/80 border-b border-foreground/10 shadow-2xl" 
-          : "py-4 bg-transparent border-b border-transparent",
-        isSearchFocused && "bg-background/60"
+        "pointer-events-auto w-full transition-all duration-700 ease-premium flex items-center justify-between backdrop-blur-xl relative z-10",
+        isScrolled && !isSearchFocused
+          ? "max-w-5xl mt-4 rounded-full border border-border/50 bg-background/90 shadow-2xl py-2 px-4 md:px-6" 
+          : "max-w-[100vw] mt-0 rounded-none border-b border-border/50 bg-transparent py-4 px-6",
+        isSearchFocused && "bg-background/95"
       )}>
         <div className="flex items-center gap-6">
-          <div className="flex items-center group cursor-pointer" onClick={() => setIsLogoZoomed(true)}>
+          <Link href="/" className="flex items-center group cursor-pointer">
             <motion.div 
-              whileHover={{ scale: 1.15 }}
+              whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              className="w-14 h-14 flex items-center justify-center transition-all duration-300 overflow-hidden"
+              className="w-14 h-14 flex items-center justify-center transition-all duration-300 overflow-hidden rounded-xl"
             >
               <img src={logoSrc} alt="JurnalStar Logo" className="w-full h-full object-contain" />
             </motion.div>
-          </div>
+          </Link>
           
           <div className="hidden lg:flex items-center space-x-10">
             <Link href="/workspace" className="group relative py-1">
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-600 transition-opacity">Workspace</span>
-              <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-blue-600 transition-all duration-300 group-hover:w-full" />
-            </Link>
-            <Link href="/trending" className="group relative py-1">
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] transition-colors duration-500 text-foreground/50 group-hover:text-foreground">
-                Trending
-              </span>
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/70 hover:text-foreground transition-colors duration-300">Workspace</span>
               <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-foreground transition-all duration-300 group-hover:w-full" />
             </Link>
-            <Link href="/library" className="group relative py-1">
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] transition-colors duration-500 text-foreground/50 group-hover:text-foreground">
-                Koleksi
+            <Link href="/search?q=trending" className="group relative py-1">
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] transition-colors duration-300 text-foreground/50 group-hover:text-foreground">
+                Trending
               </span>
               <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-foreground transition-all duration-300 group-hover:w-full" />
             </Link>
@@ -147,29 +142,56 @@ function NavbarContent() {
           <form 
             onSubmit={handleSearch} 
             className={cn(
-              "w-full relative group flex items-center transition-all duration-700 ease-premium overflow-hidden h-10 border-2",
+              "w-full relative group flex items-center transition-all duration-700 ease-premium h-12 border rounded-full",
               isSearchFocused 
-                ? "bg-background/80 backdrop-blur-md border-foreground shadow-[0_30px_70px_-10px_rgba(0,0,0,0.3)]" 
-                : "bg-foreground/5 border-foreground/10 hover:bg-foreground/10"
+                ? "bg-background/80 backdrop-blur-md border-foreground/30 shadow-xl" 
+                : "bg-foreground/5 border-border/50 hover:bg-foreground/10 shadow-sm"
             )}
           >
-            <div className="relative flex items-center px-4 h-full border-r-2 border-foreground/10 cursor-pointer hover:bg-foreground/5 transition-colors">
-              <select 
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            <div className="relative flex items-center h-full border-r border-border/50 transition-colors">
+              <button
+                type="button"
+                onClick={() => setShowYearDropdown(!showYearDropdown)}
+                className="flex items-center gap-2 px-4 h-full hover:bg-foreground/5 transition-colors rounded-l-full"
               >
-                <option value="" className="bg-background text-foreground">TAHUN</option>
-                <option value="2026" className="bg-background text-foreground">2026</option>
-                <option value="2025" className="bg-background text-foreground">2025</option>
-                <option value="2020" className="bg-background text-foreground">2020+</option>
-              </select>
-              <div className="flex items-center gap-2 pointer-events-none">
-                <span className="text-[9px] font-black uppercase tracking-widest transition-colors text-foreground/40">
+                <span className="text-[9px] font-black uppercase tracking-widest transition-colors text-foreground/80 group-focus-within:text-foreground">
                   {selectedYear || 'THN'}
                 </span>
-                <ChevronDown className="w-3 h-3 text-foreground/40" />
-              </div>
+                <ChevronDown className="w-3 h-3 text-foreground/40 group-focus-within:text-foreground/80" />
+              </button>
+              
+              <AnimatePresence>
+                {showYearDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 5 }}
+                    className="absolute top-full left-0 mt-4 w-32 bg-card text-card-foreground rounded-2xl border border-border/50 shadow-xl overflow-hidden z-[90] flex flex-col p-2"
+                  >
+                    {[
+                      { val: '', label: 'SEMUA' },
+                      { val: '2026', label: '2026' },
+                      { val: '2025', label: '2025' },
+                      { val: '2020', label: '2020+' }
+                    ].map(opt => (
+                      <button
+                        key={opt.val}
+                        type="button"
+                        onClick={() => {
+                          setSelectedYear(opt.val);
+                          setShowYearDropdown(false);
+                        }}
+                        className={cn(
+                          "text-[10px] font-black uppercase tracking-widest px-4 py-3 rounded-xl text-left transition-all",
+                          selectedYear === opt.val ? "bg-card-foreground text-card" : "hover:bg-card-foreground/5 text-card-foreground/70 hover:text-card-foreground"
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             
             <div className="relative flex-1 h-full flex items-center min-w-0">
@@ -179,21 +201,38 @@ function NavbarContent() {
                   type="text"
                   value={query}
                   onFocus={handleFocus}
+                  onBlur={() => {
+                    setTimeout(() => {
+                      setIsSearchFocused(false);
+                      setShowDropdown(false);
+                      document.body.classList.remove('is-search-focused');
+                    }, 300);
+                  }}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="CARI RISET..."
-                  className="w-full bg-transparent border-none outline-none text-[9px] sm:text-xs font-black pl-9 md:pl-11 pr-3 md:pr-4 min-w-0 uppercase tracking-widest transition-colors text-foreground placeholder:text-foreground/20"
+                  className="w-full bg-transparent border-none outline-none text-[9px] sm:text-xs font-black pl-9 md:pl-11 pr-8 md:pr-10 min-w-0 uppercase tracking-widest transition-colors text-foreground placeholder:text-foreground/20"
                 />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => { setQuery(''); inputRef.current?.focus(); }}
+                    aria-label="Hapus pencarian"
+                    className="absolute right-2 text-foreground/30 hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                  </button>
+                )}
             </div>
           </form>
 
           <AnimatePresence>
             {showDropdown && (
               <motion.div
-                initial={{ opacity: 0, y: 15, scale: 0.99, filter: 'blur(10px)' }}
-                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, y: 10, scale: 0.99, filter: 'blur(10px)' }}
-                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                className="absolute top-full mt-4 left-0 right-0 glass-dropdown !rounded-none !bg-background/70 !backdrop-blur-2xl border-2 border-foreground p-4 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] search-suggestions-panel"
+                initial={{ opacity: 0, y: 5, scale: 0.99 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 5, scale: 0.99 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="absolute top-full mt-4 left-0 right-0 bg-card text-card-foreground rounded-3xl border border-border/50 p-4 shadow-xl z-[80] search-suggestions-panel"
               >
                 <SearchSuggestions query={query} onSelect={(val) => {
                   setQuery(val);
@@ -213,14 +252,14 @@ function NavbarContent() {
             {user ? (
               <Link 
                 href="/profile" 
-                className="w-9 h-9 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-[3px_3px_0px_rgba(37,99,235,1)] bg-foreground text-background"
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:scale-105 active:scale-95 transition-all shadow-sm border border-border/50 bg-foreground/5 text-foreground hover:bg-foreground/10"
               >
                 <User className="w-5 h-5" />
               </Link>
             ) : (
               <Link 
                 href="/login" 
-                className="px-6 py-2 text-[9px] font-black uppercase tracking-[0.2em] transition-all border-2 bg-foreground text-background border-foreground hover:bg-foreground/90"
+                className="px-6 py-2.5 text-xs font-bold transition-all border border-border/50 rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-sm"
               >
                 Masuk
               </Link>
@@ -231,7 +270,7 @@ function NavbarContent() {
 
     </nav>
     <AnimatePresence>
-      {(isSearchFocused || isLogoZoomed) && (
+      {isSearchFocused && (
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -241,27 +280,9 @@ function NavbarContent() {
           onClick={() => {
             setIsSearchFocused(false);
             setShowDropdown(false);
-            setIsLogoZoomed(false);
             document.body.classList.remove('is-search-focused');
           }}
         />
-      )}
-    </AnimatePresence>
-
-    {/* Hero Logo Zoom Overlay */}
-    <AnimatePresence>
-      {isLogoZoomed && (
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center pointer-events-none">
-          <motion.div
-            initial={{ scale: 0.2, opacity: 0, y: -100 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.2, opacity: 0, y: -100 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="w-[300px] h-[300px] md:w-[500px] md:h-[500px] flex items-center justify-center bg-background border-4 border-foreground p-12 shadow-[0_50px_100px_rgba(0,0,0,0.5)]"
-          >
-            <img src={logoSrc} alt="JurnalStar Logo Large" className="w-full h-full object-contain" />
-          </motion.div>
-        </div>
       )}
     </AnimatePresence>
     </>

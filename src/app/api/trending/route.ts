@@ -1,64 +1,72 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
 
-// Static fallback trending topics — shown when DB is empty or unavailable
-const FALLBACK_TRENDING = [
-  { id: 'trend-1', title: 'Large Language Models in Scientific Research', year: 2024, citations: 1250, source: 'openalex', venue: 'Nature Machine Intelligence' },
-  { id: 'trend-2', title: 'AI-Assisted Drug Discovery: A Systematic Review', year: 2024, citations: 980, source: 'semantic', venue: 'Journal of Chemical Information' },
-  { id: 'trend-3', title: 'Climate Change Mitigation Strategies: Meta-Analysis', year: 2023, citations: 875, source: 'crossref', venue: 'Environmental Science & Policy' },
-  { id: 'trend-4', title: 'Deep Learning for Medical Image Segmentation', year: 2024, citations: 1102, source: 'openalex', venue: 'IEEE Transactions on Medical Imaging' },
-  { id: 'trend-5', title: 'Quantum Computing Applications in Cryptography', year: 2023, citations: 643, source: 'crossref', venue: 'Communications of the ACM' },
-  { id: 'trend-6', title: 'Sustainable Supply Chain Management: A Literature Review', year: 2024, citations: 712, source: 'semantic', venue: 'International Journal of Production Economics' },
-];
+export const revalidate = 0; // No static cache — scope param needs dynamic routing
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const scope = searchParams.get('scope') || 'international';
+
   try {
-    // Attempt to fetch from database
-    let trending: any[] = [];
+    const today = new Date();
+    const dayIndex = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
 
-    try {
-      trending = await prisma.journal.findMany({
-        where: {
-          year: { gte: new Date().getFullYear() - 3 }
-        },
-        orderBy: [
-          { citations: 'desc' },
-          { createdAt: 'desc' }
-        ],
-        take: 10,
-        select: {
-          id: true,
-          title: true,
-          year: true,
-          citations: true,
-          source: true,
-          venue: true,
-        }
-      });
-    } catch (dbError: any) {
-      console.warn("[TRENDING] DB query failed (non-critical):", dbError.message);
-      // DB failure is non-critical — use fallback
+    // Rotate topics daily
+    const topics = [
+      "artificial intelligence", "machine learning", "climate change",
+      "quantum computing", "neuroscience", "renewable energy",
+      "public health", "nanotechnology", "robotics", "cybersecurity",
+      "economics", "sustainable agriculture", "data science"
+    ];
+    const dailyTopic = topics[dayIndex % topics.length];
+    const currentYear = today.getFullYear();
+
+    // Build OpenAlex filter based on scope
+    let filter = `publication_year:${currentYear - 2}-${currentYear}`;
+    if (scope === 'indonesia') {
+      // Filter by works affiliated with Indonesian institutions (country code ID)
+      filter += ',institutions.country_code:ID';
     }
 
-    // Use fallback if DB returned nothing
-    const data = (trending && trending.length > 0) ? trending : FALLBACK_TRENDING;
+    const url = `https://api.openalex.org/works?search=${encodeURIComponent(dailyTopic)}&filter=${filter}&sort=cited_by_count:desc&per-page=6`;
 
-    console.log(`[TRENDING] Returning ${data.length} items (${trending.length > 0 ? 'from DB' : 'fallback'})`);
+    const response = await fetch(url, {
+      headers: { 'User-Agent': 'JurnalStar/1.0 (https://jurnalstar.com)' }
+    });
+
+    if (!response.ok) throw new Error("Failed to fetch from OpenAlex");
+
+    const data = await response.json();
+
+    const trending = (data.results || []).map((work: any) => ({
+      id: work.id.replace('https://openalex.org/', ''),
+      title: work.title || 'Untitled',
+      year: work.publication_year || currentYear,
+      citations: work.cited_by_count || 0,
+      source: 'openalex',
+      venue: work.primary_location?.source?.display_name || 'Unknown Journal',
+    }));
 
     return NextResponse.json({
       success: true,
-      data,
-      source: trending.length > 0 ? 'database' : 'fallback',
+      data: trending,
+      source: 'openalex-daily-scrape',
+      topic: dailyTopic,
+      scope,
     });
 
   } catch (error: any) {
-    console.error("[TRENDING] Unexpected error:", error.message);
+    console.error("[TRENDING] Error:", error.message);
 
-    // Anti-500: always return 200 with fallback data
     return NextResponse.json({
       success: true,
-      data: FALLBACK_TRENDING,
+      data: [
+        { id: 'W3121261050', title: 'Attention Is All You Need', year: 2017, citations: 125000, source: 'openalex', venue: 'NIPS' },
+        { id: 'W2966041414', title: 'Deep learning', year: 2015, citations: 55000, source: 'openalex', venue: 'Nature' },
+        { id: 'trend-3', title: 'CRISPR Gene Editing Applications', year: 2024, citations: 432, source: 'openalex', venue: 'Nature Biotechnology' },
+      ],
       source: 'fallback',
+      scope,
     });
   }
 }
+

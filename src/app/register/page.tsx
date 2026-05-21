@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Mail, Lock, User, ArrowRight, Loader2, 
+  Mail, Lock, Eye, EyeOff, User, ArrowRight, Loader2, 
   AlertCircle, CheckCircle2, Search, 
   Library, Sparkles, Moon, Sun
 } from 'lucide-react';
@@ -25,6 +25,8 @@ export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -201,8 +203,8 @@ export default function RegisterPage() {
                   exit={{ opacity: 0, y: -10 }}
                   className="bg-red-500/5 border border-red-500/10 p-6 flex items-center gap-4"
                 >
-                  <AlertCircle className="w-5 h-5 text-red-500" />
-                  <p className="text-red-500 text-[10px] uppercase font-black tracking-widest italic">{error}</p>
+                  <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+                  <p className="text-red-500 text-sm font-medium">{error}</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -239,19 +241,27 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-3">
                     <label className="text-[11px] font-black uppercase tracking-[0.4em] opacity-40 ml-2 text-foreground">Kata Sandi</label>
                     <div className="relative group">
                       <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30 transition-all group-focus-within:text-foreground group-focus-within:scale-110 z-10" />
                       <input 
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••"
                         className="w-full bg-background border-2 border-foreground/10 px-14 py-6 outline-none transition-all focus:border-foreground/40 font-black text-[12px] placeholder:text-muted-foreground/20 tracking-widest text-foreground shadow-sm relative z-0"
                         value={formData.password}
                         onChange={(e) => setFormData({...formData, password: e.target.value})}
                         required
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground/30 hover:text-foreground transition-colors z-10 cursor-pointer"
+                        aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
 
@@ -260,13 +270,21 @@ export default function RegisterPage() {
                     <div className="relative group">
                       <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30 transition-all group-focus-within:text-foreground group-focus-within:scale-110 z-10" />
                       <input 
-                        type="password"
+                        type={showConfirmPassword ? 'text' : 'password'}
                         placeholder="••••••••"
                         className="w-full bg-background border-2 border-foreground/10 px-14 py-6 outline-none transition-all focus:border-foreground/40 font-black text-[12px] placeholder:text-muted-foreground/20 tracking-widest text-foreground shadow-sm relative z-0"
                         value={formData.confirmPassword}
                         onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                         required
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground/30 hover:text-foreground transition-colors z-10 cursor-pointer"
+                        aria-label={showConfirmPassword ? 'Sembunyikan konfirmasi' : 'Tampilkan konfirmasi'}
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
                 </div>

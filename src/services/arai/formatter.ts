@@ -55,13 +55,15 @@ class ResponseFormattingLayer {
    */
   public getSystemPromptInjection(): string {
     return `
-    ATURAN FORMATTING KETAT:
-    1. JANGAN gunakan simbol markdown (#, ##, ***, **, *, ---).
-    2. JANGAN gunakan tabel markdown mentah.
-    3. Gunakan spasi dan baris baru untuk struktur.
-    4. Tulis judul dengan HURUF KAPITAL tanpa simbol.
-    5. Gunakan poin '•' untuk daftar.
-    6. Bahasa: Indonesia Akademik Formal.
+    INSTRUKSI BAHASA: Seluruh respon WAJIB menggunakan Bahasa Indonesia Akademik yang sangat formal dan elegan. JANGAN PERNAH menyisipkan istilah Bahasa Inggris kecuali jika itu adalah istilah teknis yang tidak memiliki padanan dalam Bahasa Indonesia.
+
+    ATURAN BAHASA DAN FORMATTING MUTLAK:
+    1. OUTPUT WAJIB 100% BAHASA INDONESIA FORMAL.
+    2. JANGAN gunakan simbol markdown (#, ##, ***, **, *, ---).
+    3. JANGAN gunakan tabel markdown mentah.
+    4. Gunakan spasi dan baris baru untuk struktur.
+    5. Tulis judul dengan HURUF KAPITAL tanpa simbol.
+    6. Gunakan poin '•' untuk daftar.
     `;
   }
 }

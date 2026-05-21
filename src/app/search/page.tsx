@@ -163,14 +163,14 @@ function SearchResults() {
                     "font-black text-foreground tracking-tighter uppercase transition-all duration-500 ease-out cursor-pointer overflow-hidden",
                     isTitleExpanded 
                       ? "text-3xl md:text-4xl leading-tight" 
-                      : "text-lg md:text-xl whitespace-nowrap overflow-hidden text-ellipsis text-slate-400 hover:text-slate-800"
+                      : "text-lg md:text-xl whitespace-nowrap overflow-hidden text-ellipsis text-foreground-muted hover:text-foreground"
                   )}
                   title="Klik untuk mengubah ukuran teks"
                 >
                   {recommend ? (
                     <>Jurnal Serupa</>
                   ) : (
-                    <>Hasil untuk <span className={cn(isTitleExpanded ? "text-foreground-muted ml-2" : "text-slate-300 ml-1")}>"</span><span className="opacity-100">{searchParams.get('q') || query}</span><span className={cn(isTitleExpanded ? "text-foreground-muted" : "text-slate-300")}>"</span></>
+                    <>Hasil untuk <span className={cn(isTitleExpanded ? "text-foreground-muted ml-2" : "text-foreground-muted/50 ml-1")}>"</span><span className="opacity-100">{searchParams.get('q') || query}</span><span className={cn(isTitleExpanded ? "text-foreground-muted" : "text-foreground-muted/50")}>"</span></>
                   )}
                 </h1>
                 
@@ -184,12 +184,19 @@ function SearchResults() {
                   </Link>
                   <button 
                     onClick={() => setIsTitleExpanded(!isTitleExpanded)}
-                    className="flex items-center gap-1.5 px-2 py-1 rounded-none bg-muted hover:bg-slate-200 text-[10px] font-bold text-foreground transition-colors uppercase tracking-wider"
+                    className="flex items-center gap-1.5 px-2 py-1 rounded-none bg-muted hover:bg-muted text-[10px] font-bold text-foreground transition-colors uppercase tracking-wider"
                   >
                     {isTitleExpanded ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
                     <span>{isTitleExpanded ? 'Perkecil Judul' : 'Perluas Judul'}</span>
                   </button>
-                  <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] border-l border-slate-300 pl-3">
+                  <Link 
+                    href="/"
+                    className="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-muted hover:bg-foreground hover:text-background text-[10px] font-bold text-foreground transition-colors uppercase tracking-wider"
+                  >
+                    <Search className="w-3 h-3" />
+                    <span>Cari Baru</span>
+                  </Link>
+                  <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] border-l border-border pl-3">
                     {recommend ? 'Mesin Rekomendasi Neural' : `Jurnal Ditemukan: ${total.toLocaleString()}`}
                   </p>
                 </div>
@@ -199,12 +206,12 @@ function SearchResults() {
           
           <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 shrink-0 w-full lg:w-auto">
             {/* Provider Toggle - Monochrome */}
-            <div className="bg-muted p-1 bg-muted/50 rounded-none border border-border flex shadow-inner w-full sm:w-auto">
+            <div className="bg-muted p-1 bg-muted/50 rounded-full border border-border flex shadow-inner w-full sm:w-auto">
               <button 
                 onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&provider=default`)}
                 className={cn(
-                  "btn-fill-mewah flex-1 sm:flex-none px-6 md:px-8 py-2.5 md:py-3.5 rounded-none text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all",
-                  provider === 'default' ? "bg-black text-white shadow-xl" : "text-foreground-muted hover:text-foreground"
+                  "btn-fill-mewah flex-1 sm:flex-none px-6 md:px-8 py-2.5 md:py-3.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all",
+                  provider === 'default' ? "bg-foreground text-background shadow-xl" : "text-foreground-muted hover:text-foreground"
                 )}
               >
                 Standard
@@ -212,8 +219,8 @@ function SearchResults() {
               <button 
                 onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&provider=googlescholar`)}
                 className={cn(
-                  "btn-fill-mewah flex-1 sm:flex-none px-6 md:px-8 py-2.5 md:py-3.5 rounded-none text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2",
-                  provider === 'googlescholar' ? "bg-black text-white shadow-xl" : "text-foreground-muted hover:text-foreground"
+                  "btn-fill-mewah flex-1 sm:flex-none px-6 md:px-8 py-2.5 md:py-3.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2",
+                  provider === 'googlescholar' ? "bg-foreground text-background shadow-xl" : "text-foreground-muted hover:text-foreground"
                 )}
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -224,7 +231,7 @@ function SearchResults() {
             <button 
               onClick={() => setIsFilterOpen(true)}
               className={cn(
-                "btn-fill-mewah w-full sm:w-auto flex items-center justify-center space-x-2 md:space-x-3 border-2 px-6 md:px-8 py-2.5 md:py-3.5 rounded-none text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all relative",
+                "btn-fill-mewah w-full sm:w-auto flex items-center justify-center space-x-2 md:space-x-3 border-2 px-6 md:px-8 py-2.5 md:py-3.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all relative",
                 isFilterOpen || Object.values(filters).some(v => v === true || (typeof v === 'number' && v > 0)) 
                   ? "bg-foreground text-background border-foreground shadow-2xl" 
                   : "bg-background border-border-strong text-foreground hover:bg-muted"
@@ -233,7 +240,9 @@ function SearchResults() {
               <Filter className="w-4 h-4" />
               <span>Filter Intelijen</span>
               {Object.values(filters).some(v => v === true || (typeof v === 'number' && v > 0)) && (
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-foreground rounded-none border-2 border-background" />
+                <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 bg-foreground text-background rounded-full border-2 border-background text-[9px] font-black flex items-center justify-center">
+                  {Object.values(filters).filter(v => v === true || (typeof v === 'number' && v > 0)).length}
+                </span>
               )}
             </button>
           </div>
@@ -246,9 +255,9 @@ function SearchResults() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mb-12 p-8 bg-white text-black border border-black/10 rounded-none flex items-start gap-6 shadow-xl"
+              className="mb-12 p-8 bg-card text-card-foreground border border-border/50 rounded-2xl flex items-start gap-6 shadow-xl"
             >
-              <div className="w-12 h-12 bg-black/5 rounded-none flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 bg-card-foreground/5 rounded-2xl flex items-center justify-center shrink-0">
                 <AlertCircle className="w-6 h-6 text-black" />
               </div>
               <div>
@@ -275,7 +284,7 @@ function SearchResults() {
                 <img 
                   src={activeLoadingState.gif} 
                   alt="Loading..." 
-                  className="w-full h-full object-contain drop-shadow-2xl border-4 border-foreground"
+                  className="w-full h-full object-contain drop-shadow-2xl"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23000000' opacity='0.1'/%3E%3C/svg%3E";
                   }}
@@ -302,7 +311,7 @@ function SearchResults() {
                <BookX className="w-12 h-12 text-foreground-muted/20" />
             </div>
             <div className="space-y-4">
-              <h2 className="text-4xl font-black text-foreground tracking-tighter uppercase">Pencarian Terganggu</h2>
+              <h2 className="text-4xl font-black text-foreground tracking-tighter uppercase">Gagal Memuat Hasil</h2>
               <p className="text-foreground-secondary max-w-md mx-auto text-base font-medium">
                 {error}. {provider === 'googlescholar' && "Sinyal eksternal saat ini sedang dibatasi oleh penyedia."}
               </p>
@@ -351,7 +360,7 @@ function SearchResults() {
                   onClick={handleSearchMore}
                   disabled={loading || isLoadingMore}
                   className={cn(
-                    "group relative px-16 py-6 rounded-none font-black text-[12px] uppercase tracking-[0.3em] shadow-2xl transition-all overflow-hidden min-w-[320px]",
+                    "group relative px-16 py-6 rounded-none font-black text-[12px] uppercase tracking-[0.3em] shadow-2xl transition-all overflow-hidden w-full max-w-xs",
                     isLoadingMore 
                       ? "bg-muted text-foreground-muted cursor-not-allowed" 
                       : "bg-foreground text-background hover:scale-105 active:scale-95"
@@ -362,19 +371,19 @@ function SearchResults() {
                     {isLoadingMore ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        Exploring...
+                        Menjelajahi...
                       </>
                     ) : (
                       <>
                         <Sparkles className="w-5 h-5" />
-                        Explore More Research
+                        Jelajahi Lebih Banyak
                       </>
                     )}
                   </span>
                 </button>
                 <div className="flex flex-col items-center gap-2">
                    <p className="text-[10px] text-foreground-muted font-black uppercase tracking-[0.4em] opacity-60">
-                    Neural Index: Page {page + 1}
+                    Halaman {page + 1}
                   </p>
                   <p className="text-[9px] text-foreground-muted font-bold uppercase tracking-widest">
                     {results.length} Journals Enriched • Total Indeks: {total.toLocaleString()}
@@ -392,13 +401,13 @@ function SearchResults() {
             )}
 
             {!hasMore && filteredResults.length > 0 && (
-              <p className="text-center text-slate-500 mt-12 text-sm italic">
+              <p className="text-center text-foreground-muted mt-12 text-sm italic">
                 Anda telah mencapai akhir hasil pencarian.
               </p>
             )}
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center py-56 space-y-12 text-center relative overflow-hidden">
+          <div className="flex flex-col items-center justify-center py-32 space-y-12 text-center relative overflow-hidden">
             {/* Background Decorative Element */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-foreground/[0.02] rounded-full blur-[120px] pointer-events-none" />
             
@@ -420,7 +429,7 @@ function SearchResults() {
             </motion.div>
 
             <div className="space-y-6 relative">
-              <h2 className="text-5xl font-black text-foreground tracking-tighter uppercase leading-none">Tidak Ada Jurnal Ditemukan</h2>
+              <h2 className="text-3xl font-black text-foreground tracking-tighter uppercase leading-none">Tidak Ada Jurnal Ditemukan</h2>
               <p className="text-foreground-muted max-w-md mx-auto text-sm font-black uppercase tracking-[0.3em]">
                 {results.length > 0 
                   ? "PARAMETER FILTER TERLALU KETAT"
@@ -434,7 +443,7 @@ function SearchResults() {
                   onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&provider=default`)}
                   className={cn(
                     "flex-1 px-8 py-4 rounded-none text-[10px] font-black uppercase tracking-widest transition-all",
-                    provider === 'default' ? "bg-black text-white shadow-xl" : "text-foreground-muted hover:text-foreground"
+                    provider === 'default' ? "bg-foreground text-background shadow-xl" : "text-foreground-muted hover:text-foreground"
                   )}
                 >
                   Indeks Standar
@@ -443,7 +452,7 @@ function SearchResults() {
                   onClick={() => router.push(`/search?q=${encodeURIComponent(query)}&provider=googlescholar`)}
                   className={cn(
                     "flex-1 px-8 py-4 rounded-none text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2",
-                    provider === 'googlescholar' ? "bg-black text-white shadow-xl" : "text-foreground-muted hover:text-foreground"
+                    provider === 'googlescholar' ? "bg-foreground text-background shadow-xl" : "text-foreground-muted hover:text-foreground"
                   )}
                 >
                   <Sparkles className="w-3.5 h-3.5" />

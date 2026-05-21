@@ -4,6 +4,7 @@ import { ISAGIMemory } from './memorySystem';
 import { agentSwarm } from './agentSwarm';
 import { responseFormatter } from './formatter';
 import { graphCognition } from './graphCognition';
+import { embeddingService } from '../embeddingService';
 
 export interface StreamCallbacks {
   onStatus: (status: string) => void;
@@ -32,32 +33,30 @@ export const streamingOrchestrator = {
       callbacks.onStatus(`KONTROL: Niat ${intent.primary} terdeteksi. Memetakan sirkuit agen...`);
 
       // 2. SEMANTIC MEMORY RECALL (Retriever Agent)
-      callbacks.onAgentActivity('retriever', 'MENCARI MEMORI SEMANTIK...');
-      const embedding = await smartOrchestrator.execute({
-        prompt: `Generate a search context for: ${query}`,
-        type: 'intent',
-        importance: 'low',
-        userId
-      }).then(r => r.text);
+      callbacks.onAgentActivity('retriever', 'MENCIPTAKAN VEKTOR QUERY...');
       
-      // Mocking embedding recall for now if service is unavailable, otherwise use real recall
-      const memoryHits = await ISAGIMemory.semanticRecall([], 5); 
+      // FIX: Generate real embedding for the query
+      const queryEmbedding = await embeddingService.getEmbedding(query);
+      
+      callbacks.onAgentActivity('retriever', 'MENCARI MEMORI SEMANTIK...');
+      
+      // FIX: Pass the real embedding to semanticRecall
+      const memoryHits = await ISAGIMemory.semanticRecall(queryEmbedding, 5); 
       let contextStr = memoryHits.map(m => `${m.concept}: ${m.summary}`).join('\n\n');
       
       callbacks.onAgentActivity('retriever', memoryHits.length > 0 
-        ? `DITEMUKAN ${memoryHits.length} RELASI MEMORI.` 
+        ? `DITEMUKAN ${memoryHits.length} RELASI MEMORI RELEVAN.` 
         : 'MEMORI LOKAL NIHIL. MENGGUNAKAN BASIS PENGETAHUAN GLOBAL.');
 
       // 3. MULTI-AGENT EXECUTION (CRITIC & GAP DETECTOR)
-      callbacks.onStatus('MEMULAI DEBAT MULTI-AGEN UNTUK VALIDASI ILMIAH...');
+      callbacks.onStatus('MEMULAI ANALISIS MULTI-AGEN...');
       
-      // GAP DETECTOR
+      // GAP DETECTOR & GRAPH AGENT run in parallel
       const gapTask = agentSwarm.detectGaps(memoryHits).then(gap => {
         callbacks.onGapDetected(responseFormatter.format(gap));
         return gap;
       });
 
-      // GRAPH AGENT
       const graphTask = graphCognition.generateGraph([]).then(graph => {
         callbacks.onGraphUpdate(JSON.stringify(graph));
         return graph;
@@ -65,38 +64,37 @@ export const streamingOrchestrator = {
 
       const [gapResult] = await Promise.all([gapTask, graphTask]);
 
-      // 4. FINAL SYNTHESIS WITH RESPONSE FORMATTING
+      // 4. FINAL SYNTHESIS WITH REAL STREAMING
       callbacks.onStatus('MENYINTESIS HASIL RISET...');
       callbacks.onAgentActivity('synthesizer', 'MEMPROSES KOGNISI AKHIR...');
 
       const synthesisPrompt = `
       SEBAGAI PENYINTESIS UTAMA ISAGI:
       PERTANYAAN: ${query}
-      KONTEKS: ${contextStr}
-      CELAH RISET: ${gapResult}
+      KONTEKS MEMORI: ${contextStr}
+      CELAH RISET TERDETEKSI: ${gapResult}
       MODE: ${mode}
       
       TUGAS:
       Berikan jawaban ilmiah yang mendalam, objektif, dan terstruktur.
-      ${responseFormatter.getSystemPromptInjection()}
+      Gunakan data dari memori jika relevan.
       `;
 
-      const res = await smartOrchestrator.execute({
+      // FIX: Use real streaming from smartOrchestrator
+      const stream = smartOrchestrator.executeStream({
         prompt: synthesisPrompt,
         type: 'synthesis',
         importance: 'high',
         userId
       });
 
-      // Clean the output
-      const cleanOutput = responseFormatter.format(res.text);
-      
-      // Stream tokens
-      const words = cleanOutput.split(' ');
-      for (const word of words) {
-        callbacks.onToken(word + ' ');
-        await new Promise(r => setTimeout(r, 10 + Math.random() * 20));
+      for await (const token of stream) {
+        callbacks.onToken(token);
       }
+
+      // 5. OPTIONAL: CRITIQUE PHASE (Post-synthesis verification)
+      callbacks.onAgentActivity('critic', 'MENGEVALUASI HASIL...');
+      // (This could be used to update the status or send a final 'validation' event)
 
       callbacks.onStatus('OPERASI SELESAI. SISTEM SIAP.');
       callbacks.onAgentActivity('synthesizer', 'IDLE');

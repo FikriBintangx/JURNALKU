@@ -55,7 +55,7 @@ export const ModelSelector = () => {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-[120]" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full right-0 mt-3 w-72 glass-dropdown p-2 shadow-2xl z-[130] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-400">
+          <div className="absolute top-full right-0 md:right-auto md:left-0 mt-3 w-72 bg-card border border-border/50 rounded-2xl p-2 shadow-xl z-[130] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
             <div className="p-4 border-b border-border/50">
               <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-card-foreground/50">Pilih Model AI</h4>
               <p className="text-[9px] text-card-foreground/30 mt-1 font-medium italic">Gunakan model yang berbeda untuk variasi hasil & menghindari traffic tinggi.</p>

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Mail, Lock, ArrowRight, Loader2, 
+  Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, 
   CheckCircle2, AlertCircle, Search, 
   Library, Sparkles, Moon, Sun
 } from 'lucide-react';
@@ -28,6 +28,7 @@ function LoginContent() {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -209,8 +210,8 @@ function LoginContent() {
                   exit={{ opacity: 0, y: -10 }}
                   className="bg-red-500/5 border border-red-500/10 p-6 flex items-center gap-4"
                 >
-                  <AlertCircle className="w-5 h-5 text-red-500" />
-                  <p className="text-red-500 text-[10px] uppercase font-black tracking-widest italic">{error}</p>
+                  <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+                  <p className="text-red-500 text-sm font-medium">{error}</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -240,13 +241,21 @@ function LoginContent() {
                   <div className="relative group">
                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30 transition-all group-focus-within:text-foreground group-focus-within:scale-110 z-10" />
                     <input 
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       placeholder="••••••••"
                       className="w-full bg-background border-2 border-foreground/10 px-14 py-6 outline-none transition-all focus:border-foreground/40 font-black text-[12px] placeholder:text-muted-foreground/20 tracking-widest text-foreground shadow-sm relative z-0"
                       value={formData.password}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
                       required
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground/30 hover:text-foreground transition-colors z-10 cursor-pointer"
+                      aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
               </div>

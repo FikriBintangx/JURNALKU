@@ -75,6 +75,9 @@ class AIKeyManager {
   }
 
   private initKeys() {
+    // SECURITY: Never run key initialization in the browser
+    if (typeof window !== 'undefined') return;
+
     const keyList: { key: string; id: number }[] = [];
     for (let i = 1; i <= 20; i++) {
       const key = process.env[`GEMINI_API_KEY_${i}`];
@@ -96,8 +99,9 @@ class AIKeyManager {
       networkFailCount: 0,
     }));
 
-    console.log(`[KEY ROTATION] Initialized with ${this.keys.length} active keys.`);
-    if (this.keys.length === 0) {
+    if (this.keys.length > 0) {
+      console.log(`[KEY ROTATION] Initialized with ${this.keys.length} active keys.`);
+    } else {
       console.error('[KEY ROTATION] WARNING: No valid GEMINI_API_KEY_* found in environment!');
     }
   }

@@ -27,27 +27,27 @@ export default function IntelligencePanel({ intelligence, loading }: Intelligenc
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-8 p-6 md:p-8 rounded-none border border-border-strong bg-card overflow-hidden relative shadow-md"
+      className="mb-8 p-6 md:p-8 rounded-3xl border border-border/50 bg-card overflow-hidden relative shadow-md"
     >
       <div className="flex flex-col lg:flex-row gap-10 relative z-10">
         {/* Left Section: Intent & Domains */}
         <div className="flex-[1.2]">
-          <div className="flex items-center gap-2 mb-6 text-[10px] font-bold tracking-[0.2em] uppercase text-foreground-muted">
+          <div className="flex items-center gap-2 mb-6 text-[10px] font-bold tracking-[0.2em] uppercase text-card-foreground/60">
             <Sparkles className="w-3.5 h-3.5" />
             Intelijen Riset AI
           </div>
 
           <div className="flex items-start gap-4 mb-6">
-            <div className="p-3 rounded-none bg-foreground text-background shrink-0">
+            <div className="p-3 rounded-2xl bg-card-foreground text-card shrink-0">
               <currentIntent.icon className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-xl md:text-2xl font-extrabold text-foreground leading-tight tracking-tight">
+              <h2 className="text-xl md:text-2xl font-extrabold text-card-foreground leading-tight tracking-tight">
                 {currentIntent.label}
               </h2>
               <div className="flex flex-wrap gap-2 mt-3">
                 {intelligence?.domains.map((domain, i) => (
-                  <span key={i} className="text-[10px] font-bold px-3 py-1 rounded-none border border-border text-foreground-secondary uppercase tracking-wider">
+                  <span key={i} className="text-[10px] font-bold px-3 py-1 rounded-full border border-card-foreground/20 text-card-foreground/80 uppercase tracking-wider">
                     {domain}
                   </span>
                 ))}
@@ -56,10 +56,10 @@ export default function IntelligencePanel({ intelligence, loading }: Intelligenc
           </div>
           
           <div className="mt-8">
-            <h3 className="text-[10px] font-bold text-foreground-muted uppercase tracking-[0.2em] mb-4">Ekspansi Konteks AI</h3>
+            <h3 className="text-[10px] font-bold text-card-foreground/60 uppercase tracking-[0.2em] mb-4">Ekspansi Konteks AI</h3>
             <div className="flex flex-wrap gap-2">
               {intelligence?.keywords.map((kw, i) => (
-                <span key={i} className="text-sm font-medium px-4 py-1.5 rounded-none bg-muted border border-border text-foreground transition-all hover:border-foreground-muted cursor-default">
+                <span key={i} className="text-sm font-medium px-4 py-1.5 rounded-2xl bg-card-foreground/5 border border-card-foreground/10 text-card-foreground transition-all hover:border-card-foreground/40 cursor-default">
                   {kw}
                 </span>
               ))}
@@ -68,16 +68,16 @@ export default function IntelligencePanel({ intelligence, loading }: Intelligenc
         </div>
 
         {/* Right Section: Suggested Questions */}
-        <div className="flex-1 border-t lg:border-t-0 lg:border-l border-border pt-8 lg:pt-0 lg:pl-10">
-          <h3 className="text-[10px] font-bold text-foreground-muted uppercase tracking-[0.2em] mb-6">Saran Jalur Riset</h3>
+        <div className="flex-1 border-t lg:border-t-0 lg:border-l border-card-foreground/20 pt-8 lg:pt-0 lg:pl-10">
+          <h3 className="text-[10px] font-bold text-card-foreground/60 uppercase tracking-[0.2em] mb-6">Saran Jalur Riset</h3>
           <div className="space-y-4">
             {intelligence?.questions.map((q, i) => (
               <div 
                 key={i} 
-                className="group flex gap-4 p-4 rounded-none hover:bg-muted transition-all cursor-pointer border border-transparent hover:border-border"
+                className="group flex gap-4 p-4 rounded-2xl hover:bg-card-foreground/5 transition-all cursor-pointer border border-transparent hover:border-card-foreground/10"
               >
-                <div className="text-xs font-bold text-foreground-muted group-hover:text-foreground transition-colors">0{i+1}</div>
-                <p className="text-sm font-semibold text-foreground group-hover:opacity-70 transition-all leading-relaxed">
+                <div className="text-xs font-bold text-card-foreground/40 group-hover:text-card-foreground transition-colors">0{i+1}</div>
+                <p className="text-sm font-semibold text-card-foreground group-hover:opacity-70 transition-all leading-relaxed">
                   {q}
                 </p>
               </div>

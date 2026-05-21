@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { journalService } from '@/services/journalService';
 import { Journal } from '@/types/journal';
 import Navbar from '@/components/Navbar';
@@ -24,6 +24,7 @@ import UnpaywallButton from '@/components/UnpaywallButton';
 export default function JournalDetail() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [journal, setJournal] = useState<Journal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -112,11 +113,11 @@ export default function JournalDetail() {
             </Link>
           </div>
 
-          <div className="pt-6 border-t border-white/5">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-slate-600 font-black mb-3">Diagnostik Sistem</div>
+          <div className="pt-6 border-t border-border/20">
+            <div className="text-[10px] uppercase tracking-[0.2em] text-foreground-muted font-black mb-3">Diagnostik Sistem</div>
             <div className="flex flex-wrap justify-center gap-2">
-              <span className="px-3 py-1 bg-black/40 rounded-lg border border-white/5 text-[10px] text-slate-500 font-mono">ID: {decodedId}</span>
-              <span className="px-3 py-1 bg-black/40 rounded-lg border border-white/5 text-[10px] text-slate-500 font-mono uppercase">Source: {source}</span>
+              <span className="px-3 py-1 bg-muted rounded-lg border border-border text-[10px] text-foreground-muted font-mono">ID: {decodedId}</span>
+              <span className="px-3 py-1 bg-muted rounded-lg border border-border text-[10px] text-foreground-muted font-mono uppercase">Source: {source}</span>
             </div>
           </div>
         </motion.div>
@@ -139,11 +140,24 @@ export default function JournalDetail() {
           <section className="space-y-8 md:space-y-10">
             <div className="flex flex-wrap items-center gap-4">
               <button 
-                onClick={() => window.history.back()}
-                className="p-3 glass-card rounded-2xl hover:bg-muted transition-all group"
+                onClick={() => {
+                  if (window.history.length > 1) router.back();
+                  else router.push('/search');
+                }}
+                className="p-3 glass-card rounded-2xl hover:bg-muted transition-all group cursor-pointer"
+                aria-label="Kembali"
               >
                 <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               </button>
+
+              {/* Breadcrumb */}
+              <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-2 text-[10px] font-bold text-foreground-muted uppercase tracking-widest">
+                <Link href="/" className="hover:text-foreground transition-colors">Beranda</Link>
+                <span>/</span>
+                <Link href="/search" className="hover:text-foreground transition-colors">Cari</Link>
+                <span>/</span>
+                <span className="text-foreground truncate max-w-[200px]">{journal?.title?.slice(0, 40)}{(journal?.title?.length ?? 0) > 40 ? '...' : ''}</span>
+              </nav>
               
               <div className="flex items-center gap-2">
                 <div className={cn(

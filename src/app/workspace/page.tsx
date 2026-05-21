@@ -242,7 +242,7 @@ export default function WorkspacePage() {
           {/* UPLOAD */}
           <div className="relative group">
             <input type="file" accept=".pdf" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" onChange={handleFileUpload} disabled={isUploading} />
-            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-[2rem] bg-foreground/[0.02] hover:bg-foreground/[0.05] transition-all group-hover:border-foreground/40">
+            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-2xl bg-foreground/[0.02] hover:bg-foreground/[0.05] transition-all group-hover:border-foreground/40">
               {isUploading ? (
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-8 h-8 border-4 border-foreground/10 border-t-foreground rounded-full animate-spin" />
@@ -347,7 +347,7 @@ export default function WorkspacePage() {
 
         <div className="p-6 bg-foreground/[0.02]">
           <button onClick={() => router.push('/')} className="btn-primary btn-fill-mewah w-full flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest px-6 py-4 !rounded-2xl bg-foreground text-background transition-all shadow-xl">
-            <span>← Kembali ke Menu</span>
+            <span>← Beranda</span>
           </button>
         </div>
       </aside>
@@ -374,18 +374,21 @@ export default function WorkspacePage() {
 
         {/* CONTENT */}
         <div className="flex-1 overflow-y-auto p-8 md:p-12">
-          <div className="max-w-4xl mx-auto space-y-12 pb-40">
+          <div className="max-w-3xl mx-auto space-y-12 pb-40">
             
             {/* STATUS ORCHESTRATOR */}
-            <div className="rounded-[2.5rem] border-2 border-foreground bg-card p-10 relative overflow-hidden group">
+            <div className="rounded-3xl border border-border/50 bg-card p-8 md:p-10 relative overflow-hidden shadow-sm">
               <div className="absolute top-0 right-0 w-64 h-64 bg-foreground/[0.02] rounded-full -mr-32 -mt-32 blur-3xl transition-all group-hover:bg-foreground/[0.05]" />
               <div className="flex items-start gap-6 relative z-10">
-                <div className="p-4 bg-foreground text-background rounded-2xl shadow-2xl">
+                <div className="p-4 bg-foreground/5 text-foreground rounded-2xl">
                   <Sparkles className="w-8 h-8" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground-muted mb-3">Kernel ISAGI Aktif</h4>
-                  <p className="text-xl md:text-2xl font-extrabold text-foreground tracking-tight leading-tight">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h4 className="text-xs font-bold text-foreground/60 uppercase tracking-widest">Status Engine</h4>
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-bold uppercase tracking-wider">BETA</span>
+                  </div>
+                  <p className="text-lg md:text-xl font-semibold text-foreground leading-snug">
                     {streamText}
                   </p>
                 </div>
@@ -403,15 +406,15 @@ export default function WorkspacePage() {
 
               <AnimatePresence mode="wait">
                 {synthesisOutput || isStreaming ? (
-                  <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="mono-card p-10 shadow-2xl border-2 border-border-strong relative bg-card">
+                  <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="bg-card p-8 md:p-10 rounded-3xl shadow-sm border border-border/50 relative">
                     <div className="flex items-center justify-between mb-8 pb-6 border-b border-border/50">
                       <div className="flex items-center gap-3">
-                        <BookOpen className="w-6 h-6 opacity-40" />
-                        <h3 className="text-xs font-black uppercase tracking-[0.25em]">Hasil Analisis Intelijen</h3>
+                        <BookOpen className="w-6 h-6 text-foreground/40" />
+                        <h3 className="text-sm font-bold text-foreground/80">Hasil Analisis Intelijen</h3>
                       </div>
-                      {isStreaming && <div className="flex gap-1.5"><div className="w-2 h-2 bg-foreground rounded-full animate-bounce" /><div className="w-2 h-2 bg-foreground rounded-full animate-bounce [animation-delay:0.2s]" /><div className="w-2 h-2 bg-foreground rounded-full animate-bounce [animation-delay:0.4s]" /></div>}
+                      {isStreaming && <div className="flex gap-1.5"><div className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" /><div className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce [animation-delay:0.2s]" /><div className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce [animation-delay:0.4s]" /></div>}
                     </div>
-                    <div className="text-lg leading-relaxed font-bold whitespace-pre-wrap selection:bg-foreground selection:text-background">
+                    <div className="text-base leading-relaxed font-medium whitespace-pre-wrap">
                       {synthesisOutput || "Menunggu data dari Swarm Multi-Agen..."}
                     </div>
                   </motion.div>
@@ -430,18 +433,18 @@ export default function WorkspacePage() {
         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-background via-background/90 to-transparent pt-20">
           <div className="max-w-4xl mx-auto relative group">
             <div className="absolute -inset-2 bg-foreground/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <form onSubmit={handleChatSubmit} className="relative flex items-center bg-card border-[3px] md:border-4 border-foreground rounded-full px-6 md:px-10 py-3 md:py-6 shadow-[0_30px_100px_-20px_rgba(0,0,0,0.5)] saturated-bar">
-              <Search className="w-5 h-5 md:w-7 md:h-7 text-foreground mr-3 md:mr-6 shrink-0" />
+            <form onSubmit={handleChatSubmit} className="relative flex items-center bg-card border border-border/50 rounded-full px-6 md:px-8 py-3 md:py-4 shadow-xl">
+              <Search className="w-5 h-5 md:w-6 md:h-6 text-foreground/40 mr-4 shrink-0" />
               <input 
                 type="text" 
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 disabled={isStreaming}
-                placeholder="KENDALIKAN INTELIJEN..." 
-                className="flex-1 min-w-0 bg-transparent border-none outline-none text-sm md:text-xl font-black text-foreground placeholder:text-foreground/20 disabled:opacity-50 uppercase tracking-tighter"
+                placeholder={isStreaming ? "AI sedang memproses..." : "Tanya sesuatu atau beri instruksi riset..."} 
+                className="flex-1 min-w-0 bg-transparent border-none outline-none text-sm md:text-base font-medium text-foreground placeholder:text-foreground/40 disabled:opacity-50"
               />
-              <button type="submit" disabled={isStreaming} className="bg-foreground text-background p-3 md:p-4 rounded-full transition-all ml-3 md:ml-6 shadow-2xl hover:scale-110 active:scale-95 disabled:opacity-50 shrink-0">
-                <ChevronRight className="w-5 h-5 md:w-6 md:h-6 stroke-[4px]" />
+              <button type="submit" disabled={isStreaming} className="bg-foreground text-background p-2.5 md:p-3 rounded-full transition-all ml-4 hover:bg-foreground/90 disabled:opacity-50 shrink-0">
+                <ChevronRight className="w-5 h-5 stroke-[3px]" />
               </button>
             </form>
           </div>
@@ -452,7 +455,6 @@ export default function WorkspacePage() {
       <aside className="hidden xl:flex w-96 border-l border-border bg-card flex-col z-20 overflow-y-auto">
         <div className="p-8 border-b border-border flex items-center justify-between bg-foreground/[0.02]">
           <h2 className="font-black tracking-[0.2em] text-[10px] uppercase text-foreground-muted">Intelijen Riset</h2>
-          <span className="text-[8px] font-black px-2 py-0.5 rounded-full bg-foreground text-background">VERSI BETA V4</span>
         </div>
 
         <div className="p-8 space-y-12">
@@ -519,7 +521,7 @@ export default function WorkspacePage() {
               ].map((agent, i) => (
                 <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-foreground/[0.03] border border-border transition-all hover:bg-foreground/[0.05]">
                   <div className="flex items-center gap-3">
-                    <div className={cn("w-1.5 h-1.5 rounded-full", agent.status !== 'Siap' && agent.status !== 'Selesai' ? `${agent.color} animate-ping` : "bg-foreground/20")} />
+                    <div className={cn("w-1.5 h-1.5 rounded-full transition-all", agent.status !== 'Siap' && agent.status !== 'Selesai' ? `${agent.color} animate-pulse` : "bg-foreground/20")} />
                     <span className="text-[10px] font-black uppercase tracking-widest">{agent.label}</span>
                   </div>
                   <span className="text-[9px] font-black uppercase opacity-40">{agent.status}</span>

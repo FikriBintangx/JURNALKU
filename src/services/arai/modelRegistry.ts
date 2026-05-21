@@ -35,15 +35,15 @@ class DynamicModelRegistry {
   private initDefaultModels() {
     const defaults: Partial<RegisteredModel>[] = [
       // ── NATIVE GEMINI ──────────────────────────────────────────────────
-      { id: 'gemini-1.5-flash', provider: 'gemini', name: 'Gemini 1.5 Flash', capabilities: ['fast'] },
+      { id: 'gemini-1.5-flash-latest', provider: 'gemini', name: 'Gemini 1.5 Flash', capabilities: ['fast'] },
       { id: 'gemini-2.0-flash', provider: 'gemini', name: 'Gemini 2.0 Flash', capabilities: ['vision', 'streaming'] },
-      { id: 'gemini-1.5-pro', provider: 'gemini', name: 'Gemini 1.5 Pro', capabilities: ['high-reasoning'] },
+      { id: 'gemini-1.5-pro-latest', provider: 'gemini', name: 'Gemini 1.5 Pro', capabilities: ['high-reasoning'] },
       { id: 'gemini-2.0-flash-exp', provider: 'gemini', name: 'Gemini 2.0 Experimental' },
       
       // ── NATIVE GROQ ────────────────────────────────────────────────────
       { id: 'llama-3.3-70b-versatile', provider: 'groq', name: 'Llama 3.3 70B', capabilities: ['fast', 'high-reasoning'] },
       { id: 'llama-3.1-70b-versatile', provider: 'groq', name: 'Llama 3.1 70B' },
-      { id: 'mixtral-8x7b-32768', provider: 'groq', name: 'Mixtral 8x7B', capabilities: ['fast'] },
+      { id: 'llama-3.1-8b-instant', provider: 'groq', name: 'Llama 3.1 8B', capabilities: ['fast'] },
       
       // ── OPENROUTER (Qualified IDs) ─────────────────────────────────────
       { id: 'google/gemini-2.0-flash-001', provider: 'openrouter', name: 'OR Gemini Flash' },

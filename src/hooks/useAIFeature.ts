@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 
 interface UseAIFeatureProps {
   endpoint: string;
@@ -8,42 +8,45 @@ interface UseAIFeatureProps {
 }
 
 export const useAIFeature = ({ endpoint, paperId, abstract, title }: UseAIFeatureProps) => {
-  const [data, setData] = useState<string | null>(null);
+  const [data, setData] = useState<any>(null);
   const [intelligence, setIntelligence] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const generate = useCallback(async () => {
-    if (loading) return;
-    
+  const generate = async () => {
     setLoading(true);
     setError(null);
-    setData(null);
-    setIntelligence(null);
-
-    const model = typeof window !== 'undefined' ? localStorage.getItem('selected_ai_model') : null;
-
     try {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paperId, abstract, title, model }),
+        body: JSON.stringify({ paperId, abstract, title }),
       });
-
+      
       const result = await response.json();
-
-      if (result.success) {
-        setData(result.data);
-        if (result.intelligence) setIntelligence(result.intelligence);
-      } else {
-        setError(result.message || "Gagal memproses data AI");
+      
+      if (!response.ok || result.error) {
+        throw new Error(result.error || result.message || 'Gagal menghubungi Intelligence Engine');
       }
+
+      // Handle various response shapes
+      const responseData = result.data || result.text || result.summary || result.content || result;
+      
+      // If it's still an object, we stringify it to avoid React rendering errors
+      if (typeof responseData === 'object' && responseData !== null && !result.data) {
+         setData(JSON.stringify(responseData, null, 2));
+      } else {
+         setData(responseData);
+      }
+      
+      setIntelligence(result.intelligence || null);
     } catch (err: any) {
-      setError("AI sedang sibuk atau koneksi terputus");
+      console.error('[useAIFeature] Error:', err);
+      setError(err.message || 'Terjadi kesalahan');
     } finally {
       setLoading(false);
     }
-  }, [endpoint, paperId, abstract, title, loading]);
+  };
 
   return { data, intelligence, loading, error, generate };
 };

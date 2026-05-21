@@ -9,25 +9,30 @@ import { fetchBASE } from './providers/baseProvider';
 import { fetchGaruda } from './providers/garudaProvider';
 import type { UniversalPaperEnriched } from '@/types/search';
 import { intelligenceService, ResearchIntelligence } from './intelligenceService';
+import { cohereService } from './cohereService';
+import { healthSystem, ProviderStatus } from '../lib/reliability/health';
+import { searchQueue } from '../lib/reliability/queue';
+import { reliabilityCache } from '../lib/reliability/cache';
 
 // Re-export for compatibility with existing imports
 export type UniversalPaper = UniversalPaperEnriched;
 
-const FETCH_TIMEOUT = 7000;
-
-// ─────────────────────────────────────────────────────────────
-// Query expansions — when results are sparse
-// ─────────────────────────────────────────────────────────────
-const QUERY_EXPANSIONS: Record<string, string[]> = {
-  'tiktok shop': ['social commerce', 'e-commerce behavior', 'online shopping'],
-  'gen z': ['generation z', 'young consumers', 'digital natives'],
-  'machine learning': ['deep learning', 'neural network', 'artificial intelligence'],
-  'covid': ['pandemic', 'SARS-CoV-2', 'coronavirus'],
-  'blockchain': ['distributed ledger', 'smart contract', 'cryptocurrency'],
-  'umkm': ['small medium enterprise', 'SME Indonesia', 'usaha mikro'],
-  'pendidikan': ['education', 'learning', 'pedagogy'],
-  'kesehatan': ['health', 'medical', 'public health'],
+const DEFAULT_TIMEOUT = 10000;
+const FETCH_TIMEOUT = 12000;
+const PROVIDER_TIERS = {
+  TIER_1: ['googlescholar', 'semantic', 'openalex'],
+  TIER_2: ['crossref', 'core', 'pubmed', 'arxiv'],
+  TIER_3: ['base', 'zenodo', 'doaj', 'garuda', 'lens']
 };
+
+function withTimeout<T>(promise: Promise<T>, ms: number, provider: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => 
+      setTimeout(() => reject(new Error(`[${provider}] Timeout after ${ms}ms`)), ms)
+    )
+  ]);
+}
 
 export const searchAggregator = {
   sanitizeQuery(rawQuery: string): string {
@@ -43,172 +48,278 @@ export const searchAggregator = {
     }
   },
 
-  simplifyQuery(query: string): string {
-    return query.split(/\s+/).filter(w => w.length > 2).slice(0, 3).join(' ');
+  /**
+   * PART 1 — QUERY NORMALIZATION
+   * Ensures 'esport' becomes 'esports' and other academic mappings.
+   */
+  normalizeAcademicQuery(query: string): string {
+    const q = query.toLowerCase().trim();
+    const dictionary: Record<string, string> = {
+      'esport': 'esports',
+      'e-sport': 'esports',
+      'crypto': 'cryptocurrency',
+      'blockchain': 'distributed ledger technology',
+      'ai': 'artificial intelligence',
+      'ml': 'machine learning',
+      'iot': 'internet of things',
+      'ekonomi': 'economics',
+      'hukum': 'law',
+      'pembelajaran': 'learning education',
+      'kesehatan': 'medical health',
+    };
+
+    // Exact match or contains mapping
+    if (dictionary[q]) return dictionary[q];
+    
+    // Check if any word in the query matches a dictionary key
+    const words = q.split(/\s+/);
+    const normalizedWords = words.map(w => dictionary[w] || w);
+    return normalizedWords.join(' ');
+  },
+
+  /**
+   * PART 6 & 7 — SEMANTIC INTELLIGENCE ENGINE
+   */
+  async expandAcademicQuery(query: string): Promise<string[]> {
+    const terms = query.toLowerCase().split(/\s+/).filter(t => t.length > 2);
+    const expansions: Set<string> = new Set([query]);
+
+    // Manual Rule-based expansion for common domains (Mocking a vector-based expansion)
+    const dictionary: Record<string, string[]> = {
+      'esport': ['e-sports', 'electronic sports', 'competitive gaming', 'gaming performance'],
+      'ai': ['artificial intelligence', 'machine learning', 'deep learning', 'neural networks'],
+      'covid': ['sars-cov-2', 'coronavirus', 'pandemic', 'respiratory virus'],
+      'ekonomi': ['economy', 'economic', 'finance', 'market trends', 'macroeconomics'],
+      'pembelajaran': ['learning', 'education', 'pedagogy', 'instructional design'],
+      'hukum': ['law', 'legal', 'jurisprudence', 'regulation', 'judicial'],
+    };
+
+    terms.forEach(term => {
+      Object.keys(dictionary).forEach(key => {
+        if (term.includes(key)) {
+          dictionary[key].forEach(val => expansions.add(val));
+        }
+      });
+    });
+
+    return Array.from(expansions);
+  },
+
+  compressSearchQuery(query: string): string {
+    return this.compressAcademicQuery(query);
+  },
+
+  detectIntent(query: string): { topic: string, domain: string, intent: string } {
+    const q = query.toLowerCase();
+    let intent = 'discovery';
+    if (q.includes('metode') || q.includes('method')) intent = 'methodology';
+    if (q.includes('banding') || q.includes('compare')) intent = 'comparative';
+    if (q.includes('statistik') || q.includes('data')) intent = 'empirical';
+
+    // Simple domain detection
+    let domain = 'general';
+    if (q.includes('medis') || q.includes('health') || q.includes('pasien')) domain = 'medical';
+    if (q.includes('komputer') || q.includes('software') || q.includes('digital')) domain = 'technology';
+
+    return { topic: query, domain, intent };
+  },
+
+  compressAcademicQuery(query: string): string {
+    const stopwords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'with', 'by', 'of', 'about', 'terhadap', 'dalam', 'di', 'era', 'terutama', 'untuk', 'pengaruh', 'dan', 'yang', 'dari']);
+    return query
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .split(/\s+/)
+      .filter(word => word.length > 2 && !stopwords.has(word))
+      .slice(0, 6)
+      .join(' ');
   },
 
   detectDOI(query: string): string | null {
     if (!query) return null;
-    // Regex for DOI (Standard: 10.xxxx/yyyy)
     const doiRegex = /(10\.\d{4,9}\/[-._;()/:A-Z0-9]+)/i;
     const match = query.match(doiRegex);
     return match ? match[1] : null;
   },
 
-  expandQuery(query: string): string[] {
-    const lower = query.toLowerCase();
-    for (const [key, expansions] of Object.entries(QUERY_EXPANSIONS)) {
-      if (lower.includes(key)) return expansions;
-    }
-    // Generic expansion: take first 2 words
-    const terms = query.split(/\s+/).filter(w => w.length > 3);
-    if (terms.length > 2) return [terms.slice(0, 2).join(' ')];
-    return [];
-  },
-
   /**
-   * Main search entry point — runs all providers in parallel or targets specific one.
-   * Auto-retries with AI-driven expansions if results are sparse.
+   * Main search entry point — Uses Waterfall Priority Architecture.
    */
-  async search(rawQuery: string, limit: number = 20, offset: number = 0, filters?: any, provider: string = 'default'): Promise<{ results: UniversalPaperEnriched[], intelligence?: ResearchIntelligence }> {
+  async search(rawQuery: string, limit: number = 20, offset: number = 0, filters?: any, provider: string = 'default'): Promise<{ 
+    results: UniversalPaperEnriched[], 
+    total?: number,
+    message?: string,
+    intelligence?: ResearchIntelligence,
+    debug?: any
+  }> {
     const query = this.sanitizeQuery(rawQuery);
-    if (!query) {
-      console.warn("[SEARCH] Empty query.");
-      return { results: [] };
+    if (!query) return { results: [] };
+
+    const cacheKey = reliabilityCache.generateKey('search', { query, limit, offset, filters, provider });
+    const cached = reliabilityCache.get<any>(cacheKey);
+    if (cached) {
+      console.log(`[SEARCH_ENGINE] Cache hit for: ${query}`);
+      return cached;
     }
 
     const t0 = Date.now();
-    console.log(`[INTELLIGENCE] Initializing Research Engine: "${query}"`);
+    const providerDebug: Record<string, string> = {};
+    
+    // PART 1: Normalize
+    const normalizedQuery = this.normalizeAcademicQuery(query);
+    const compressedQuery = this.compressSearchQuery(normalizedQuery);
+    
+    console.log(`[SEARCH_ENGINE] Researching: "${query}" -> Normalized: "${normalizedQuery}"`);
 
     // Detect if it's a DOI search
     const doi = this.detectDOI(query);
     if (doi) {
-      console.log(`[INTELLIGENCE] DOI detected: ${doi}. Performing targeted lookup.`);
-      // If DOI, we only need targeted fetch from Crossref/OpenAlex/Semantic
-      const results = await Promise.allSettled([
-        this.fetchCrossref(doi, 1, filters),
-        this.fetchOpenAlex(doi, 1, filters),
-        this.fetchSemanticScholar(doi, 1, filters)
-      ]);
+      const results = await this.executeTier(['crossref', 'openalex', 'semantic'], doi, 1, 0, filters, providerDebug);
+      if (results.length > 0) return { results: this.deduplicate(results), debug: providerDebug };
+    }
+
+    // 1. Initial Intelligence & Intent
+    const queryIntel = await intelligenceService.analyzeQuery(normalizedQuery);
+    const intent = this.detectIntent(normalizedQuery);
+    let allPapers: UniversalPaperEnriched[] = [];
+
+    // 2. TIERED WATERFALL EXECUTION
+    // If it's a specific domain, prioritize providers
+    let tiers = [...PROVIDER_TIERS.TIER_1];
+    if (intent.domain === 'technology') {
+      // Prioritize IEEE/ACM style providers (Semantic, OpenAlex often better here than generic Crossref)
+      tiers = ['semantic', 'openalex', 'googlescholar'];
+    }
+
+    const t1Results = await this.executeTier(tiers, compressedQuery, limit, offset, filters, providerDebug);
+    allPapers.push(...t1Results);
+
+    // 3. ADAPTIVE RECOVERY (If sparse)
+    if (allPapers.length < 3) {
+      console.log(`[SEARCH_ENGINE] Result sparse. Triggering Adaptive Recovery...`);
+      const expandedTerms = await this.expandAcademicQuery(normalizedQuery);
       
-      const papers: UniversalPaperEnriched[] = [];
-      results.forEach(res => {
-        if (res.status === 'fulfilled' && Array.isArray(res.value)) {
-          papers.push(...res.value);
-        }
-      });
-
-      if (papers.length > 0) {
-        const final = this.deduplicate(papers);
-        return { results: final };
-      }
-      // If DOI lookup fails, fallback to normal search
-    }
-
-    // 1. Parallel Intelligence & Initial Fetch
-    const [queryIntel, initialPapers] = await Promise.all([
-      intelligenceService.analyzeQuery(query),
-      this.runParallelFetch(query, limit, offset, filters, provider)
-    ]);
-
-    let papers = initialPapers;
-
-    console.log(`[INTELLIGENCE] Intent: ${queryIntel.intent}, Domains: ${queryIntel.domains.join(', ')}`);
-
-    // 2. Semantic Expansion (AI-Driven)
-    if (papers.length < 10 && queryIntel.keywords.length > 0) {
-      const expansionQuery = queryIntel.keywords.slice(0, 2).join(' ');
-      console.log(`[INTELLIGENCE] Sparse results. Triggering semantic expansion: "${expansionQuery}"`);
-      const extra = await this.runParallelFetch(expansionQuery, limit, offset, filters, provider);
-      papers = this.deduplicate([...papers, ...extra]);
-    }
-
-    // 3. Fallback to basic expansion if still sparse
-    if (papers.length < 5) {
-      const basicExpansions = this.expandQuery(query);
-      if (basicExpansions.length > 0) {
-        const extra = await this.runParallelFetch(basicExpansions[0], limit, offset, filters, provider);
-        papers = this.deduplicate([...papers, ...extra]);
+      // Try next term in expansion
+      for (const variant of expandedTerms.slice(1, 4)) {
+        if (allPapers.length >= 10) break;
+        console.log(`[RECOVERY] Trying variant: ${variant}`);
+        const variantResults = await this.executeTier(PROVIDER_TIERS.TIER_1, variant, limit, offset, filters, providerDebug);
+        allPapers.push(...variantResults);
       }
     }
 
-    // 4. Global Filtering (Last Guard for Year/Access constraints)
-    if (filters) {
-      if (filters.yearStart || filters.yearEnd) {
-        const start = filters.yearStart || 0;
-        const end = filters.yearEnd || new Date().getFullYear();
-        papers = papers.filter(p => {
-          const y = p.year || 0;
-          return y >= start && y <= end;
-        });
-      }
-      if (filters.openAccess) {
-        papers = papers.filter(p => p.isOpenAccess);
-      }
+    // Tier 2: Essential
+    if (allPapers.length < limit) {
+        const t2Results = await this.executeTier(PROVIDER_TIERS.TIER_2, compressedQuery, limit, offset, filters, providerDebug);
+        allPapers.push(...t2Results);
     }
 
-    // 5. Advanced Intelligence Ranking (ARIS)
-    const ranked = this.rankResults(papers, query, queryIntel);
+    // 3. Deduplication & Scoring
+    const uniquePapers = this.deduplicate(allPapers);
+    let ranked = this.rankResults(uniquePapers, normalizedQuery, queryIntel);
     
-    // Enrich with direct PDFs
-    const enriched = await this.enrichWithDirectPdfs(ranked.slice(0, 10));
-    const final = [...enriched, ...ranked.slice(10)].slice(0, limit);
+    // 4. Neural Semantic Reranking (Cohere API)
+    if (ranked.length > 0) {
+        try {
+            const docsToRerank = Math.min(ranked.length, limit * 2);
+            const docTexts = ranked.slice(0, docsToRerank).map(p => `${p.title} ${p.abstract || ''}`.trim());
+            const rerankScores = await cohereService.rerankDocuments(normalizedQuery, docTexts, docsToRerank);
+            
+            if (rerankScores && rerankScores.length > 0) {
+                const newlyRanked: UniversalPaperEnriched[] = [];
+                for (const r of rerankScores) {
+                    const originalItem = ranked[r.index];
+                    if (originalItem) {
+                        originalItem.relevanceScore = (originalItem.relevanceScore || 0) + (r.relevance_score * 40);
+                        newlyRanked.push(originalItem);
+                    }
+                }
+                
+                const includedIds = new Set(newlyRanked.map(p => p.id));
+                const remaining = ranked.filter(p => !includedIds.has(p.id));
+                ranked = [...newlyRanked, ...remaining];
+            }
+        } catch (error) {
+            console.error("[SEARCH_ENGINE] Semantic Reranking failed, falling back to heuristics.", error);
+        }
+    }
 
-    console.log(`[INTELLIGENCE] Pipeline Complete (Offset: ${offset}): ${papers.length} raw → ${ranked.length} unique → ${final.length} returned in ${Date.now() - t0}ms`);
-    return { results: final, intelligence: queryIntel };
+    const finalResults = ranked.slice(0, limit);
+
+    const final = { 
+      results: finalResults, 
+      total: uniquePapers.length, // Approximate total from current discovery
+      message: finalResults.length === 0 ? "Neural Signal Weak: No research clusters found for this query." : undefined,
+      intelligence: queryIntel,
+      debug: providerDebug
+    };
+    
+    reliabilityCache.set(cacheKey, final, 3600);
+    console.log(`[SEARCH_ENGINE] Finished in ${Date.now() - t0}ms. Found: ${finalResults.length}`);
+    return final;
   },
 
-  async runParallelFetch(query: string, limit: number, offset: number = 0, filters?: any, provider: string = 'default'): Promise<UniversalPaperEnriched[]> {
-    let activeResults: PromiseSettledResult<UniversalPaperEnriched[]>[] = [];
-    let providerNames: string[] = [];
-
-    if (provider === 'googlescholar') {
-      console.log(`[SEARCH] Targeting Deep Scholar Mode (Offset: ${offset}): "${query}"`);
-      providerNames = ['Google Scholar', 'OpenAlex', 'Lens.org', 'BASE', 'Garuda'];
-      activeResults = await Promise.allSettled([
-        fetchGoogleScholar(query, limit, offset), // Pass offset to GS
-        this.fetchOpenAlex(query, limit, offset, filters),
-        fetchLens(query, Math.ceil(limit / 2)),
-        fetchBASE(query, Math.ceil(limit / 2)),
-        fetchGaruda(query, limit),
-      ]);
-    } else {
-      const perSource = Math.ceil(limit / 3);
-      providerNames = ['OpenAlex', 'CORE', 'Crossref', 'Semantic Scholar', 'arXiv', 'PubMed', 'DOAJ', 'Zenodo', 'Google Scholar', 'Lens.org', 'BASE', 'Garuda'];
-      activeResults = await Promise.allSettled([
-        this.fetchOpenAlex(query, perSource, offset, filters),
-        this.fetchCORE(query, perSource, filters),
-        this.fetchCrossref(query, perSource, offset, filters),
-        this.fetchSemanticScholar(query, perSource, offset, filters),
-        fetchArxiv(query, perSource),
-        fetchPubMed(query, Math.ceil(perSource / 2)),
-        fetchDOAJ(query, Math.ceil(perSource / 2)),
-        fetchZenodo(query, Math.ceil(perSource / 2)),
-        fetchGoogleScholar(query, Math.ceil(perSource / 3), offset),
-        fetchLens(query, Math.ceil(perSource / 2)),
-        fetchBASE(query, Math.ceil(perSource / 2)),
-        fetchGaruda(query, perSource),
-      ]);
-    }
+  async executeTier(providers: string[], query: string, limit: number, offset: number, filters: any, debug: Record<string, string>): Promise<UniversalPaperEnriched[]> {
+    const results = await Promise.allSettled(
+      providers.map(p => this.safeFetch(p, query, limit, offset, filters))
+    );
 
     const papers: UniversalPaperEnriched[] = [];
-    activeResults.forEach((result, i) => {
-      const name = providerNames[i] || 'Unknown';
-      if (result.status === 'fulfilled' && Array.isArray(result.value)) {
-        const valid = result.value.filter(p => this.isValidPaper(p));
-        if (valid.length > 0) console.log(`[PROVIDER] ${name}: ${valid.length} results`);
-        else console.log(`[PROVIDER] ${name}: No results`);
-        papers.push(...(valid as UniversalPaperEnriched[]));
-      } else if (result.status === 'rejected') {
-        console.error(`[PROVIDER] ${name} failed: ${result.reason?.message || 'Unknown error'}`);
+    results.forEach((res, i) => {
+      const providerName = providers[i];
+      if (res.status === 'fulfilled') {
+        const count = res.value.length;
+        debug[providerName] = count > 0 ? `OK (${count})` : "EMPTY";
+        papers.push(...res.value);
+      } else {
+        debug[providerName] = `ERROR: ${res.reason?.message || 'Unknown'}`;
       }
     });
-
     return papers;
   },
 
+  async safeFetch(provider: string, query: string, limit: number, offset: number, filters?: any): Promise<UniversalPaperEnriched[]> {
+    if (healthSystem.getStatus(provider) === ProviderStatus.DOWN || healthSystem.getStatus(provider) === ProviderStatus.COOLDOWN) {
+        return [];
+    }
+
+    return await searchQueue<UniversalPaperEnriched[]>(async () => {
+      try {
+        let fetchFn: any;
+        let timeout = DEFAULT_TIMEOUT;
+
+        switch (provider) {
+          case 'openalex': fetchFn = () => this.fetchOpenAlex(query, limit, offset, filters); timeout = 12000; break;
+          case 'semantic': fetchFn = () => this.fetchSemanticScholar(query, limit, offset, filters); timeout = 8000; break;
+          case 'crossref': fetchFn = () => this.fetchCrossref(query, limit, offset, filters); timeout = 10000; break;
+          case 'googlescholar': fetchFn = () => fetchGoogleScholar(query, limit, offset); timeout = 15000; break;
+          case 'core': fetchFn = () => this.fetchCORE(query, limit, filters); timeout = 10000; break;
+          case 'pubmed': fetchFn = () => fetchPubMed(query, limit); break;
+          case 'arxiv': fetchFn = () => fetchArxiv(query, limit); break;
+          case 'doaj': fetchFn = () => fetchDOAJ(query, limit); break;
+          case 'zenodo': fetchFn = () => fetchZenodo(query, limit); break;
+          case 'base': fetchFn = () => fetchBASE(query, limit); break;
+          case 'garuda': fetchFn = () => fetchGaruda(query, limit); break;
+          case 'lens': fetchFn = () => fetchLens(query, limit); break;
+          default: return [];
+        }
+
+        const data = await withTimeout(fetchFn(), timeout, provider);
+        healthSystem.reportSuccess(provider);
+        return data || [];
+      } catch (e: any) {
+        healthSystem.reportFailure(provider, e);
+        console.error(`[PROVIDER] ${provider} failed: ${e.message}`);
+        return [];
+      }
+    });
+  },
+
   isValidPaper(paper: any): boolean {
-    return !!(paper && paper.id && paper.title && typeof paper.title === 'string' && paper.title.trim().length > 3);
+    // PART 3 — RELAX FILTERING
+    // Minimum valid result: title exists and has reasonable length.
+    // DO NOT require abstract, DOI, or PDF at this stage.
+    return !!(paper && paper.title && typeof paper.title === 'string' && paper.title.trim().length > 5);
   },
 
   deduplicate(papers: UniversalPaperEnriched[]): UniversalPaperEnriched[] {
@@ -364,7 +475,7 @@ export const searchAggregator = {
         search: query, 
         per_page: Math.min(limit, 50), 
         offset,
-        sort: 'relevance_score:desc' 
+        // Remove explicit sort if it causes issues with relevance searches
       };
 
       if (filters?.yearStart || filters?.yearEnd) {
@@ -381,7 +492,10 @@ export const searchAggregator = {
       const res = await axios.get('https://api.openalex.org/works', {
         params,
         timeout: FETCH_TIMEOUT,
-        headers: { 'User-Agent': 'JurnalStar/1.0 (mailto:contact@jurnalstar.id)' },
+        headers: { 
+          'User-Agent': 'JurnalStar/1.0 (mailto:contact@jurnalstar.id)',
+          'Accept': 'application/json'
+        },
       });
 
       const items = res.data?.results;
@@ -435,9 +549,12 @@ export const searchAggregator = {
         }
       }
 
+      // Simple delay to mitigate 429 in rapid succession if needed
+      // but usually the aggregator already uses a queue.
       const res = await axios.get('https://api.semanticscholar.org/graph/v1/paper/search', {
         params,
-        headers, timeout: FETCH_TIMEOUT,
+        headers, 
+        timeout: FETCH_TIMEOUT,
       });
 
       const items = res.data?.data;

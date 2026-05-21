@@ -5,6 +5,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import CompareBar from "@/components/CompareBar";
 import { FloatingActionButtons } from "@/components/FloatingActionButtons";
 import SmoothScroll from "@/components/SmoothScroll";
+import Providers from "@/components/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,13 +50,15 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SmoothScroll>
-            <div className="relative flex min-h-screen flex-col">
-              {children}
-              <CompareBar />
-              <FloatingActionButtons />
-            </div>
-          </SmoothScroll>
+          <Providers>
+            <SmoothScroll>
+              <div className="relative flex min-h-screen flex-col">
+                {children}
+                <CompareBar />
+                <FloatingActionButtons />
+              </div>
+            </SmoothScroll>
+          </Providers>
         </NextThemesProvider>
       </body>
     </html>

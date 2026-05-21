@@ -146,5 +146,41 @@ export const geminiService = {
       message: lastError?.message || 'GEMINI_ALL_KEYS_FAILED',
       retryable: false
     };
+  },
+
+  /**
+   * STREAMING EXECUTION (Gemini only)
+   */
+  async *executeStreamInternal(req: { prompt: string, model: string }): AsyncGenerator<string> {
+    const apiKey = aiKeyManager.getBestKey();
+    if (!apiKey) {
+      yield "ERROR: No healthy API keys available.";
+      return;
+    }
+
+    const geminiModelId = req.model.includes('/') ? req.model.split('/').pop()! : req.model;
+    
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const gModel = genAI.getGenerativeModel({ 
+        model: geminiModelId, 
+        generationConfig, 
+        safetySettings 
+      });
+      
+      const result = await gModel.generateContentStream(req.prompt);
+
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        if (chunkText) {
+          yield chunkText;
+        }
+      }
+      
+      aiKeyManager.markSuccess(apiKey);
+    } catch (err: any) {
+      console.error("[GEMINI_STREAM] Error:", err.message);
+      yield `[ERROR: ${err.message}]`;
+    }
   }
 };

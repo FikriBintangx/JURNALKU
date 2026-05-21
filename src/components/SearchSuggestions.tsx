@@ -20,7 +20,24 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [history, setHistory] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [dailyTopics, setDailyTopics] = useState<string[]>([
+    "Large Language Models", "Quantum Computing", "Neuroplasticity", "CRISPR Cas9"
+  ]);
   const debouncedQuery = useDebounce(query, 300);
+
+  useEffect(() => {
+    // Generate daily dynamic topics (changes every 24h)
+    const allTopics = [
+      "Artificial General Intelligence", "Quantum Computing", "Neuroplasticity", "CRISPR Cas9",
+      "Sustainable Energy", "Machine Learning", "Climate Modeling", "Space Exploration",
+      "Large Language Models", "Bioinformatics", "Nanotechnology", "Robotics",
+      "Cybersecurity", "Blockchain", "Renewable Energy", "Mental Health",
+      "Synthetic Biology", "Fusion Energy", "Autonomous Vehicles", "Epidemiology",
+      "Deep Learning", "Web3 Technologies", "Genomic Editing", "Cognitive Science"
+    ];
+    const dayIndex = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+    setDailyTopics([0, 1, 2, 3].map(i => allTopics[(dayIndex * 7 + i * 13) % allTopics.length]));
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem('search_history');
@@ -69,7 +86,7 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
       <span>
         {parts.map((part, i) => 
           regex.test(part) ? (
-            <span key={i} className="text-foreground font-black underline decoration-2 underline-offset-4">{part}</span>
+            <span key={i} className="text-card-foreground font-black underline decoration-2 underline-offset-4">{part}</span>
           ) : (
             <span key={i} className="opacity-50">{part}</span>
           )
@@ -88,9 +105,9 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
             className="py-6 px-4"
           >
             {history.length > 0 ? (
-              <div className="space-y-6">
+              <div className="space-y-6 mb-8">
                 <div className="px-6 flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/40">Riwayat Penelusuran</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-card-foreground/40">Riwayat Penelusuran</span>
                   <button onClick={clearHistory} className="text-[9px] font-black uppercase tracking-widest opacity-20 hover:opacity-100 transition-all hover:text-red-500">Bersihkan Histori</button>
                 </div>
                 <div className="space-y-1">
@@ -101,24 +118,40 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
                         saveToHistory(h);
                         onSelect?.(h);
                       }}
-                      className="w-full flex items-center gap-5 px-6 py-4 rounded-none hover:bg-foreground/5 transition-all group text-left"
+                      className="w-full flex items-center gap-5 px-6 py-4 rounded-2xl hover:bg-card-foreground/5 transition-all group text-left"
                     >
-                      <div className="w-10 h-10 rounded-none bg-foreground/10 border border-foreground/10 flex items-center justify-center group-hover:bg-foreground group-hover:text-background transition-all shrink-0">
-                        <Search className="w-4 h-4 opacity-60 group-hover:opacity-100" />
+                      <div className="w-10 h-10 rounded-2xl bg-card-foreground/10 border border-card-foreground/20 flex items-center justify-center group-hover:bg-card-foreground group-hover:text-card transition-all shrink-0">
+                        <Search className="w-4 h-4 opacity-80 group-hover:opacity-100" />
                       </div>
-                      <span className="text-base font-bold text-foreground/80 group-hover:text-foreground transition-colors truncate">{h}</span>
+                      <span className="text-base font-black text-card-foreground group-hover:text-card-foreground transition-colors truncate">{h}</span>
                     </button>
                   ))}
                 </div>
               </div>
-            ) : (
-              <div className="py-12 text-center space-y-4">
-                <div className="w-14 h-14 bg-foreground/5 rounded-none flex items-center justify-center mx-auto border border-foreground/5">
-                  <Sparkles className="w-6 h-6 text-foreground/20" />
-                </div>
-                <p className="label-caps !opacity-20">Riwayat Masih Kosong</p>
+            ) : null}
+
+            <div className="space-y-6">
+              <div className="px-6 flex items-center justify-between mb-2">
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-card-foreground/40">Saran Topik Riset</span>
               </div>
-            )}
+              <div className="space-y-1">
+                {dailyTopics.map((h, i) => (
+                  <button 
+                    key={i}
+                    onClick={() => {
+                      saveToHistory(h);
+                      onSelect?.(h);
+                    }}
+                    className="w-full flex items-center gap-5 px-6 py-4 rounded-2xl hover:bg-card-foreground/5 transition-all group text-left"
+                  >
+                    <div className="w-10 h-10 rounded-2xl bg-card-foreground/5 border border-card-foreground/20 flex items-center justify-center group-hover:bg-card-foreground group-hover:text-card transition-all shrink-0">
+                      <Sparkles className="w-4 h-4 opacity-80 group-hover:opacity-100" />
+                    </div>
+                    <span className="text-base font-black text-card-foreground group-hover:text-card-foreground transition-colors truncate">{h}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </motion.div>
         ) : loading ? (
           <motion.div 
@@ -152,10 +185,10 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
           >
             <div className="px-6 py-4 flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-foreground rounded-none flex items-center justify-center shadow-xl">
-                  <Sparkles className="w-4 h-4 text-background" />
+                <div className="w-8 h-8 bg-card-foreground rounded-2xl flex items-center justify-center shadow-xl">
+                  <Sparkles className="w-4 h-4 text-card" />
                 </div>
-                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground">Sinyal Riset AI</span>
+                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-card-foreground">Sinyal Riset AI</span>
               </div>
               <span className="text-[9px] font-black uppercase tracking-widest opacity-20">{suggestions.length} Hasil</span>
             </div>
@@ -168,14 +201,14 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
                     saveToHistory(s.title);
                     onSelect?.(s.title);
                   }}
-                  className="w-full flex items-center justify-between px-6 py-5 transition-all rounded-none group text-left hover:bg-foreground/5 hover:translate-x-1"
+                  className="w-full flex items-center justify-between px-6 py-5 transition-all rounded-2xl group text-left hover:bg-card-foreground/5 hover:translate-x-1"
                 >
                   <div className="flex items-center gap-5 flex-1 min-w-0">
-                    <div className="w-11 h-11 rounded-none bg-foreground/10 border border-foreground/10 flex items-center justify-center shrink-0 group-hover:bg-foreground group-hover:text-background transition-all">
+                    <div className="w-11 h-11 rounded-2xl bg-card-foreground/10 border border-card-foreground/10 flex items-center justify-center shrink-0 group-hover:bg-card-foreground group-hover:text-card transition-all">
                       {s.type === 'topic' ? <Search className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-[15px] font-bold truncate tracking-tight mb-0.5 text-foreground group-hover:opacity-80 transition-opacity">
+                      <span className="text-[15px] font-bold truncate tracking-tight mb-0.5 text-card-foreground group-hover:opacity-80 transition-opacity">
                         {highlightText(s.title, query)}
                       </span>
                       <span className="text-[9px] opacity-40 uppercase font-black tracking-[0.2em] group-hover:opacity-60">
@@ -194,12 +227,12 @@ export default function SearchSuggestions({ query, onSelect }: SearchSuggestions
             animate={{ opacity: 1 }}
             className="p-16 text-center space-y-6"
           >
-            <div className="w-16 h-16 bg-muted rounded-none flex items-center justify-center mx-auto border border-border/50">
+            <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto border border-border/50">
               <Search className="w-6 h-6 opacity-20" />
             </div>
             <div className="space-y-2">
               <p className="text-base font-black opacity-40">Sinyal Tidak Terdeteksi</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold opacity-30 leading-relaxed">Perluas kata kunci untuk pemetaan intelijen yang lebih dalam</p>
+              <p className="text-[10px] text-card-foreground/50 uppercase tracking-widest font-bold opacity-30 leading-relaxed">Perluas kata kunci untuk pemetaan intelijen yang lebih dalam</p>
             </div>
           </motion.div>
         )}

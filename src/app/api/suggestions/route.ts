@@ -1,20 +1,18 @@
 import { NextResponse } from 'next/server';
+import { searchAggregator } from '@/services/searchAggregator';
 import axios from 'axios';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get('q');
-
-  if (!query || query.length < 2) {
-    return NextResponse.json({ data: [] });
-  }
+  const query = searchParams.get('q') || '';
+  const normalizedQuery = searchAggregator.normalizeAcademicQuery(query);
 
   try {
     // Artificial delay to prevent spamming
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 200));
 
     // Try simple fetch first
-    const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=5&fields=title`;
+    const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(normalizedQuery)}&limit=5&fields=title`;
     
     console.log('Fetching suggestions for:', query);
     

@@ -99,8 +99,7 @@ class IntelligentProviderOrchestrator {
       BUKTI LITERATUR REAL-TIME:
       ${evidenceContext}
       
-      INSTRUKSI KHUSUS:
-      ${taskSpecificInstruction}
+      INSTRUKSI BAHASA: Seluruh respon WAJIB menggunakan Bahasa Indonesia Akademik yang sangat formal dan elegan. JANGAN PERNAH menyisipkan istilah Bahasa Inggris kecuali jika itu adalah istilah teknis yang tidak memiliki padanan dalam Bahasa Indonesia.
       
       ${responseFormatter.getSystemPromptInjection()}
     `;
@@ -251,6 +250,44 @@ Fokus utama mencakup ${top.topics?.slice(0,3).join(', ') || 'topik terkait'}.
       'explainer': 'Jelaskan konsep penelitian ini dengan bahasa yang adaptif namun tetap ilmiah.',
     };
     return instructions[type] || 'Lakukan analisis ilmiah objektif berdasarkan konteks yang diberikan.';
+  }
+  /**
+   * EXECUTE STREAMING TASK
+   * Enhanced for real-time scientific synthesis.
+   */
+  public async *executeStream(req: InferenceRequest): AsyncGenerator<string> {
+    // 1. Determine Target
+    let targetModel = req.modelId || 'isagi-autonomous';
+    let targetProvider: ProviderType;
+
+    if (targetModel === 'isagi-autonomous') {
+      targetProvider = 'gemini'; // Default to gemini for streaming support
+      targetModel = 'gemini-1.5-flash';
+    } else {
+      targetProvider = modelRegistry.getProviderForModel(targetModel);
+    }
+
+    // 2. Retrieval (Minimal for stream latency)
+    const evidence = await this.retrieveEvidence(req);
+    const evidenceContext = literatureService.formatContext(evidence);
+
+    const enhancedPrompt = `
+      SISTEM: ISAGI Autonomous Scientific Orchestrator (STREAM)
+      TUGAS: ${req.type.toUpperCase()}
+      KONTEKS: ${req.prompt}
+      BUKTI: ${evidenceContext}
+      ${this.getTaskInstruction(req.type)}
+      ${responseFormatter.getSystemPromptInjection()}
+    `;
+
+    // 3. Delegate to streaming service
+    if (targetProvider === 'gemini') {
+      yield* geminiService.executeStreamInternal({ prompt: enhancedPrompt, model: targetModel });
+    } else {
+      // Fallback for non-streaming providers (simulate stream for now or throw)
+      const result = await this.execute(req);
+      yield result.text;
+    }
   }
 }
 

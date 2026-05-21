@@ -56,9 +56,9 @@ export default function JournalCard({ journal, index = 0, isSelected = false, on
       className="group"
     >
       <div className={cn(
-        "mono-card p-8 md:p-10 flex flex-col h-full relative transition-all duration-500",
-        isComparing && "ring-2 ring-foreground translate-y-[-8px]",
-        isSelected && "ring-2 ring-foreground"
+        "bg-card p-8 md:p-10 flex flex-col h-full relative transition-all duration-500 rounded-3xl border border-border/50 shadow-sm",
+        isComparing && "ring-2 ring-card-foreground translate-y-[-8px]",
+        isSelected && "ring-2 ring-card-foreground"
       )}>
         {/* Selection Dot */}
         {onSelect && (
@@ -69,13 +69,13 @@ export default function JournalCard({ journal, index = 0, isSelected = false, on
               onSelect(journal.paperId);
             }}
             className={cn(
-              "absolute top-6 left-6 md:top-8 md:left-8 w-6 h-6 rounded-none border-2 transition-all flex items-center justify-center z-20",
+              "absolute top-6 left-6 md:top-8 md:left-8 w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center z-20",
               isSelected 
                 ? "bg-white border-foreground scale-110" 
                 : "bg-white border-border hover:border-foreground"
             )}
           >
-            {isSelected && <div className="w-2.5 h-2.5 bg-black rounded-none" />}
+            {isSelected && <div className="w-2.5 h-2.5 bg-black rounded-full" />}
           </button>
         )}
 
@@ -84,10 +84,10 @@ export default function JournalCard({ journal, index = 0, isSelected = false, on
           <button 
             onClick={toggleCompare}
             className={cn(
-              "w-10 h-10 rounded-none flex items-center justify-center transition-all border",
+              "w-10 h-10 rounded-full flex items-center justify-center transition-all border",
               isComparing 
-                ? "bg-foreground text-background border-foreground shadow-lg" 
-                : "bg-background/80 backdrop-blur-sm text-foreground-muted border-border hover:bg-foreground hover:text-background hover:border-foreground"
+                ? "bg-card-foreground text-card border-card-foreground shadow-lg" 
+                : "bg-card/80 backdrop-blur-sm text-card-foreground/60 border-card-foreground/20 hover:bg-card-foreground hover:text-card hover:border-card-foreground"
             )}
             title="Tambah ke Komparasi"
           >
@@ -101,20 +101,20 @@ export default function JournalCard({ journal, index = 0, isSelected = false, on
         {/* Badges */}
         <div className="flex flex-wrap gap-2 mb-8 pr-20">
           {/* Source badge */}
-          <div className="bg-foreground text-background px-4 py-1.5 rounded-none text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm">
+          <div className="bg-card-foreground text-card px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm">
             {journal.source === 'googlescholar' ? 'Scholar' : (journal.source || 'Semantic')}
           </div>
           
           {/* NEW badge — current or last year */}
           {journal.isNew && (
-            <div className="bg-foreground text-background px-4 py-1.5 rounded-none text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg ring-1 ring-foreground/20 animate-pulse">
+            <div className="bg-card-foreground text-card px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg ring-1 ring-card-foreground/20">
               ✦ NEW
             </div>
           )}
 
           {/* RISING badge — high velocity, recent paper */}
           {journal.isRising && !journal.isNew && (
-            <div className="bg-foreground/5 text-foreground border border-foreground/20 px-4 py-1.5 rounded-none text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+            <div className="bg-card-foreground/5 text-card-foreground border border-card-foreground/20 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
               <Flame className="w-3 h-3 fill-current" />
               Rising
             </div>
@@ -122,22 +122,22 @@ export default function JournalCard({ journal, index = 0, isSelected = false, on
 
           {/* ARIS score */}
           {journal.relevanceScore && (
-            <div className="bg-transparent text-foreground border border-border-strong px-4 py-1.5 rounded-none text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-              <Sparkles className="w-3 h-3 text-foreground" />
+            <div className="bg-transparent text-card-foreground border border-card-foreground/20 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+              <Sparkles className="w-3 h-3 text-card-foreground" />
               ARIS {journal.relevanceScore}%
             </div>
           )}
 
           {/* Trending — legacy trendScore signal */}
           {!journal.isRising && (journal.trendScore || 0) > 10 && (
-            <div className="bg-foreground/5 text-foreground border border-border-strong px-4 py-1.5 rounded-none text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+            <div className="bg-card-foreground/5 text-card-foreground border border-card-foreground/20 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
               <Zap className="w-3 h-3 fill-current" />
               Trending
             </div>
           )}
 
           {journal.isOpenAccess && (
-            <div className="bg-transparent text-foreground-secondary border border-border px-4 py-1.5 rounded-none text-[10px] font-bold uppercase tracking-widest">
+            <div className="bg-transparent text-card-foreground/80 border border-card-foreground/20 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
               Open Access
             </div>
           )}
@@ -148,24 +148,24 @@ export default function JournalCard({ journal, index = 0, isSelected = false, on
           href={`/journal/${journal.id || journal.paperId}?source=${journal.source || 'semantic'}`}
           className="space-y-4 flex-grow mb-8"
         >
-          <h3 className="text-xl md:text-2xl lg:text-3xl font-extrabold leading-[1.1] tracking-tighter text-foreground group-hover:opacity-70 transition-all">
+          <h3 className="text-lg md:text-xl lg:text-2xl font-extrabold leading-[1.1] tracking-tighter text-card-foreground group-hover:opacity-70 transition-all">
             {journal.title}
           </h3>
-          <p className="text-foreground text-sm md:text-base font-medium line-clamp-3 leading-relaxed">
+          <p className="text-card-foreground/80 text-sm md:text-base font-medium line-clamp-3 leading-relaxed">
             {journal.abstract || 'Analisis riset neural mendalam diperlukan. Klik untuk inisialisasi ringkasan AI dan pembuatan insight untuk jurnal akademik ini.'}
           </p>
         </Link>
 
         {/* Footer Metadata */}
-        <div className="pt-8 border-t border-border space-y-6">
+        <div className="pt-8 border-t border-card-foreground/10 space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4 overflow-hidden">
-              <div className="w-10 h-10 rounded-none bg-muted flex items-center justify-center shrink-0 border border-border">
-                <Users className="w-4 h-4 text-foreground-muted" />
+              <div className="w-10 h-10 rounded-full bg-card-foreground/5 flex items-center justify-center shrink-0 border border-card-foreground/10">
+                <Users className="w-4 h-4 text-card-foreground/60" />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[9px] mb-0.5 font-bold text-foreground-muted uppercase tracking-widest">Kontributor</span>
-                <span className="text-xs font-bold truncate max-w-[140px] text-foreground">
+                <span className="text-[11px] mb-0.5 font-bold text-card-foreground/60 uppercase tracking-wider">Kontributor</span>
+                <span className="text-xs font-bold truncate max-w-[140px] text-card-foreground">
                   {journal.authors && journal.authors.length > 0 
                     ? journal.authors.slice(0, 2).map(a => a.name).join(', ') + (journal.authors.length > 2 ? ' et al.' : '')
                     : 'Anonymous'}
@@ -175,20 +175,20 @@ export default function JournalCard({ journal, index = 0, isSelected = false, on
 
             <div className="flex items-center gap-6">
               <div className="text-right">
-                <span className="text-[9px] mb-0.5 font-bold text-foreground-muted uppercase tracking-widest block">Tahun</span>
+                <span className="text-[11px] mb-0.5 font-bold text-card-foreground/60 uppercase tracking-wider block">Tahun</span>
                 <span className={cn(
                   "text-xs font-black",
-                  journal.isNew ? "text-foreground" : "text-foreground"
+                  journal.isNew ? "text-card-foreground" : "text-card-foreground"
                 )}>
                   {journal.year || 'N/A'}
                   {journal.isNew && <span className="ml-1 text-[8px] font-black opacity-60">●</span>}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-[9px] mb-0.5 font-bold text-foreground-muted uppercase tracking-widest block">Sitasi</span>
+                <span className="text-[11px] mb-0.5 font-bold text-card-foreground/60 uppercase tracking-wider block">Sitasi</span>
                 <div className="flex items-center justify-end">
-                  <Star className="w-3 h-3 mr-1 text-foreground-muted" />
-                  <span className="text-xs font-bold text-foreground">{(journal.citationCount || journal.citations || 0).toLocaleString()}</span>
+                  <Star className="w-3 h-3 mr-1 text-card-foreground/60" />
+                  <span className="text-xs font-bold text-card-foreground">{(journal.citationCount || journal.citations || 0).toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -197,9 +197,9 @@ export default function JournalCard({ journal, index = 0, isSelected = false, on
           <div className="flex gap-3">
             <Link 
               href={`/journal/${journal.id || journal.paperId}?source=${journal.source || 'semantic'}`}
-              className="flex-grow btn-primary btn-fill-mewah h-12 md:h-14 group/btn shadow-md !rounded-none"
+              className="flex-grow flex items-center justify-center gap-2 bg-card-foreground text-card h-12 md:h-14 group/btn shadow-md rounded-2xl hover:opacity-90 transition-all font-black"
             >
-              <span className="text-[11px] tracking-[0.15em] relative z-10">Analisis Intelijen</span>
+              <span className="text-[11px] tracking-[0.15em] relative z-10 uppercase">Analisis Intelijen</span>
               <Sparkles className="w-4 h-4 group-hover/btn:rotate-12 transition-transform relative z-10" />
             </Link>
 
@@ -208,7 +208,7 @@ export default function JournalCard({ journal, index = 0, isSelected = false, on
                 href={journal.pdfUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-14 h-12 md:h-14 rounded-none border border-border flex items-center justify-center bg-foreground/5 hover:bg-foreground hover:text-background transition-all duration-300 group/pdf"
+                className="w-14 h-12 md:h-14 rounded-2xl border border-card-foreground/20 flex items-center justify-center bg-card-foreground text-card hover:opacity-80 transition-all duration-300 group/pdf shadow-sm"
                 title="Download PDF"
                 onClick={(e) => e.stopPropagation()}
               >

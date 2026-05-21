@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     /* NORMAL: LIGHT MODE = WHITE BACKGROUND */
@@ -12,8 +14,8 @@
     --primary: #000000;
     --primary-foreground: #FFFFFF;
     
-    --card: #FFFFFF;
-    --card-foreground: #000000;
+    --card: #000000;
+    --card-foreground: #FFFFFF;
     
     --border: rgba(0, 0, 0, 0.1);
     --border-strong: rgba(0, 0, 0, 0.2);
@@ -28,21 +30,6 @@
 
     --shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 20px 50px -12px rgba(0, 0, 0, 0.1);
-
-    /* Tailwind v4 Theme Variables */
-    --color-background: var(--background);
-    --color-background-secondary: var(--background-secondary);
-    --color-foreground: var(--foreground);
-    --color-foreground-secondary: var(--foreground-secondary);
-    --color-foreground-muted: var(--foreground-muted);
-    --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-card: var(--card);
-    --color-card-foreground: var(--card-foreground);
-    --color-border: var(--border);
-    --color-border-strong: var(--border-strong);
-    --color-muted: var(--muted);
-    --color-muted-foreground: var(--muted-foreground);
 
     --ease-premium: cubic-bezier(0.23, 1, 0.32, 1);
     --transition-premium: 0.5s var(--ease-premium);
@@ -59,8 +46,8 @@
     --primary: #FFFFFF;
     --primary-foreground: #000000;
     
-    --card: #0A0A0A;
-    --card-foreground: #FFFFFF;
+    --card: #FFFFFF;
+    --card-foreground: #000000;
     
     --border: rgba(255, 255, 255, 0.15);
     --border-strong: rgba(255, 255, 255, 0.25);
@@ -77,6 +64,24 @@
     color: var(--foreground);
     transition: background-color 0.4s var(--ease-premium), color 0.4s var(--ease-premium);
   }
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --radius-2xl: var(--radius-2xl);
+  --animate-shimmer: shimmer 1.5s infinite;
 }
 
 /* UI UTILITIES */
@@ -131,7 +136,7 @@
     color-mix(in srgb, var(--foreground) 5%, transparent),
     transparent
   );
-  animation: shimmer 1.5s infinite;
+  animation: var(--animate-shimmer);
 }
 
 @keyframes shimmer {
@@ -161,5 +166,3 @@ html.lenis body {
 .lenis.lenis-scrolling iframe {
   pointer-events: none;
 }
-
-

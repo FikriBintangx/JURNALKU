@@ -57,13 +57,14 @@ export async function GET(request: Request) {
 
     // ─── 1. Multi-source fetch ────────────────────────────────
     const fetchLimit = pageSize * 4; // Over-fetch to allow for filtering
-    const { results: rawPapers, intelligence: queryIntel } = await searchAggregator.search(query, fetchLimit, offset, filters, provider);
+    const { results: rawPapers, intelligence: queryIntel, debug } = await searchAggregator.search(query, fetchLimit, offset, filters, provider);
 
     if (!rawPapers || rawPapers.length === 0) {
       return NextResponse.json({
         success: true, data: [], total: 0,
         page, pageSize, hasMore: false,
-        message: "Tidak ada hasil untuk pencarian ini. Coba kata kunci yang berbeda.",
+        debug,
+        message: "Tidak ada hasil untuk pencarian ini. Kueri telah dinormalisasi secara otomatis.",
       });
     }
 
@@ -138,6 +139,7 @@ export async function GET(request: Request) {
       message: `${total} karya ilmiah ditemukan.`,
       enriched: enrich,
       intelligence: queryIntel,
+      debug,
     });
 
   } catch (error: any) {

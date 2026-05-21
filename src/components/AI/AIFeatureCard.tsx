@@ -74,24 +74,26 @@ export const AIFeatureCard = ({
   return (
     <motion.div 
       layout
-      className="mono-card p-8 flex flex-col h-full min-h-[280px] relative overflow-hidden group/aicolor"
+      className="bg-card p-6 md:p-8 flex flex-col h-full min-h-[280px] relative overflow-hidden rounded-2xl border border-border/50 shadow-sm group/aicolor hover:border-foreground/20 hover:shadow-md transition-all"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 relative z-10">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 glass-card !bg-white/5 !rounded-2xl flex items-center justify-center text-primary group-hover/aicolor:scale-110 transition-transform border border-white/10">
-            <Icon size={22} />
+          <div className="w-10 h-10 rounded-xl bg-card-foreground/10 flex items-center justify-center text-card-foreground relative z-10 group-hover/aicolor:scale-110 transition-transform duration-500 ease-premium">
+            <Icon size={20} />
           </div>
-          <h3 className="font-black text-card-foreground tracking-tight text-base">{title}</h3>
+          <h3 className="font-bold text-card-foreground tracking-tight text-base relative z-10">{title}</h3>
         </div>
         {!data && (
           <button 
             onClick={generate}
             disabled={loading}
             className={cn(
-              "btn-primary btn-fill-mewah h-10 px-6 !rounded-xl",
-              loading && "opacity-50 cursor-not-allowed"
+              "flex items-center gap-2 h-9 px-4 rounded-lg relative z-20 cursor-pointer text-[11px] font-bold transition-all shadow-sm border border-border/50",
+              loading 
+                ? "opacity-50 cursor-not-allowed bg-foreground/10 text-foreground/50"
+                : "bg-background text-foreground hover:bg-foreground hover:text-background hover:shadow-md hover:-translate-y-0.5 active:scale-95"
             )}
           >
             {loading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
@@ -144,8 +146,8 @@ export const AIFeatureCard = ({
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col h-full"
             >
-              <div className="flex-1 text-sm text-card-foreground/90 leading-relaxed max-h-[500px] overflow-y-auto pr-4 custom-scrollbar font-medium">
-                <div className="relative p-7 glass-card !bg-white/5 border border-white/10 shadow-2xl rounded-[2.5rem] group/content overflow-hidden">
+              <div className="flex-1 text-sm text-card-foreground/80 leading-relaxed max-h-[500px] overflow-y-auto pr-4 custom-scrollbar font-medium">
+                <div className="relative group/content overflow-hidden">
                   {/* ISAGI Branding & Fallback Badge */}
                   <div className="flex flex-wrap items-center gap-3 mb-6">
                     {!String(data).includes('(Fallback)') && !intelligence?.fallback && (
@@ -171,11 +173,11 @@ export const AIFeatureCard = ({
 
                   {/* Premium Markdown Renderer */}
                   <div className="prose prose-invert prose-sm max-w-none 
-                    prose-headings:font-black prose-headings:tracking-tight prose-headings:text-foreground
+                    prose-headings:font-black prose-headings:tracking-tight prose-headings:text-card-foreground
                     prose-h2:text-lg prose-h2:mt-6 prose-h2:mb-4 prose-h2:border-b prose-h2:border-white/5 prose-h2:pb-2
                     prose-h3:text-base prose-h3:mt-4 prose-h3:mb-2
                     prose-p:leading-relaxed prose-p:mb-4 prose-p:text-card-foreground/80
-                    prose-strong:text-foreground prose-strong:font-bold
+                    prose-strong:text-card-foreground prose-strong:font-bold
                     prose-ul:my-4 prose-li:my-1
                     prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg
                   ">
@@ -186,7 +188,7 @@ export const AIFeatureCard = ({
                         h3: ({node, ...props}) => <h3 className="!m-0 !mb-2 pt-2" {...props} />,
                         p: ({node, ...props}) => <p className="!m-0 !mb-5 last:mb-0" {...props} />,
                         li: ({node, ...props}) => <li className="!m-0 !mb-1.5 marker:text-primary" {...props} />,
-                        strong: ({node, ...props}) => <strong className="text-foreground font-black" {...props} />,
+                        strong: ({node, ...props}) => <strong className="text-card-foreground font-black" {...props} />,
                       }}
                     >
                       {String(data)}
@@ -194,32 +196,32 @@ export const AIFeatureCard = ({
                   </div>
 
                   {/* Actions Area */}
-                  <div className="mt-10 pt-6 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
+                  <div className="mt-8 pt-4 border-t border-border/50 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
                       <button 
                         onClick={handleCopy}
                         className={cn(
-                          "btn-fill-mewah flex items-center gap-2 text-[10px] font-bold transition-all px-3 py-1.5 rounded-xl border border-white/5 whitespace-nowrap",
-                          copied ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-white/5 text-card-foreground/60 hover:text-primary"
+                          "flex items-center gap-2 text-[11px] font-bold transition-all px-3 py-1.5 rounded-lg border whitespace-nowrap",
+                          copied ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-background text-foreground/60 border-border/50 hover:text-foreground hover:bg-foreground/5"
                         )}
                       >
-                        {copied ? <Check size={12} /> : <Clipboard size={12} />}
+                        {copied ? <Check size={14} /> : <Clipboard size={14} />}
                         {copied ? 'Tersalin' : 'Salin Teks'}
                       </button>
                       <button 
                         onClick={handleShare}
-                        className="btn-fill-mewah flex items-center gap-2 text-[10px] font-bold bg-white/5 text-card-foreground/60 hover:text-primary transition-all px-3 py-1.5 rounded-xl border border-white/5 whitespace-nowrap"
+                        className="flex items-center gap-2 text-[11px] font-bold bg-background text-foreground/60 border-border/50 hover:text-foreground hover:bg-foreground/5 transition-all px-3 py-1.5 rounded-lg border whitespace-nowrap"
                       >
-                        <Share2 size={12} />
+                        <Share2 size={14} />
                         Bagikan
                       </button>
                     </div>
                     
-                    <div className="flex items-center gap-2 py-1 px-3 glass-card !bg-white/5 border border-white/10 rounded-full group/badge transition-colors hover:border-primary/30">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-card-foreground/40 group-hover/badge:text-primary/70 transition-colors whitespace-nowrap">
+                    <div className="flex items-center gap-2 py-1 px-3 bg-foreground/5 rounded-full group/badge transition-colors">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/50 whitespace-nowrap">
                         {intelligence?.orchestrator || 'ISAGI Analysis'}
                       </span>
-                      <CheckCircle2 size={10} className="text-primary/40 group-hover/badge:text-primary/70 transition-colors" />
+                      <CheckCircle2 size={12} className="text-foreground/40" />
                     </div>
                   </div>
                 </div>
@@ -230,7 +232,7 @@ export const AIFeatureCard = ({
               key="description"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-sm text-foreground-secondary leading-relaxed font-medium px-1"
+              className="text-sm text-card-foreground/70 leading-relaxed font-medium px-1"
             >
               {description}
             </motion.p>
