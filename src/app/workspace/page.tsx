@@ -273,7 +273,7 @@ export default function WorkspacePage() {
       </aside>
 
       {/* MAIN CANVAS */}
-      <main className="flex-1 flex flex-col relative min-w-0 bg-background-secondary md:rounded-l-3xl md:border-l md:border-border/50 shadow-2xl overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 bg-background-secondary md:rounded-l-3xl md:border-l md:border-border/50 shadow-2xl overflow-hidden">
         
         {/* TOP NAV */}
         <header className="h-20 px-6 lg:px-10 flex items-center justify-between shrink-0 glass-nav z-30">
@@ -309,8 +309,8 @@ export default function WorkspacePage() {
         </header>
 
         {/* CONTENT AREA */}
-        <div className="flex-1 overflow-y-auto hide-scrollbar relative">
-          <div className="max-w-4xl mx-auto px-6 lg:px-10 py-10 pb-40 space-y-12">
+        <div className="flex-1 overflow-y-auto hide-scrollbar">
+          <div className="max-w-4xl mx-auto px-6 lg:px-10 py-10 pb-8 space-y-12">
             
             {/* AGENT STATUS HERO */}
             <div className="flex items-start gap-5">
@@ -385,10 +385,10 @@ export default function WorkspacePage() {
           </div>
         </div>
 
-        {/* BOTTOM INPUT DOCK */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background-secondary via-background-secondary/90 to-transparent pt-24 z-20 pointer-events-none">
-          <div className="max-w-4xl mx-auto pointer-events-auto">
-            <form onSubmit={handleChatSubmit} className="relative group flex items-center bg-background border border-border/50 rounded-2xl p-2 shadow-2xl transition-all focus-within:ring-2 focus-within:ring-foreground/20 focus-within:border-foreground/30">
+        {/* BOTTOM INPUT DOCK - natural flow, not absolute */}
+        <div className="shrink-0 px-6 lg:px-10 py-4 border-t border-border/40 bg-background-secondary">
+          <div className="max-w-4xl mx-auto">
+            <form onSubmit={handleChatSubmit} className="flex items-center bg-background border border-border/50 rounded-2xl p-2 shadow-lg transition-all focus-within:ring-2 focus-within:ring-foreground/20 focus-within:border-foreground/30">
               <div className="p-3 text-foreground/40 shrink-0"><Search className="w-5 h-5" /></div>
               <input 
                 type="text" 
@@ -398,6 +398,11 @@ export default function WorkspacePage() {
                 placeholder="Tuliskan tujuan riset, komparasi jurnal, atau pencarian celah teori..." 
                 className="flex-1 bg-transparent border-none outline-none text-sm font-semibold placeholder:text-foreground/30 disabled:opacity-50 min-w-0"
               />
+              {isStreaming && (
+                <div className="flex items-center gap-2 px-3 text-foreground/40 shrink-0">
+                  <div className="w-4 h-4 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
+                </div>
+              )}
               <button type="submit" disabled={isStreaming} className="bg-foreground text-background p-3 rounded-xl transition-all ml-2 hover:scale-105 active:scale-95 disabled:opacity-50 shrink-0 shadow-md">
                 <ChevronRight className="w-5 h-5 stroke-[3px]" />
               </button>

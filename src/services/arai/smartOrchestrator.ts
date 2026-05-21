@@ -282,11 +282,32 @@ Fokus utama mencakup ${top.topics?.slice(0,3).join(', ') || 'topik terkait'}.
 
     // 3. Delegate to streaming service
     if (targetProvider === 'gemini') {
-      yield* geminiService.executeStreamInternal({ prompt: enhancedPrompt, model: targetModel });
-    } else {
-      // Fallback for non-streaming providers (simulate stream for now or throw)
+      // Check if gemini keys are available first
+      const { aiKeyManager } = await import('../AIKeyManager');
+      const hasGeminiKey = aiKeyManager.getHealthyCount() > 0;
+      
+      if (hasGeminiKey) {
+        yield* geminiService.executeStreamInternal({ prompt: enhancedPrompt, model: targetModel });
+        return;
+      }
+      // Fall through to non-streaming fallback if no keys
+      console.warn('[ORCHESTRATOR:STREAM] No Gemini keys — falling back to execute()');
+    }
+    
+    // Fallback: non-streaming for Groq / OpenRouter, or if Gemini has no keys
+    try {
       const result = await this.execute(req);
-      yield result.text;
+      if (result.text) {
+        // Simulate streaming by chunking the result
+        const words = result.text.split(' ');
+        for (const word of words) {
+          yield word + ' ';
+        }
+      } else {
+        yield '[MODE CADANGAN] Sistem AI sedang dalam pemulihan. Coba beberapa saat lagi.';
+      }
+    } catch (err: any) {
+      yield `[ERROR] ${err.message}`;
     }
   }
 }
