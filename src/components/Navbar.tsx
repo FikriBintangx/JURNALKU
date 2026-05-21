@@ -247,6 +247,9 @@ function NavbarContent() {
         </div>
 
         <div className="flex items-center gap-4">
+          <Link href="/library" title="Koleksi / Bookmark" className="w-10 h-10 flex items-center justify-center rounded-full hover:scale-105 active:scale-95 transition-all shadow-sm border border-border/50 bg-foreground/5 text-foreground hover:bg-foreground/10">
+            <BookMarked className="w-5 h-5" />
+          </Link>
           <ThemeToggle />
           <div className="hidden sm:flex items-center gap-4">
             {user ? (
