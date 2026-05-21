@@ -64,13 +64,13 @@ export default function BookmarkButton({ journal, variant = 'icon', className }:
     <button 
       onClick={handleToggle}
       className={cn(
-        "p-2.5 rounded-none transition-all border group backdrop-blur-md",
+        "w-10 h-10 rounded-full flex items-center justify-center transition-all border group backdrop-blur-md shadow-sm",
         isBookmarked 
-          ? "bg-primary/10 text-primary border-primary/30" 
-          : "bg-muted/30 text-muted-foreground border-border/50 hover:text-foreground",
+          ? "bg-primary/20 text-primary border-primary/50" 
+          : "bg-card/80 text-card-foreground/60 border-card-foreground/20 hover:bg-card-foreground hover:text-card hover:border-card-foreground",
         className
       )}
-      title={isBookmarked ? "Hapus dari Koleksi" : "Simpan ke Koleksi"}
+      title={isBookmarked ? "Hapus dari Workspace" : "Simpan ke Workspace"}
     >
       <Bookmark className={cn("w-4 h-4 transition-transform group-hover:scale-110", isBookmarked && "fill-current")} />
     </button>
