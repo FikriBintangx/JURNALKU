@@ -304,7 +304,7 @@ export const searchAggregator = {
           default: return [];
         }
 
-        const data = await withTimeout(fetchFn(), timeout, provider);
+        const data = await withTimeout<UniversalPaperEnriched[]>(fetchFn(), timeout, provider);
         healthSystem.reportSuccess(provider);
         return data || [];
       } catch (e: any) {

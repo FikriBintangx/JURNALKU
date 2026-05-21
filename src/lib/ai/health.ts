@@ -63,9 +63,10 @@ class AIHealthSystem {
     if (!health) return;
 
     health.consecutiveFailures++;
-    health.lastError = error?.message || String(error);
+    const errorMessage = error?.message || String(error);
+    health.lastError = errorMessage;
 
-    const msg = health.lastError.toLowerCase();
+    const msg = errorMessage.toLowerCase();
     
     // 429 - Quota/Rate Limit
     if (msg.includes('429') || msg.includes('quota') || msg.includes('rate limit')) {
