@@ -386,8 +386,8 @@ export default function WorkspacePage() {
         </div>
 
         {/* BOTTOM INPUT DOCK */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background-secondary via-background-secondary/90 to-transparent pt-24 z-20">
-          <div className="max-w-4xl mx-auto">
+        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background-secondary via-background-secondary/90 to-transparent pt-24 z-20 pointer-events-none">
+          <div className="max-w-4xl mx-auto pointer-events-auto">
             <form onSubmit={handleChatSubmit} className="relative group flex items-center bg-background border border-border/50 rounded-2xl p-2 shadow-2xl transition-all focus-within:ring-2 focus-within:ring-foreground/20 focus-within:border-foreground/30">
               <div className="p-3 text-foreground/40 shrink-0"><Search className="w-5 h-5" /></div>
               <input 

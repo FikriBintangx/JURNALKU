@@ -79,6 +79,13 @@ class AIKeyManager {
     if (typeof window !== 'undefined') return;
 
     const keyList: { key: string; id: number }[] = [];
+    
+    // Support standard single key
+    const singleKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    if (singleKey && singleKey.trim() && singleKey.trim() !== 'your_key_here') {
+      keyList.push({ key: singleKey.trim(), id: 0 });
+    }
+
     for (let i = 1; i <= 20; i++) {
       const key = process.env[`GEMINI_API_KEY_${i}`];
       if (key && key.trim() && key.trim() !== 'your_key_here') {
